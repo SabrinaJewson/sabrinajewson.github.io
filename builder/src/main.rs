@@ -25,6 +25,7 @@ use asset::Asset;
 
 mod blog;
 mod markdown;
+mod minify;
 mod push_str;
 
 /// Rust program that builds this website.
@@ -41,6 +42,8 @@ fn main() -> anyhow::Result<()> {
     let args: Args = clap::Parser::parse();
 
     set_cwd()?;
+
+    minify::init()?;
 
     let blog = blog::asset("./blog".as_ref(), "./dist/blog".as_ref());
     blog.generate()?;

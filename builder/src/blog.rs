@@ -125,7 +125,7 @@ fn build_index(posts: &mut [Rc<Post>], template: &Template) -> anyhow::Result<St
         })
         .context("failed to apply template to blog index")?;
 
-    // TODO: minify
+    crate::minify::html(&mut html)?;
 
     Ok(html)
 }
@@ -144,7 +144,7 @@ fn build_post(post: &Post, template: &Template) -> anyhow::Result<String> {
         })
         .context("failed to apply template to post")?;
 
-    // TODO: minify
+    crate::minify::html(&mut html)?;
 
     Ok(html)
 }

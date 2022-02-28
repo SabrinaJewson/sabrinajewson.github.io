@@ -1,0 +1,5 @@
+{
+	"dependencies": {
+		"html-minifier-terser": "^7.0.0-alpha.1"
+	}
+}

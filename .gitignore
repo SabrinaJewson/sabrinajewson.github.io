@@ -1,2 +1,3 @@
 /builder/target
+/builder/js/node_modules
 /dist
