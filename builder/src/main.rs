@@ -11,6 +11,7 @@
     clippy::match_bool,
     clippy::single_component_path_imports, // https://github.com/rust-lang/rust-clippy/issues/7923
     clippy::too_many_lines,
+    clippy::items_after_statements,
 )]
 
 use ::{
@@ -74,9 +75,7 @@ fn main() -> anyhow::Result<()> {
         loop {
             thread::park();
             log::info!("rebuilding");
-            if let Err(e) = blog.generate() {
-                log::error!("{:?}", e);
-            }
+            blog.generate()?;
         }
     }
 

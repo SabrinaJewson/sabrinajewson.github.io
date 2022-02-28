@@ -1,11 +1,14 @@
 use crate::push_str::{escape_href, escape_html, push, PushStr};
 use ::{
     anyhow::{bail, ensure, Context as _},
+    fn_error_context::context,
+    once_cell::sync::Lazy,
     std::{
         borrow::Cow,
         collections::HashSet,
         hash::{Hash, Hasher},
     },
+    syntect::{highlighting::Theme, parsing::SyntaxSet, util::LinesWithEndings},
 };
 
 #[cfg_attr(test, derive(Debug, PartialEq))]
@@ -46,21 +49,22 @@ pub(crate) fn parse(source: &str) -> anyhow::Result<Markdown> {
         outline: String::new(),
         outline_level: 0,
         in_heading: false,
+        syntax_set: &*SYNTAX_SET,
     }
     .render()
     .context("failed to render markdown")
 }
 
-struct Renderer<'input> {
-    published: Option<&'input str>,
+struct Renderer<'a> {
+    published: Option<&'a str>,
     title: String,
-    parser: pulldown_cmark::Parser<'input, 'input>,
+    parser: pulldown_cmark::Parser<'a, 'a>,
     body: String,
     /// Whether we are in a `<thead>`.
     /// Used to determine whether to output `<td>`s or `<th>`s.
     in_table_head: bool,
     /// Class names that need to be generated in the resulting CSS.
-    used_classes: HashSet<Class>,
+    used_classes: HashSet<Classes>,
     outline: String,
     /// The level of the currently opened heading `<li>` in the outline.
     /// In the range [0..6].
@@ -68,9 +72,10 @@ struct Renderer<'input> {
     /// Whether we are in a `<hN>` tag.
     /// Used to determine whether to also write to the title and the outline.
     in_heading: bool,
+    syntax_set: &'a SyntaxSet,
 }
 
-impl<'input> Renderer<'input> {
+impl<'a> Renderer<'a> {
     fn render(mut self) -> anyhow::Result<Markdown> {
         while let Some(event) = self.parser.next() {
             match event {
@@ -78,15 +83,19 @@ impl<'input> Renderer<'input> {
                 pulldown_cmark::Event::End(tag) => self.end_tag(tag),
                 pulldown_cmark::Event::Text(text) => escape_html(&mut self, &text),
                 pulldown_cmark::Event::Code(text) => {
-                    if let Some((_option, _rest)) =
+                    self.push_str("<code");
+
+                    if let Some((language, code)) =
                         text.strip_prefix('[').and_then(|rest| rest.split_once(']'))
                     {
-                        todo!("syntax highlighting")
+                        self.push_str(" class='scode'>");
+                        self.syntax_highlight(language, code)?;
                     } else {
-                        self.push_str("<code>");
+                        self.push_str(">");
                         escape_html(&mut self, &text);
-                        self.push_str("</code>");
                     }
+
+                    self.push_str("</code>");
                 }
                 pulldown_cmark::Event::Html(html) => self.push_str(&html),
                 pulldown_cmark::Event::SoftBreak => self.push_str(" "),
@@ -122,7 +131,7 @@ impl<'input> Renderer<'input> {
         })
     }
 
-    fn start_tag(&mut self, tag: pulldown_cmark::Tag<'input>) -> anyhow::Result<()> {
+    fn start_tag(&mut self, tag: pulldown_cmark::Tag<'a>) -> anyhow::Result<()> {
         match tag {
             pulldown_cmark::Tag::Paragraph => self.push_str("<p>"),
             pulldown_cmark::Tag::Heading(level, id, classes) => {
@@ -166,11 +175,11 @@ impl<'input> Renderer<'input> {
                 {
                     self.push_str("<table>");
                 } else {
-                    let class = Class::Table(TableAlignments(alignments));
+                    let alignments = TableAlignments(alignments);
                     self.push_str("<table class='");
-                    class.write_name(self);
+                    alignments.write_class_name(self);
                     self.push_str("'>");
-                    self.used_classes.insert(class);
+                    self.used_classes.insert(Classes::Table(alignments));
                 }
             }
             pulldown_cmark::Tag::TableHead => {
@@ -185,16 +194,41 @@ impl<'input> Renderer<'input> {
                 });
             }
             pulldown_cmark::Tag::BlockQuote => self.push_str("<blockquote>"),
-            pulldown_cmark::Tag::CodeBlock(pulldown_cmark::CodeBlockKind::Fenced(info)) => {
-                let lang = info.split(' ').next().unwrap();
-                if lang.is_empty() {
-                    self.push_str("<pre><code>");
-                } else {
-                    todo!("syntax highlighting")
+            pulldown_cmark::Tag::CodeBlock(kind) => {
+                self.push_str("<pre");
+
+                let language = match kind {
+                    pulldown_cmark::CodeBlockKind::Fenced(lang) if lang.is_empty() => None,
+                    pulldown_cmark::CodeBlockKind::Fenced(lang) => Some(lang),
+                    pulldown_cmark::CodeBlockKind::Indented => None,
+                };
+
+                fn event_text(
+                    event: pulldown_cmark::Event<'_>,
+                ) -> Option<pulldown_cmark::CowStr<'_>> {
+                    match event {
+                        pulldown_cmark::Event::End(_) => None,
+                        pulldown_cmark::Event::Text(text) => Some(text),
+                        // Other events shouldn't happen
+                        _ => unreachable!("unexpected event in code block {:?}", event),
+                    }
                 }
-            }
-            pulldown_cmark::Tag::CodeBlock(pulldown_cmark::CodeBlockKind::Indented) => {
-                self.push_str("<pre><code>");
+
+                if let Some(language) = language {
+                    self.push_str(" class='scode'><code>");
+                    let mut code = String::new();
+                    while let Some(part) = self.parser.next().and_then(event_text) {
+                        code.push_str(&part);
+                    }
+                    self.syntax_highlight(&language, &code)?;
+                } else {
+                    self.push_str("><code>");
+                    while let Some(part) = self.parser.next().and_then(event_text) {
+                        escape_html(self, &*part);
+                    }
+                }
+
+                self.push_str("</code></pre>");
             }
             pulldown_cmark::Tag::List(Some(1)) => self.push_str("<ol>"),
             pulldown_cmark::Tag::List(Some(start)) => {
@@ -241,7 +275,7 @@ impl<'input> Renderer<'input> {
         Ok(())
     }
 
-    fn end_tag(&mut self, tag: pulldown_cmark::Tag<'input>) {
+    fn end_tag(&mut self, tag: pulldown_cmark::Tag<'a>) {
         match tag {
             pulldown_cmark::Tag::Paragraph => {
                 self.push_str("</p>");
@@ -273,7 +307,6 @@ impl<'input> Renderer<'input> {
                 });
             }
             pulldown_cmark::Tag::BlockQuote => self.push_str("</blockquote>"),
-            pulldown_cmark::Tag::CodeBlock(_) => self.push_str("</code></pre>"),
             pulldown_cmark::Tag::List(Some(_)) => self.push_str("</ol>"),
             pulldown_cmark::Tag::List(None) => self.push_str("</ul>"),
             pulldown_cmark::Tag::Item => self.push_str("</li>"),
@@ -281,12 +314,37 @@ impl<'input> Renderer<'input> {
             pulldown_cmark::Tag::Strong => self.push_str("</strong>"),
             pulldown_cmark::Tag::Strikethrough => self.push_str("</del>"),
             pulldown_cmark::Tag::Link(_, _, _) => self.push_str("</a>"),
-            // Image tag closing is handled by the opening logic, since alt tags aren't HTML
-            pulldown_cmark::Tag::Image(_, _, _)
-                // We do not enable this extension
-                | pulldown_cmark::Tag::FootnoteDefinition(_)
+            // We do not enable this extension
+            pulldown_cmark::Tag::FootnoteDefinition(_)
+            // We handle closing of these tags in the opening logic
+            | pulldown_cmark::Tag::Image(_, _, _)
+                | pulldown_cmark::Tag::CodeBlock(_)
                 => unreachable!(),
         }
+    }
+
+    #[context("failed to syntax highlight")]
+    fn syntax_highlight(&mut self, language: &str, code: &str) -> anyhow::Result<()> {
+        let syntax = self
+            .syntax_set
+            .find_syntax_by_token(language)
+            .with_context(|| format!("no known language {language}"))?;
+
+        let mut generator = syntect::html::ClassedHTMLGenerator::new_with_class_style(
+            syntax,
+            self.syntax_set,
+            SYNTECT_CLASS_STYLE,
+        );
+
+        for line in LinesWithEndings::from(code) {
+            generator.parse_html_for_line_which_includes_newline(line);
+        }
+
+        self.push_str(&generator.finalize());
+
+        self.used_classes.insert(Classes::Syntect);
+
+        Ok(())
     }
 }
 
@@ -303,6 +361,20 @@ impl PushStr for Renderer<'_> {
 }
 
 struct TableAlignments(Vec<pulldown_cmark::Alignment>);
+
+impl TableAlignments {
+    fn write_class_name(&self, buf: &mut impl PushStr) {
+        buf.push_str("t");
+        for alignment in &self.0 {
+            buf.push_str(match alignment {
+                pulldown_cmark::Alignment::None => "n",
+                pulldown_cmark::Alignment::Left => "l",
+                pulldown_cmark::Alignment::Center => "c",
+                pulldown_cmark::Alignment::Right => "r",
+            });
+        }
+    }
+}
 
 impl PartialEq for TableAlignments {
     fn eq(&self, other: &TableAlignments) -> bool {
@@ -325,26 +397,12 @@ impl Hash for TableAlignments {
 }
 
 #[derive(PartialEq, Eq, Hash)]
-enum Class {
+enum Classes {
     Table(TableAlignments),
+    Syntect,
 }
 
-impl Class {
-    fn write_name(&self, buf: &mut impl PushStr) {
-        match self {
-            Self::Table(alignments) => {
-                buf.push_str("t");
-                for alignment in &alignments.0 {
-                    buf.push_str(match alignment {
-                        pulldown_cmark::Alignment::None => "n",
-                        pulldown_cmark::Alignment::Left => "l",
-                        pulldown_cmark::Alignment::Center => "c",
-                        pulldown_cmark::Alignment::Right => "r",
-                    });
-                }
-            }
-        }
-    }
+impl Classes {
     fn write_definition(&self, buf: &mut impl PushStr) {
         match self {
             Self::Table(alignments) => {
@@ -353,7 +411,7 @@ impl Class {
                         continue;
                     }
                     buf.push_str(".");
-                    self.write_name(buf);
+                    alignments.write_class_name(buf);
                     push!(buf, " td:nth-child({})", i);
                     buf.push_str("{text-align:");
                     buf.push_str(match alignment {
@@ -365,31 +423,56 @@ impl Class {
                     buf.push_str("}");
                 }
             }
+            Self::Syntect => {
+                let (light, dark) = &*THEMES;
+                buf.push_str(&syntect::html::css_for_theme_with_class_style(
+                    dark,
+                    SYNTECT_CLASS_STYLE,
+                ));
+                buf.push_str("@media(prefers-color-scheme:light){");
+                buf.push_str(&syntect::html::css_for_theme_with_class_style(
+                    light,
+                    SYNTECT_CLASS_STYLE,
+                ));
+                buf.push_str("}");
+            }
         }
     }
 }
 
+const SYNTECT_CLASS_STYLE: syntect::html::ClassStyle =
+    syntect::html::ClassStyle::SpacedPrefixed { prefix: "s" };
+
+static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
+
+static THEMES: Lazy<(Theme, Theme)> = Lazy::new(|| {
+    (
+        syntect::dumps::from_binary(include_bytes!("../light_theme")),
+        syntect::dumps::from_binary(include_bytes!("../dark_theme")),
+    )
+});
+
 #[cfg(test)]
 mod tests {
-    use super::{parse, Class, Markdown, TableAlignments};
+    use super::{parse, Classes, Markdown, TableAlignments};
     use ::pulldown_cmark::Alignment;
 
     #[test]
     fn table_class() {
-        let class = Class::Table(TableAlignments(vec![
+        let class = TableAlignments(vec![
             Alignment::Left,
             Alignment::None,
             Alignment::Right,
             Alignment::Center,
             Alignment::Right,
-        ]));
+        ]);
 
         let mut buf = String::new();
-        class.write_name(&mut buf);
+        class.write_class_name(&mut buf);
         assert_eq!(buf, "tlnrcr");
 
         buf.clear();
-        class.write_definition(&mut buf);
+        Classes::Table(class).write_definition(&mut buf);
         let css = concat!(
             ".tlnrcr td:nth-child(0){text-align:left}",
             ".tlnrcr td:nth-child(2){text-align:right}",
@@ -565,15 +648,47 @@ mod tests {
     }
 
     #[test]
-    fn code() {
+    fn inline_code() {
         assert_eq!(
             just_body("`no language`"),
             "<p><code>no language</code></p>"
         );
+        let with_syntax = just_body("`[rs] let foo = 5;`");
+        let start = "<p><code class='scode'><span class=\"ssource srust\"> \
+            <span class=\"sstorage stype srust\">let</span> \
+            foo \
+            <span class=\"skeyword soperator srust\">=</span> \
+            <span class=\"sconstant snumeric sinteger sdecimal srust\">5</span>\
+            <span class=\"spunctuation sterminator srust\">;</span>\
+        </span></code></p><style>";
+        assert_eq!(&with_syntax[..start.len()], start);
+    }
+
+    #[test]
+    fn block_code() {
         assert_eq!(
             just_body("```\ncode\n```"),
             "<pre><code>code\n</code></pre>"
         );
+        let with_syntax = just_body("```rs\nprintln!(\"Hello World!\");\n```");
+        let start = "<pre class='scode'><code><span class=\"ssource srust\">\
+            <span class=\"ssupport smacro srust\">println!</span>\
+            <span class=\"smeta sgroup srust\">\
+                <span class=\"spunctuation ssection sgroup sbegin srust\">(</span>\
+            </span>\
+            <span class=\"smeta sgroup srust\">\
+                <span class=\"sstring squoted sdouble srust\">\
+                    <span class=\"spunctuation sdefinition sstring sbegin srust\">&quot;</span>\
+                    Hello World!\
+                    <span class=\"spunctuation sdefinition sstring send srust\">&quot;</span>\
+                </span>\
+            </span>\
+            <span class=\"smeta sgroup srust\">\
+                <span class=\"spunctuation ssection sgroup send srust\">)</span>\
+            </span>\
+            <span class=\"spunctuation sterminator srust\">;</span>\n\
+        </span></code></pre><style>";
+        assert_eq!(&with_syntax[..start.len()], start);
     }
 
     #[test]

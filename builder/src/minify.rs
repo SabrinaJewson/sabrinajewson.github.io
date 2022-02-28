@@ -36,6 +36,7 @@ pub(crate) fn html(html: &mut String) -> anyhow::Result<()> {
         .arg("--no-include-auto-generated-tags")
         .arg("--minify-css")
         .arg("--minify-js")
+        .arg("--no-newlines-before-tag-close")
         .arg("--remove-attribute-quotes")
         .arg("--remove-comments")
         .arg("--remove-empty-attributes")

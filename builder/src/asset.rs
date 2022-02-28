@@ -117,6 +117,7 @@ impl<A: Asset, F: Fn(A::Output) -> anyhow::Result<O>, O> Asset for AndThen<A, F>
     }
 }
 
+// TODO: not storing that the previous version errored leads to too many rebuilds
 pub(crate) struct Cache<A: Asset> {
     asset: A,
     cached: Cell<Option<(Modified, A::Output)>>,
@@ -234,6 +235,7 @@ macro_rules! impl_for_seq {
     ($($ty:ty),*) => { $(
         impl<A: Asset> Asset for $ty {
             // TODO: don't allocate?
+            // TODO: maybe we should be filtering out errors here instead
             type Output = Box<[A::Output]>;
 
             fn modified(&self) -> Modified {

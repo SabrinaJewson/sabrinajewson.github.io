@@ -66,13 +66,23 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
         })
         .cache()
         .and_then(|rc| {
+            let mut ok = true;
             let (post_assets, index_asset) = &*rc;
             for asset in &*post_assets {
                 if let Err(e) = asset.generate() {
-                    log::error!("skipping generating blog post: {:?}", e);
+                    log::error!("skipping generating blog post: {:?}\n", e);
+                    ok = false;
                 }
             }
-            index_asset.generate()?;
+            if let Err(e) = index_asset.generate().context("failed to generate index") {
+                log::error!("{:?}\n", e);
+                ok = false;
+            }
+
+            if ok {
+                log::info!("succesfully build posts and index");
+            }
+
             Ok(())
         })
 }
