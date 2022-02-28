@@ -17,7 +17,7 @@ use ::{
     anyhow::Context as _,
     fn_error_context::context,
     notify::Watcher,
-    std::{env, fs, thread},
+    std::{env, thread},
 };
 
 mod asset;
@@ -42,9 +42,7 @@ fn main() -> anyhow::Result<()> {
 
     set_cwd()?;
 
-    fs::create_dir_all("dist").context("couldn't create `dist` directory")?;
-
-    let blog = blog::asset("./blog", "./dist/blog");
+    let blog = blog::asset("./blog".as_ref(), "./dist/blog".as_ref());
     blog.generate()?;
 
     if args.watch {

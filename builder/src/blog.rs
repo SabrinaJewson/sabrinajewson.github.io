@@ -5,27 +5,21 @@ use ::{
     std::{ops::Range, path::Path, rc::Rc},
 };
 
-pub(crate) fn asset(
-    in_dir: impl AsRef<Path>,
-    out_dir: impl AsRef<Path>,
-) -> impl Asset<Output = ()> {
+pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
-        asset::TextFile::new(in_dir.as_ref().join("post.html"))
+        asset::TextFile::new(in_dir.join("post.html"))
             .and_then(|src| Ok(Rc::new(Template::new(src)?)))
             .cache(),
     );
 
     let index_template = Rc::new(
-        asset::TextFile::new(in_dir.as_ref().join("index.html"))
+        asset::TextFile::new(in_dir.join("index.html"))
             .and_then(|src| Ok(Rc::new(Template::new(src)?)))
             .cache(),
     );
 
     asset::Dir::new(in_dir)
         .and_then(move |files| {
-            // TODO: avoid `to_owned()`
-            let out_dir = out_dir.as_ref().to_owned();
-
             // TODO: Whenever the directory is changed at all, this entire bit of code is re-run
             // which throws away all the old `Asset`s.
             // That's a problem because we loes all our in-memory cache.
