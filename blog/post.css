@@ -1,8 +1,19 @@
-body {
-	max-width: 80ch;
-	margin: 0 auto;
+* {
+	box-sizing: border-box;
 }
 
+body {
+	display: flex;
+	flex-flow: row-reverse wrap;
+	justify-content: center;
+	font-family: sans-serif;
+}
+
+main {
+	max-width: 80ch;
+}
+
+/* Heading anchors */
 .anchor::before {
     content: "§";
     display: none;
@@ -15,4 +26,31 @@ body {
 }
 :hover > .anchor::before {
 	display: block;
+}
+
+/* Block quotes */
+blockquote {
+	border-left: 5px solid grey;
+	margin-left: 10px;
+	padding-left: 10px;
+}
+
+/* Code blocks */
+code.scode {
+	padding: 3px 5px;
+}
+pre.scode {
+	padding: 8px;
+}
+.scode {
+	border-radius: 6px;
+}
+
+/* Tables */
+table {
+	border-collapse: collapse;
+}
+th, td {
+	border: 1px solid grey;
+	padding: 6px 10px;
 }
