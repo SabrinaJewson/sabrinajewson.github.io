@@ -1,11 +1,10 @@
 use crate::push_str::{escape_href, escape_html, push, PushStr};
 use ::{
-    anyhow::{bail, ensure, Context as _},
-    fn_error_context::context,
     once_cell::sync::Lazy,
     std::{
         borrow::Cow,
         collections::HashSet,
+        fmt::Display,
         hash::{Hash, Hasher},
     },
     syntect::{highlighting::Theme, parsing::SyntaxSet, util::LinesWithEndings},
@@ -19,12 +18,9 @@ pub(crate) struct Markdown {
     pub(crate) outline: String,
 }
 
-pub(crate) fn parse(source: &str) -> anyhow::Result<Markdown> {
+pub(crate) fn parse(source: &str) -> Markdown {
     let (published, markdown) = if let Some(rest) = source.strip_prefix("published: ") {
-        let (published, rest) = rest
-            .split_once('\n')
-            .context("unexpected EOF after publish date")?;
-
+        let (published, rest) = rest.split_once('\n').unwrap_or((rest, ""));
         (
             Some(published),
             Cow::Owned(rest.replace("[published]", published)),
@@ -52,7 +48,6 @@ pub(crate) fn parse(source: &str) -> anyhow::Result<Markdown> {
         syntax_set: &*SYNTAX_SET,
     }
     .render()
-    .context("failed to render markdown")
 }
 
 struct Renderer<'a> {
@@ -76,10 +71,10 @@ struct Renderer<'a> {
 }
 
 impl<'a> Renderer<'a> {
-    fn render(mut self) -> anyhow::Result<Markdown> {
+    fn render(mut self) -> Markdown {
         while let Some(event) = self.parser.next() {
             match event {
-                pulldown_cmark::Event::Start(tag) => self.start_tag(tag)?,
+                pulldown_cmark::Event::Start(tag) => self.start_tag(tag),
                 pulldown_cmark::Event::End(tag) => self.end_tag(tag),
                 pulldown_cmark::Event::Text(text) => escape_html(&mut self, &text),
                 pulldown_cmark::Event::Code(text) => {
@@ -89,7 +84,7 @@ impl<'a> Renderer<'a> {
                         text.strip_prefix('[').and_then(|rest| rest.split_once(']'))
                     {
                         self.push_str(" class='scode'>");
-                        self.syntax_highlight(language, code)?;
+                        self.syntax_highlight(language, code);
                     } else {
                         self.push_str(">");
                         escape_html(&mut self, &text);
@@ -123,46 +118,55 @@ impl<'a> Renderer<'a> {
             self.push_str("</style>");
         }
 
-        Ok(Markdown {
+        Markdown {
             published: self.published.map(Into::into),
             title: self.title,
             body: self.body,
             outline: self.outline,
-        })
+        }
     }
 
-    fn start_tag(&mut self, tag: pulldown_cmark::Tag<'a>) -> anyhow::Result<()> {
+    fn start_tag(&mut self, tag: pulldown_cmark::Tag<'a>) {
         match tag {
             pulldown_cmark::Tag::Paragraph => self.push_str("<p>"),
             pulldown_cmark::Tag::Heading(level, id, classes) => {
-                ensure!(classes.is_empty(), "heading classes are disallowed");
-                let id = id.context("heading does not have ID")?;
-                push!(self, "<{} id='", level);
-                escape_html(self, id);
-                self.push_str("'>");
+                if !classes.is_empty() {
+                    self.error("heading classes are disallowed");
+                }
 
-                let level = level as u8;
+                let mut level = level as u8;
 
                 // Update the outline.
-                if level == self.outline_level {
-                    // If this next heading is on the same level, just close the previous one.
+                if let Some(levels_down) = self.outline_level.checked_sub(level) {
                     self.outline.push_str("</li>");
-                } else if level == self.outline_level + 1 {
-                    // If it is on the next level, open an new `<ul>` tag.
-                    self.outline.push_str("<ul>");
-                } else if level + 1 == self.outline_level {
-                    // If it is on the previous level, close the tags.
-                    self.outline.push_str("</li></ul></li>");
+                    for _ in 0..levels_down {
+                        self.outline.push_str("</ul></li>");
+                    }
                 } else {
-                    bail!(
-                        "heading level jump of > 1: {} to {}",
-                        self.outline_level,
-                        level
-                    );
+                    self.outline.push_str("<ul>");
+
+                    if level != self.outline_level + 1 {
+                        let outline_level = self.outline_level;
+                        self.error(format_args!(
+                            "heading level jump: {outline_level} to {level}"
+                        ));
+                        level = self.outline_level + 1;
+                    }
+                }
+
+                if let Some(id) = id {
+                    push!(self, "<h{level} id='");
+                    escape_html(self, id);
+                    self.push_str("'>");
+                } else {
+                    self.error("heading does not have id");
+                    push!(self, "<h{level}>");
                 }
 
                 self.outline.push_str("<li><a href='#");
-                escape_href(&mut self.outline, id);
+                if let Some(id) = id {
+                    escape_href(&mut self.outline, id);
+                }
                 self.outline.push_str("'>");
 
                 self.outline_level = level;
@@ -220,7 +224,7 @@ impl<'a> Renderer<'a> {
                     while let Some(part) = self.parser.next().and_then(event_text) {
                         code.push_str(&part);
                     }
-                    self.syntax_highlight(&language, &code)?;
+                    self.syntax_highlight(&language, &code);
                 } else {
                     self.push_str("><code>");
                     while let Some(part) = self.parser.next().and_then(event_text) {
@@ -240,7 +244,7 @@ impl<'a> Renderer<'a> {
             pulldown_cmark::Tag::Strong => self.push_str("<strong>"),
             pulldown_cmark::Tag::Strikethrough => self.push_str("<del>"),
             pulldown_cmark::Tag::Link(pulldown_cmark::LinkType::Email, ..) => {
-                bail!("email links are not supported yet");
+                self.error("email links are not supported yet");
             }
             pulldown_cmark::Tag::Link(_type, href, title) => {
                 self.push_str("<a href='");
@@ -272,7 +276,6 @@ impl<'a> Renderer<'a> {
             // We do not enable this extension
             pulldown_cmark::Tag::FootnoteDefinition(_) => unreachable!(),
         }
-        Ok(())
     }
 
     fn end_tag(&mut self, tag: pulldown_cmark::Tag<'a>) {
@@ -323,12 +326,14 @@ impl<'a> Renderer<'a> {
         }
     }
 
-    #[context("failed to syntax highlight")]
-    fn syntax_highlight(&mut self, language: &str, code: &str) -> anyhow::Result<()> {
-        let syntax = self
-            .syntax_set
-            .find_syntax_by_token(language)
-            .with_context(|| format!("no known language {language}"))?;
+    fn syntax_highlight(&mut self, language: &str, code: &str) {
+        let syntax = if let Some(syntax) = self.syntax_set.find_syntax_by_token(language) {
+            syntax
+        } else {
+            self.error(format_args!("no known language {language}"));
+            self.push_str(code);
+            return;
+        };
 
         let mut generator = syntect::html::ClassedHTMLGenerator::new_with_class_style(
             syntax,
@@ -343,8 +348,12 @@ impl<'a> Renderer<'a> {
         self.push_str(&generator.finalize());
 
         self.used_classes.insert(Classes::Syntect);
+    }
 
-        Ok(())
+    fn error(&mut self, msg: impl Display) {
+        self.push_str("<span style='color:red'>");
+        push!(self, "{}", msg);
+        self.push_str("</span>");
     }
 }
 
@@ -485,7 +494,7 @@ mod tests {
     #[test]
     fn published() {
         assert_eq!(
-            parse("published: false\nfoo").unwrap(),
+            parse("published: false\nfoo"),
             Markdown {
                 published: Some("false".into()),
                 title: String::new(),
@@ -494,7 +503,7 @@ mod tests {
             }
         );
         assert_eq!(
-            parse("published: 2038-01-19\nPublished: [published]").unwrap(),
+            parse("published: 2038-01-19\nPublished: [published]"),
             Markdown {
                 published: Some("2038-01-19".into()),
                 title: String::new(),
@@ -506,7 +515,7 @@ mod tests {
 
     #[track_caller]
     fn just_body(input: &str) -> String {
-        let markdown = parse(input).unwrap();
+        let markdown = parse(input);
         assert_eq!(markdown.published, None, "published is present");
         assert_eq!(markdown.title, "", "title is not empty");
         assert_eq!(markdown.outline, "", "outline is not empty");
@@ -530,7 +539,7 @@ mod tests {
     #[test]
     fn heading() {
         assert_eq!(
-            parse("# foo bar { #foo-bar }").unwrap(),
+            parse("# foo bar { #foo-bar }"),
             Markdown {
                 published: None,
                 title: "foo bar".to_owned(),
@@ -545,10 +554,10 @@ mod tests {
                     ## a { #a }\n\
                     ### b { #b }\n\
                     ### c { #c }\n\
-                    ## d { #d }\n\
+                    #### d { #d }\n\
+                    ## e { #e }\n\
                 ",
-            )
-            .unwrap(),
+            ),
             Markdown {
                 published: None,
                 title: "the title".to_owned(),
@@ -557,7 +566,8 @@ mod tests {
                         <h2 id='a'>a</h2>\
                             <h3 id='b'>b</h3>\
                             <h3 id='c'>c</h3>\
-                        <h2 id='d'>d</h2>\
+                                <h4 id='d'>d</h4>\
+                        <h2 id='e'>e</h2>\
                 "
                 .to_owned(),
                 outline: "\
@@ -565,9 +575,11 @@ mod tests {
                         <li><a href='#top'>the title</a><ul>\
                             <li><a href='#a'>a</a><ul>\
                                 <li><a href='#b'>b</a></li>\
-                                <li><a href='#c'>c</a></li>\
+                                <li><a href='#c'>c</a><ul>\
+                                    <li><a href='#d'>d</a></li>\
+                                </ul></li>\
                             </ul></li>\
-                            <li><a href='#d'>d</a></li>\
+                            <li><a href='#e'>e</a></li>\
                         </ul></li>\
                     </ul>\
                 "

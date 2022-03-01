@@ -45,7 +45,7 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
 
                 let post_asset = Rc::new(
                     asset::TextFile::new(path)
-                        .and_then(move |src| read_post(stem.clone(), &src).map(Rc::new))
+                        .map(move |src| Rc::new(read_post(stem.clone(), &src)))
                         .cache(),
                 );
 
@@ -95,17 +95,17 @@ struct Post {
     outline: String,
 }
 
-fn read_post(stem: Rc<str>, src: &str) -> anyhow::Result<Post> {
-    let markdown = crate::markdown::parse(src)?;
-    Ok(Post {
+fn read_post(stem: Rc<str>, src: &str) -> Post {
+    let markdown = crate::markdown::parse(src);
+    Post {
         stem,
         published: markdown
             .published
-            .with_context(|| format!("post '{}' has no publish date", markdown.title))?,
+            .unwrap_or_else(|| "[error: no publish date provided]".into()),
         title: markdown.title,
         body: markdown.body,
         outline: markdown.outline,
-    })
+    }
 }
 
 fn build_index(posts: &mut [Rc<Post>], template: &Template) -> anyhow::Result<String> {
