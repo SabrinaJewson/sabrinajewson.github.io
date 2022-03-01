@@ -1,6 +1,4 @@
-# Test post for testing out things { #test-post }
-
-Published: [published].
+# Test post for testing out things
 
 A paragraph with _emphasized text_, **strong text** and ~~strikethrough text~~.
 This is a [link](https://rust-lang.org) and below is an image:

@@ -2,7 +2,6 @@ use crate::push_str::{escape_href, escape_html, push, PushStr};
 use ::{
     once_cell::sync::Lazy,
     std::{
-        borrow::Cow,
         collections::HashSet,
         fmt::Display,
         hash::{Hash, Hasher},
@@ -21,12 +20,9 @@ pub(crate) struct Markdown {
 pub(crate) fn parse(source: &str) -> Markdown {
     let (published, markdown) = if let Some(rest) = source.strip_prefix("published: ") {
         let (published, rest) = rest.split_once('\n').unwrap_or((rest, ""));
-        (
-            Some(published),
-            Cow::Owned(rest.replace("[published]", published)),
-        )
+        (Some(published), rest)
     } else {
-        (None, Cow::Borrowed(source))
+        (None, source)
     };
 
     let options = pulldown_cmark::Options::empty()
@@ -37,13 +33,14 @@ pub(crate) fn parse(source: &str) -> Markdown {
 
     Renderer {
         published,
+        parser: pulldown_cmark::Parser::new_ext(markdown, options),
         title: String::new(),
-        parser: pulldown_cmark::Parser::new_ext(&markdown, options),
+        in_title: false,
         body: String::new(),
         in_table_head: false,
         used_classes: HashSet::new(),
         outline: String::new(),
-        outline_level: 0,
+        outline_level: 1,
         in_heading: false,
         syntax_set: &*SYNTAX_SET,
     }
@@ -56,8 +53,10 @@ pub(crate) fn theme_css(theme: &Theme) -> String {
 
 struct Renderer<'a> {
     published: Option<&'a str>,
-    title: String,
     parser: pulldown_cmark::Parser<'a, 'a>,
+    title: String,
+    /// Whether we are currently writing to the title instead of the body.
+    in_title: bool,
     body: String,
     /// Whether we are in a `<thead>`.
     /// Used to determine whether to output `<td>`s or `<th>`s.
@@ -66,10 +65,10 @@ struct Renderer<'a> {
     used_classes: HashSet<Classes>,
     outline: String,
     /// The level of the currently opened heading `<li>` in the outline.
-    /// In the range [0..6].
+    /// In the range [1..6].
     outline_level: u8,
     /// Whether we are in a `<hN>` tag.
-    /// Used to determine whether to also write to the title and the outline.
+    /// Used to determine whether to also write to the outline.
     in_heading: bool,
     syntax_set: &'a SyntaxSet,
 }
@@ -108,7 +107,7 @@ impl<'a> Renderer<'a> {
         assert!(!self.in_heading);
 
         // Close remaining opened tags in the outline.
-        for _ in 0..self.outline_level {
+        for _ in 0..self.outline_level - 1 {
             self.outline.push_str("</li></ul>");
         }
 
@@ -131,6 +130,12 @@ impl<'a> Renderer<'a> {
     fn start_tag(&mut self, tag: pulldown_cmark::Tag<'a>) {
         match tag {
             pulldown_cmark::Tag::Paragraph => self.push_str("<p>"),
+            pulldown_cmark::Tag::Heading(pulldown_cmark::HeadingLevel::H1, id, classes) => {
+                if !classes.is_empty() || id.is_some() {
+                    self.error("title IDs and classes are disallowed");
+                }
+                self.in_title = true;
+            }
             pulldown_cmark::Tag::Heading(level, id, classes) => {
                 if !classes.is_empty() {
                     self.error("heading classes are disallowed");
@@ -285,6 +290,9 @@ impl<'a> Renderer<'a> {
             pulldown_cmark::Tag::Paragraph => {
                 self.push_str("</p>");
             }
+            pulldown_cmark::Tag::Heading(pulldown_cmark::HeadingLevel::H1, _id, _classes) => {
+                self.in_title = false;
+            }
             pulldown_cmark::Tag::Heading(level, _id, _classes) => {
                 self.in_heading = false;
 
@@ -358,11 +366,12 @@ impl<'a> Renderer<'a> {
 
 impl PushStr for Renderer<'_> {
     fn push_str(&mut self, s: &str) {
-        self.body.push_str(s);
-        if self.in_heading {
-            self.outline.push_str(s);
-            if self.outline_level == 1 {
-                self.title.push_str(s);
+        if self.in_title {
+            self.title.push_str(s);
+        } else {
+            self.body.push_str(s);
+            if self.in_heading {
+                self.outline.push_str(s);
             }
         }
     }
@@ -472,22 +481,13 @@ mod tests {
     #[test]
     fn published() {
         assert_eq!(
-            parse("published: false\nfoo"),
+            parse("published: 2038-01-19\nfoo"),
             Markdown {
-                published: Some("false".into()),
+                published: Some("2038-01-19".into()),
                 title: String::new(),
                 body: "<p>foo</p>".to_owned(),
                 outline: String::new(),
             }
-        );
-        assert_eq!(
-            parse("published: 2038-01-19\nPublished: [published]"),
-            Markdown {
-                published: Some("2038-01-19".into()),
-                title: String::new(),
-                body: "<p>Published: 2038-01-19</p>".to_owned(),
-                outline: String::new(),
-            },
         );
     }
 
@@ -517,19 +517,18 @@ mod tests {
     #[test]
     fn heading() {
         assert_eq!(
-            parse("# foo bar { #foo-bar }"),
+            parse("# foo bar"),
             Markdown {
                 published: None,
                 title: "foo bar".to_owned(),
-                body: "<h1 id='foo-bar'><a href='#foo-bar' class='anchor'></a>foo bar</h1>"
-                    .to_owned(),
-                outline: "<ul><li><a href='#foo-bar'>foo bar</a></li></ul>".to_owned(),
+                body: String::new(),
+                outline: String::new(),
             },
         );
         assert_eq!(
             parse(
                 "\
-                    # the title { #top }\n\
+                    # the _title_\n\
                     ## a { #a }\n\
                     ### b { #b }\n\
                     ### c { #c }\n\
@@ -539,27 +538,24 @@ mod tests {
             ),
             Markdown {
                 published: None,
-                title: "the title".to_owned(),
+                title: "the <em>title</em>".to_owned(),
                 body: "\
-                    <h1 id='top'><a href='#top' class='anchor'></a>the title</h1>\
-                        <h2 id='a'><a href='#a' class='anchor'></a>a</h2>\
-                            <h3 id='b'><a href='#b' class='anchor'></a>b</h3>\
-                            <h3 id='c'><a href='#c' class='anchor'></a>c</h3>\
-                                <h4 id='d'><a href='#d' class='anchor'></a>d</h4>\
-                        <h2 id='e'><a href='#e' class='anchor'></a>e</h2>\
+                    <h2 id='a'><a href='#a' class='anchor'></a>a</h2>\
+                        <h3 id='b'><a href='#b' class='anchor'></a>b</h3>\
+                        <h3 id='c'><a href='#c' class='anchor'></a>c</h3>\
+                            <h4 id='d'><a href='#d' class='anchor'></a>d</h4>\
+                    <h2 id='e'><a href='#e' class='anchor'></a>e</h2>\
                 "
                 .to_owned(),
                 outline: "\
                     <ul>\
-                        <li><a href='#top'>the title</a><ul>\
-                            <li><a href='#a'>a</a><ul>\
-                                <li><a href='#b'>b</a></li>\
-                                <li><a href='#c'>c</a><ul>\
-                                    <li><a href='#d'>d</a></li>\
-                                </ul></li>\
+                        <li><a href='#a'>a</a><ul>\
+                            <li><a href='#b'>b</a></li>\
+                            <li><a href='#c'>c</a><ul>\
+                                <li><a href='#d'>d</a></li>\
                             </ul></li>\
-                            <li><a href='#e'>e</a></li>\
                         </ul></li>\
+                        <li><a href='#e'>e</a></li>\
                     </ul>\
                 "
                 .to_owned(),

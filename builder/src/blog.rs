@@ -202,13 +202,16 @@ fn build_post(post: &Post, template: Result<&Template, &anyhow::Error>) -> Strin
         (Err(e1), Err(e2)) => return error_page([e1, e2]),
     };
 
+    let published = post_content.published.as_deref().unwrap_or("Draft");
+
     let mut html = String::new();
     template.apply(
         &mut html,
         [
             ("title", &post_content.title),
-            ("body", &post_content.body),
+            ("published", published),
             ("outline", &post_content.outline),
+            ("body", &post_content.body),
         ],
     );
 

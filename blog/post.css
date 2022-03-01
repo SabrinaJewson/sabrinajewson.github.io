@@ -3,10 +3,13 @@
 }
 
 body {
+	font-family: sans-serif;
+}
+
+body > div {
 	display: flex;
 	flex-flow: row-reverse wrap;
-	justify-content: center;
-	font-family: sans-serif;
+	justify-content: flex-end;
 }
 
 main {
