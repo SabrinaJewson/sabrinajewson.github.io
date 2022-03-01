@@ -82,15 +82,13 @@ impl<'a> Renderer<'a> {
                 pulldown_cmark::Event::End(tag) => self.end_tag(tag),
                 pulldown_cmark::Event::Text(text) => escape_html(&mut self, &text),
                 pulldown_cmark::Event::Code(text) => {
-                    self.push_str("<code");
+                    self.push_str("<code class='scode'>");
 
                     if let Some((language, code)) =
                         text.strip_prefix('[').and_then(|rest| rest.split_once(']'))
                     {
-                        self.push_str(" class='scode'>");
                         self.syntax_highlight(language, code);
                     } else {
-                        self.push_str(">");
                         escape_html(&mut self, &text);
                     }
 
@@ -205,7 +203,7 @@ impl<'a> Renderer<'a> {
             }
             pulldown_cmark::Tag::BlockQuote => self.push_str("<blockquote>"),
             pulldown_cmark::Tag::CodeBlock(kind) => {
-                self.push_str("<pre");
+                self.push_str("<pre class='scode'><code>");
 
                 let language = match kind {
                     pulldown_cmark::CodeBlockKind::Fenced(lang) if lang.is_empty() => None,
@@ -225,14 +223,12 @@ impl<'a> Renderer<'a> {
                 }
 
                 if let Some(language) = language {
-                    self.push_str(" class='scode'><code>");
                     let mut code = String::new();
                     while let Some(part) = self.parser.next().and_then(event_text) {
                         code.push_str(&part);
                     }
                     self.syntax_highlight(&language, &code);
                 } else {
-                    self.push_str("><code>");
                     while let Some(part) = self.parser.next().and_then(event_text) {
                         escape_html(self, &*part);
                     }
@@ -625,8 +621,8 @@ mod tests {
                         <tr><th>Crate</th><th>Size (KB)</th></tr>\
                     </thead>\
                     <tbody>\
-                        <tr><td><code>cfg-if</code> v1.0.0</td><td>7.93</td></tr>\
-                        <tr><td><code>syn</code> v1.0.86</td><td>235</td></tr>\
+                        <tr><td><code class='scode'>cfg-if</code> v1.0.0</td><td>7.93</td></tr>\
+                        <tr><td><code class='scode'>syn</code> v1.0.86</td><td>235</td></tr>\
                     </tbody>\
                 </table>\
                 <style>\
@@ -646,7 +642,7 @@ mod tests {
     fn inline_code() {
         assert_eq!(
             just_body("`no language`"),
-            "<p><code>no language</code></p>"
+            "<p><code class='scode'>no language</code></p>"
         );
         assert_eq!(
             just_body("`[rs] let foo = 5;`"),
@@ -664,7 +660,7 @@ mod tests {
     fn block_code() {
         assert_eq!(
             just_body("```\ncode\n```"),
-            "<pre><code>code\n</code></pre>"
+            "<pre class='scode'><code>code\n</code></pre>"
         );
         assert_eq!(
             just_body("```rs\nprintln!(\"Hello World!\");\n```"),
