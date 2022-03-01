@@ -419,7 +419,7 @@ impl Classes {
                     }
                     buf.push_str(".");
                     alignments.write_class_name(buf);
-                    push!(buf, " td:nth-child({})", i);
+                    push!(buf, " td:nth-child({})", i + 1);
                     buf.push_str("{text-align:");
                     buf.push_str(match alignment {
                         pulldown_cmark::Alignment::None => unreachable!(),
@@ -461,10 +461,10 @@ mod tests {
         buf.clear();
         Classes::Table(class).write_definition(&mut buf);
         let css = concat!(
-            ".tlnrcr td:nth-child(0){text-align:left}",
-            ".tlnrcr td:nth-child(2){text-align:right}",
-            ".tlnrcr td:nth-child(3){text-align:center}",
-            ".tlnrcr td:nth-child(4){text-align:right}",
+            ".tlnrcr td:nth-child(1){text-align:left}",
+            ".tlnrcr td:nth-child(3){text-align:right}",
+            ".tlnrcr td:nth-child(4){text-align:center}",
+            ".tlnrcr td:nth-child(5){text-align:right}",
         );
         assert_eq!(buf, css);
     }
@@ -626,8 +626,8 @@ mod tests {
                     </tbody>\
                 </table>\
                 <style>\
-                    .tcr td:nth-child(0){text-align:center}\
-                    .tcr td:nth-child(1){text-align:right}\
+                    .tcr td:nth-child(1){text-align:center}\
+                    .tcr td:nth-child(2){text-align:right}\
                 </style>\
             ",
         );
