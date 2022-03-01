@@ -1,5 +1,3 @@
-published: false
-
 # Test post for testing out things { #test-post }
 
 Published: [published].

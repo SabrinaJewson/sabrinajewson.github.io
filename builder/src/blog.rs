@@ -174,13 +174,8 @@ fn build_index(posts: &mut [Rc<Post>], template: &anyhow::Result<Template>) -> S
         if let Ok(content) = &post.content {
             ul.push_str(&content.title);
             ul.push_str("</a> (");
-            const NO_DATE: &str = "no publish date provided";
-            ul.push_str(content.published.as_deref().unwrap_or(NO_DATE));
+            ul.push_str(content.published.as_deref().unwrap_or("draft"));
             ul.push(')');
-
-            if content.published.is_none() {
-                log::error!("post '{}' does not have publish date", content.title);
-            }
         } else {
             log::error!("failed to generate post from {:?}.md", post.stem);
             push!(ul, "Error generating post from {:?}.md</a>", post.stem);
