@@ -127,7 +127,6 @@ where
     }
 }
 
-// TODO: not storing that the previous version errored leads to too many rebuilds
 pub(crate) struct Cache<A: Asset> {
     asset: A,
     cached: Cell<Option<(Modified, A::Output)>>,
