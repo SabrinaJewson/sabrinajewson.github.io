@@ -46,7 +46,19 @@ pub(crate) trait Asset {
         Cache::new(self)
     }
 
-    /// Output the asset to a file if generating it didn't error.
+    /// Cache the output of the asset based on the fact that it modifies a certain path.
+    ///
+    /// `to_file` already does this caching, so it's not necessary to apply after that.
+    fn modifies_path<E, P: AsRef<Path>>(self, path: P) -> ModifiesPath<Self, P>
+    where
+        Self: Asset<Output = Result<(), E>> + Sized,
+    {
+        ModifiesPath::new(self, path)
+    }
+
+    /// Output the asset to a file.
+    ///
+    /// Conceptually this is just a `.map` that writes the file followed by a `.modifies_path`.
     fn to_file<P: AsRef<Path>>(self, path: P) -> ToFile<Self, P>
     where
         Self: Sized,
@@ -149,6 +161,37 @@ where
     }
 }
 
+static EXE_MODIFIED: Lazy<Modified> = Lazy::new(|| {
+    env::current_exe()
+        .ok()
+        .and_then(Modified::path)
+        .unwrap_or_else(|| Modified::At(SystemTime::now()))
+});
+
+pub(crate) struct ModifiesPath<A, P> {
+    asset: A,
+    path: P,
+}
+impl<A, P> ModifiesPath<A, P> {
+    fn new(asset: A, path: P) -> Self {
+        Self { asset, path }
+    }
+}
+impl<E, A: Asset<Output = Result<(), E>>, P: AsRef<Path>> Asset for ModifiesPath<A, P> {
+    type Output = Result<(), E>;
+
+    fn modified(&self) -> Modified {
+        Modified::path(&self.path).unwrap_or(Modified::Now)
+    }
+    fn generate(&self) -> Self::Output {
+        let output_modified = Modified::path(&self.path).unwrap_or(Modified::Never);
+        if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
+            self.asset.generate()?;
+        }
+        Ok(())
+    }
+}
+
 pub(crate) struct ToFile<A, P> {
     asset: A,
     path: P,
@@ -168,17 +211,10 @@ where
         Modified::path(&self.path).unwrap_or(Modified::Now)
     }
     fn generate(&self) -> Self::Output {
-        static EXE_MODIFIED: Lazy<Modified> = Lazy::new(|| {
-            env::current_exe()
-                .ok()
-                .and_then(Modified::path)
-                .unwrap_or_else(|| Modified::At(SystemTime::now()))
-        });
-
         let output = self.path.as_ref();
         let output_modified = Modified::path(output).unwrap_or(Modified::Never);
         if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
-            if let Some(parent) = self.path.as_ref().parent() {
+            if let Some(parent) = output.parent() {
                 fs::create_dir_all(parent)
                     .with_context(|| format!("failed to create dir `{}`", parent.display()))?;
             }
@@ -300,6 +336,23 @@ impl<C: Clone> Asset for Constant<C> {
     fn generate(&self) -> Self::Output {
         self.constant.clone()
     }
+}
+
+pub(crate) struct FsPath<P> {
+    path: P,
+}
+impl<P: AsRef<Path>> FsPath<P> {
+    pub(crate) fn new(path: P) -> Self {
+        Self { path }
+    }
+}
+impl<P: AsRef<Path>> Asset for FsPath<P> {
+    type Output = ();
+
+    fn modified(&self) -> Modified {
+        Modified::path(&self.path).unwrap_or(Modified::Now)
+    }
+    fn generate(&self) -> Self::Output {}
 }
 
 pub(crate) struct TextFile<P> {

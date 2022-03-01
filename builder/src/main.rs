@@ -49,10 +49,8 @@ fn main() -> anyhow::Result<()> {
 
     set_cwd()?;
 
-    minify::init()?;
-
-    let blog = blog::asset("./blog".as_ref(), "./dist/blog".as_ref());
-    blog.generate();
+    let asset = asset();
+    asset.generate();
 
     if args.watch {
         let (sender, receiver) = channel::bounded(1);
@@ -85,11 +83,19 @@ fn main() -> anyhow::Result<()> {
             while receiver.recv_deadline(debounce_deadline).is_ok() {}
 
             log::info!("rebuilding");
-            blog.generate();
+            asset.generate();
         }
     }
 
     Ok(())
+}
+
+fn asset() -> impl Asset<Output = ()> {
+    asset::all((
+        minify::asset(),
+        blog::asset("./blog".as_ref(), "./dist/blog".as_ref()),
+    ))
+    .map(|((), ())| {})
 }
 
 #[context("failed to set cwd to project root")]

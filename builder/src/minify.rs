@@ -1,3 +1,4 @@
+use crate::asset::{self, Asset};
 use ::{
     anyhow::{ensure, Context as _},
     fn_error_context::context,
@@ -7,13 +8,21 @@ use ::{
     },
 };
 
-pub(crate) fn init() -> anyhow::Result<()> {
+pub(crate) fn asset() -> impl Asset<Output = ()> {
+    asset::FsPath::new("./builder/js/package.json")
+        .map(|()| npm_install())
+        .modifies_path("./builder/js/package-lock.json")
+        .map(|res| {
+            if let Err(e) = res {
+                log::error!("{:?}", e);
+            }
+        })
+}
+
+fn npm_install() -> anyhow::Result<()> {
     let status = process::Command::new("npm")
         .arg("install")
-        .arg("--silent")
         .current_dir("./builder/js")
-        // disable the progress bar
-        .stderr(process::Stdio::null())
         .status()
         .context("failed to run `npm install`")?;
 
