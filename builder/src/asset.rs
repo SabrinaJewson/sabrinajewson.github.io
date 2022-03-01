@@ -338,6 +338,7 @@ impl<C: Clone> Asset for Constant<C> {
     }
 }
 
+/// No-op asset that sources its modification time from a path on the filesystem.
 pub(crate) struct FsPath<P> {
     path: P,
 }
@@ -355,6 +356,9 @@ impl<P: AsRef<Path>> Asset for FsPath<P> {
     fn generate(&self) -> Self::Output {}
 }
 
+/// Asset that reads in an entire file as UTF-8.
+///
+/// Conceptually `FsPath` followed by `fs::read_to_string`.
 pub(crate) struct TextFile<P> {
     path: P,
 }
@@ -376,6 +380,9 @@ impl<P: AsRef<Path>> Asset for TextFile<P> {
     }
 }
 
+/// Asset that reads the top-level contents of a directory.
+///
+/// Conceptually `FsPath` followed by `fs::read_dir`.
 pub(crate) struct Dir<P> {
     path: P,
 }

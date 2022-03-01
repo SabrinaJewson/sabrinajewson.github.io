@@ -1,0 +1,3 @@
+[submodule "blog/code_themes/Solarized"]
+	path = blog/code_themes/Solarized
+	url = https://github.com/braver/Solarized.git

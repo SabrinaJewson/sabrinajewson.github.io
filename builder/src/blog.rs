@@ -1,12 +1,18 @@
 use crate::{
     asset::{self, Asset},
     markdown::{self, Markdown},
+    minify,
     push_str::push,
     template::Template,
 };
 use ::{
     anyhow::Context as _,
-    std::{cmp, path::Path, rc::Rc},
+    std::{
+        cmp,
+        path::{Path, PathBuf},
+        rc::Rc,
+    },
+    syntect::highlighting::ThemeSet,
 };
 
 pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Output = ()> + 'a {
@@ -26,14 +32,14 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
             .cache(),
     );
 
-    asset::Dir::new(in_dir)
+    let html = asset::Dir::new(in_dir)
         .map(move |files| -> anyhow::Result<_> {
             // TODO: Whenever the directory is changed at all, this entire bit of code is re-run
             // which throws away all the old `Asset`s.
             // That's a problem because we loes all our in-memory cache.
 
-            let mut post_assets = Vec::new();
-            let mut html_assets = Vec::new();
+            let mut posts = Vec::new();
+            let mut post_pages = Vec::new();
 
             for path in files? {
                 let path = path?;
@@ -51,59 +57,74 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
                 let mut output_path = out_dir.join(&*stem);
                 output_path.set_extension("html");
 
-                let post_asset = Rc::new(
+                let post = Rc::new(
                     asset::TextFile::new(path)
                         .map(move |src| Rc::new(read_post(stem.clone(), src)))
                         .cache(),
                 );
 
-                post_assets.push(post_asset.clone());
+                posts.push(post.clone());
 
-                let html_asset = asset::all((post_asset, post_template.clone()))
+                let post_page = asset::all((post, post_template.clone()))
                     .map(|(post, template)| build_post(&*post, (*template).as_ref()))
                     .to_file(output_path)
-                    .map(|res| {
-                        if let Err(e) = &res {
-                            log::error!("{:?}", e);
-                        }
-                        res.is_ok()
-                    });
+                    .map(log_errors);
 
-                html_assets.push(html_asset);
+                post_pages.push(post_page);
             }
 
-            let html_assets =
-                asset::all(html_assets).map(|successes: Box<[bool]>| successes.iter().all(|&x| x));
+            let post_pages = asset::all(post_pages)
+                .map(|successes| successes.iter().copied().fold(Ok(()), Result::and));
 
-            let index_asset = asset::all((asset::all(post_assets), index_template.clone()))
+            let index = asset::all((asset::all(posts), index_template.clone()))
                 .map(|(mut posts, template)| build_index(&mut *posts, &*template))
                 .to_file(out_dir.join("index.html"))
-                .map(|res| {
-                    if let Err(e) = &res {
-                        log::error!("{:?}", e);
-                    }
-                    res.is_ok()
-                });
+                .map(log_errors);
 
-            Ok(
-                asset::all((html_assets, index_asset)).map(|(blog_success, index_success)| {
-                    if blog_success && index_success {
-                        log::info!("successfully emitted blog posts");
-                    }
-                }),
-            )
+            Ok(asset::all((post_pages, index))
+                .map(|(blog_success, index_success)| Result::and(blog_success, index_success)))
         })
         .map(|res| -> Rc<dyn Asset<Output = _>> {
             match res {
                 Ok(asset) => Rc::new(asset),
                 Err(e) => {
                     log::error!("{:?}", e);
-                    Rc::new(asset::Constant::new(()))
+                    Rc::new(asset::Constant::new(Err(())))
                 }
             }
         })
         .cache()
-        .flatten()
+        .flatten();
+
+    let post_css = asset::TextFile::new(in_dir.join("post.css"))
+        .map(|res| res.map_err(|e| log::error!("{e:?}")).unwrap_or_default());
+
+    let code_themes_dir = in_dir.join("code_themes");
+    let dark_theme = theme_asset(code_themes_dir.join("dark.tmTheme"));
+    let light_theme = theme_asset(code_themes_dir.join("light.tmTheme"));
+
+    let css = asset::all((post_css, light_theme, dark_theme))
+        .map(|(mut post_css, light_theme, dark_theme)| {
+            post_css.push_str(&**dark_theme);
+            post_css.push_str("@media(prefers-color-scheme:light){");
+            post_css.push_str(&**light_theme);
+            post_css.push('}');
+            match minify::css(&post_css) {
+                Ok(minified) => minified,
+                Err(e) => {
+                    log::error!("{:?}", e.context("failed to minify post CSS"));
+                    post_css
+                }
+            }
+        })
+        .to_file(out_dir.join("post.css"))
+        .map(log_errors);
+
+    asset::all((html, css)).map(|(html_success, css_success)| {
+        if Result::and(html_success, css_success).is_ok() {
+            log::info!("successfully emitted blog posts");
+        }
+    })
 }
 
 struct Post {
@@ -205,6 +226,29 @@ fn build_post(post: &Post, template: Result<&Template, &anyhow::Error>) -> Strin
     }
 
     html
+}
+
+fn theme_asset(path: PathBuf) -> impl Asset<Output = Rc<String>> {
+    asset::FsPath::new(path.clone())
+        .map(move |()| {
+            let res = ThemeSet::get_theme(&path)
+                .with_context(|| format!("failed to read theme file {}", path.display()));
+            Rc::new(match res {
+                Ok(theme) => markdown::theme_css(&theme),
+                Err(e) => {
+                    log::error!("{e:?}");
+                    String::new()
+                }
+            })
+        })
+        .cache()
+}
+
+fn log_errors(res: anyhow::Result<()>) -> Result<(), ()> {
+    if let Err(e) = &res {
+        log::error!("{:?}", e);
+    }
+    res.map_err(drop)
 }
 
 fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {

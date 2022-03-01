@@ -1,0 +1,18 @@
+body {
+	max-width: 80ch;
+	margin: 0 auto;
+}
+
+.anchor::before {
+    content: "§";
+    display: none;
+    position: absolute;
+    width: 1em;
+    margin-left: -1em;
+    text-decoration: none;
+    font-weight: normal;
+	color: black;
+}
+:hover > .anchor::before {
+	display: block;
+}

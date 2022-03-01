@@ -50,6 +50,10 @@ pub(crate) fn parse(source: &str) -> Markdown {
     .render()
 }
 
+pub(crate) fn theme_css(theme: &Theme) -> String {
+    syntect::html::css_for_theme_with_class_style(theme, SYNTECT_CLASS_STYLE)
+}
+
 struct Renderer<'a> {
     published: Option<&'a str>,
     title: String,
@@ -347,8 +351,6 @@ impl<'a> Renderer<'a> {
         }
 
         self.push_str(&generator.finalize());
-
-        self.used_classes.insert(Classes::Syntect);
     }
 
     fn error(&mut self, msg: impl Display) {
@@ -409,7 +411,6 @@ impl Hash for TableAlignments {
 #[derive(PartialEq, Eq, Hash)]
 enum Classes {
     Table(TableAlignments),
-    Syntect,
 }
 
 impl Classes {
@@ -433,19 +434,6 @@ impl Classes {
                     buf.push_str("}");
                 }
             }
-            Self::Syntect => {
-                let (light, dark) = &*THEMES;
-                buf.push_str(&syntect::html::css_for_theme_with_class_style(
-                    dark,
-                    SYNTECT_CLASS_STYLE,
-                ));
-                buf.push_str("@media(prefers-color-scheme:light){");
-                buf.push_str(&syntect::html::css_for_theme_with_class_style(
-                    light,
-                    SYNTECT_CLASS_STYLE,
-                ));
-                buf.push_str("}");
-            }
         }
     }
 }
@@ -454,13 +442,6 @@ const SYNTECT_CLASS_STYLE: syntect::html::ClassStyle =
     syntect::html::ClassStyle::SpacedPrefixed { prefix: "s" };
 
 static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines);
-
-static THEMES: Lazy<(Theme, Theme)> = Lazy::new(|| {
-    (
-        syntect::dumps::from_binary(include_bytes!("../light_theme")),
-        syntect::dumps::from_binary(include_bytes!("../dark_theme")),
-    )
-});
 
 #[cfg(test)]
 mod tests {
@@ -667,15 +648,16 @@ mod tests {
             just_body("`no language`"),
             "<p><code>no language</code></p>"
         );
-        let with_syntax = just_body("`[rs] let foo = 5;`");
-        let start = "<p><code class='scode'><span class=\"ssource srust\"> \
-            <span class=\"sstorage stype srust\">let</span> \
-            foo \
-            <span class=\"skeyword soperator srust\">=</span> \
-            <span class=\"sconstant snumeric sinteger sdecimal srust\">5</span>\
-            <span class=\"spunctuation sterminator srust\">;</span>\
-        </span></code></p><style>";
-        assert_eq!(&with_syntax[..start.len()], start);
+        assert_eq!(
+            just_body("`[rs] let foo = 5;`"),
+            "<p><code class='scode'><span class=\"ssource srust\"> \
+                <span class=\"sstorage stype srust\">let</span> \
+                foo \
+                <span class=\"skeyword soperator srust\">=</span> \
+                <span class=\"sconstant snumeric sinteger sdecimal srust\">5</span>\
+                <span class=\"spunctuation sterminator srust\">;</span>\
+            </span></code></p>",
+        );
     }
 
     #[test]
@@ -684,25 +666,26 @@ mod tests {
             just_body("```\ncode\n```"),
             "<pre><code>code\n</code></pre>"
         );
-        let with_syntax = just_body("```rs\nprintln!(\"Hello World!\");\n```");
-        let start = "<pre class='scode'><code><span class=\"ssource srust\">\
-            <span class=\"ssupport smacro srust\">println!</span>\
-            <span class=\"smeta sgroup srust\">\
-                <span class=\"spunctuation ssection sgroup sbegin srust\">(</span>\
-            </span>\
-            <span class=\"smeta sgroup srust\">\
-                <span class=\"sstring squoted sdouble srust\">\
-                    <span class=\"spunctuation sdefinition sstring sbegin srust\">&quot;</span>\
-                    Hello World!\
-                    <span class=\"spunctuation sdefinition sstring send srust\">&quot;</span>\
+        assert_eq!(
+            just_body("```rs\nprintln!(\"Hello World!\");\n```"),
+            "<pre class='scode'><code><span class=\"ssource srust\">\
+                <span class=\"ssupport smacro srust\">println!</span>\
+                <span class=\"smeta sgroup srust\">\
+                    <span class=\"spunctuation ssection sgroup sbegin srust\">(</span>\
                 </span>\
-            </span>\
-            <span class=\"smeta sgroup srust\">\
-                <span class=\"spunctuation ssection sgroup send srust\">)</span>\
-            </span>\
-            <span class=\"spunctuation sterminator srust\">;</span>\n\
-        </span></code></pre><style>";
-        assert_eq!(&with_syntax[..start.len()], start);
+                <span class=\"smeta sgroup srust\">\
+                    <span class=\"sstring squoted sdouble srust\">\
+                        <span class=\"spunctuation sdefinition sstring sbegin srust\">&quot;</span>\
+                        Hello World!\
+                        <span class=\"spunctuation sdefinition sstring send srust\">&quot;</span>\
+                    </span>\
+                </span>\
+                <span class=\"smeta sgroup srust\">\
+                    <span class=\"spunctuation ssection sgroup send srust\">)</span>\
+                </span>\
+                <span class=\"spunctuation sterminator srust\">;</span>\n\
+            </span></code></pre>"
+        );
     }
 
     #[test]
