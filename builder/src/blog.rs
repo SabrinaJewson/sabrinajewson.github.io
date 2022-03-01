@@ -65,6 +65,7 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
             Ok(Rc::new((html_assets, index_asset)))
         })
         .cache()
+        // TODO: really we should be using a built-in helper for flattening assets
         .and_then(|rc| {
             let mut ok = true;
             let (post_assets, index_asset) = &*rc;
@@ -98,13 +99,17 @@ struct Post {
 fn read_post(stem: Rc<str>, src: &str) -> Post {
     let markdown = crate::markdown::parse(src);
     Post {
-        stem,
         published: markdown
             .published
             .unwrap_or_else(|| "[error: no publish date provided]".into()),
-        title: markdown.title,
+        title: if markdown.title.is_empty() {
+            format!("Untitled post from {stem}.md")
+        } else {
+            markdown.title
+        },
         body: markdown.body,
         outline: markdown.outline,
+        stem,
     }
 }
 

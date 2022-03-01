@@ -30,7 +30,6 @@ pub(crate) fn html(html: &mut String) -> anyhow::Result<()> {
     let mut child = process::Command::new("npx")
         .arg("html-minifier-terser")
         .arg("--collapse-boolean-attributes")
-        .arg("--collapse-inline-tag-whitespace")
         .arg("--collapse-whitespace")
         .arg("--decode-entities")
         .arg("--no-include-auto-generated-tags")

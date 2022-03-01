@@ -2,9 +2,10 @@
 
 use ::{
     anyhow::Context as _,
+    once_cell::sync::Lazy,
     std::{
         cell::Cell,
-        fs,
+        env, fs,
         path::{Path, PathBuf},
         time::SystemTime,
     },
@@ -68,12 +69,6 @@ impl Modified {
             .and_then(|meta| meta.modified())
             .map(Self::At)
             .ok()
-    }
-    fn input_path<P: AsRef<Path>>(path: P) -> Self {
-        Modified::path(path).unwrap_or(Modified::Now)
-    }
-    fn output_path<P: AsRef<Path>>(path: P) -> Self {
-        Modified::path(path).unwrap_or(Modified::Never)
     }
 }
 
@@ -170,8 +165,16 @@ where
         Modified::Never
     }
     fn generate(&self) -> anyhow::Result<Self::Output> {
+        static EXE_MODIFIED: Lazy<Modified> = Lazy::new(|| {
+            env::current_exe()
+                .ok()
+                .and_then(Modified::path)
+                .unwrap_or_else(|| Modified::At(SystemTime::now()))
+        });
+
         let output = self.path.as_ref();
-        if self.asset.modified() > Modified::output_path(&output) {
+        let output_modified = Modified::path(&output).unwrap_or(Modified::Never);
+        if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
             if let Some(parent) = output.parent() {
                 fs::create_dir_all(parent)
                     .with_context(|| format!("failed to create dir `{}`", parent.display()))?;
@@ -261,7 +264,7 @@ impl<P: AsRef<Path>> Asset for TextFile<P> {
     type Output = String;
 
     fn modified(&self) -> Modified {
-        Modified::input_path(&self.path)
+        Modified::path(&self.path).unwrap_or(Modified::Now)
     }
     fn generate(&self) -> anyhow::Result<Self::Output> {
         let path = self.path.as_ref();
@@ -282,7 +285,7 @@ impl<P: AsRef<Path>> Asset for Dir<P> {
     type Output = DirFiles;
 
     fn modified(&self) -> Modified {
-        Modified::input_path(&self.path)
+        Modified::path(&self.path).unwrap_or(Modified::Now)
     }
     fn generate(&self) -> anyhow::Result<Self::Output> {
         let path = self.path.as_ref();

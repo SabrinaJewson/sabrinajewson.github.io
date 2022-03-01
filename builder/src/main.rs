@@ -16,9 +16,13 @@
 
 use ::{
     anyhow::Context as _,
+    crossbeam::channel,
     fn_error_context::context,
     notify::Watcher,
-    std::{env, thread},
+    std::{
+        env,
+        time::{Duration, Instant},
+    },
 };
 
 mod asset;
@@ -50,8 +54,7 @@ fn main() -> anyhow::Result<()> {
     blog.generate()?;
 
     if args.watch {
-        // TODO: a better synchronization mechanism than thread parking?
-        let main_thread = thread::current();
+        let (sender, receiver) = channel::bounded(1);
 
         let mut watcher = notify::recommended_watcher(move |event_res| {
             // TODO: more fine grained tracking of `notify::Event`s?
@@ -63,7 +66,7 @@ fn main() -> anyhow::Result<()> {
                 }
             };
             if !matches!(event.kind, notify::event::EventKind::Access(_)) {
-                main_thread.unpark();
+                let _ = sender.try_send(());
             }
         })
         .context("failed to create file watcher")?;
@@ -72,8 +75,14 @@ fn main() -> anyhow::Result<()> {
             .watch(".".as_ref(), notify::RecursiveMode::Recursive)
             .context("failed to watch directory")?;
 
+        log::info!("now watching for changes");
+
         loop {
-            thread::park();
+            let _ = receiver.recv();
+            // debounce
+            let debounce_deadline = Instant::now() + Duration::from_millis(10);
+            while receiver.recv_deadline(debounce_deadline).is_ok() {}
+
             log::info!("rebuilding");
             blog.generate()?;
         }

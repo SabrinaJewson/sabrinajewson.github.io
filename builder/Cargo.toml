@@ -7,6 +7,7 @@ publish = false
 [dependencies]
 anyhow = "1.0.55"
 clap = { version = "3.1.2", features = ["derive"] }
+crossbeam = "0.8.1"
 fn-error-context = "0.2.0"
 log = "0.4.14"
 memchr = "2.4.1"

@@ -136,7 +136,7 @@ impl<'a> Renderer<'a> {
 
                 let mut level = level as u8;
 
-                // Update the outline.
+                // Update the outline and normalize heading levels.
                 if let Some(levels_down) = self.outline_level.checked_sub(level) {
                     self.outline.push_str("</li>");
                     for _ in 0..levels_down {
@@ -154,22 +154,24 @@ impl<'a> Renderer<'a> {
                     }
                 }
 
-                if let Some(id) = id {
-                    push!(self, "<h{level} id='");
-                    escape_html(self, id);
-                    self.push_str("'>");
-                } else {
-                    self.error("heading does not have id");
-                    push!(self, "<h{level}>");
-                }
-
                 self.outline.push_str("<li><a href='#");
                 if let Some(id) = id {
                     escape_href(&mut self.outline, id);
                 }
                 self.outline.push_str("'>");
-
                 self.outline_level = level;
+
+                if let Some(id) = id {
+                    push!(self, "<h{level} id='");
+                    escape_html(self, id);
+                    self.push_str("'><a href='#");
+                    escape_html(self, id);
+                    self.push_str("' class='anchor'></a>");
+                } else {
+                    self.error("heading does not have id");
+                    push!(self, "<h{level}>");
+                }
+
                 self.in_heading = true;
             }
             pulldown_cmark::Tag::Table(alignments) => {
@@ -288,7 +290,6 @@ impl<'a> Renderer<'a> {
 
                 self.outline.push_str("</a>");
 
-                // TODO: anchor links
                 self.push_str("</");
                 push!(self, "{}", level);
                 self.push_str(">");
@@ -543,7 +544,8 @@ mod tests {
             Markdown {
                 published: None,
                 title: "foo bar".to_owned(),
-                body: "<h1 id='foo-bar'>foo bar</h1>".to_owned(),
+                body: "<h1 id='foo-bar'><a href='#foo-bar' class='anchor'></a>foo bar</h1>"
+                    .to_owned(),
                 outline: "<ul><li><a href='#foo-bar'>foo bar</a></li></ul>".to_owned(),
             },
         );
@@ -562,12 +564,12 @@ mod tests {
                 published: None,
                 title: "the title".to_owned(),
                 body: "\
-                    <h1 id='top'>the title</h1>\
-                        <h2 id='a'>a</h2>\
-                            <h3 id='b'>b</h3>\
-                            <h3 id='c'>c</h3>\
-                                <h4 id='d'>d</h4>\
-                        <h2 id='e'>e</h2>\
+                    <h1 id='top'><a href='#top' class='anchor'></a>the title</h1>\
+                        <h2 id='a'><a href='#a' class='anchor'></a>a</h2>\
+                            <h3 id='b'><a href='#b' class='anchor'></a>b</h3>\
+                            <h3 id='c'><a href='#c' class='anchor'></a>c</h3>\
+                                <h4 id='d'><a href='#d' class='anchor'></a>d</h4>\
+                        <h2 id='e'><a href='#e' class='anchor'></a>e</h2>\
                 "
                 .to_owned(),
                 outline: "\
