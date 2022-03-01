@@ -20,7 +20,7 @@ pub(crate) trait Asset {
     fn modified(&self) -> Modified;
 
     /// Generate the asset's value.
-    fn generate(&self) -> anyhow::Result<Self::Output>;
+    fn generate(&self) -> Self::Output;
 
     fn map<O, F: Fn(Self::Output) -> O>(self, f: F) -> Map<Self, F>
     where
@@ -29,11 +29,12 @@ pub(crate) trait Asset {
         Map::new(self, f)
     }
 
-    fn and_then<O, F: Fn(Self::Output) -> anyhow::Result<O>>(self, f: F) -> AndThen<Self, F>
+    fn flatten(self) -> Flatten<Self>
     where
         Self: Sized,
+        Self::Output: Asset,
     {
-        AndThen::new(self, f)
+        Flatten::new(self)
     }
 
     /// Cache the result of this asset.
@@ -87,28 +88,30 @@ impl<A: Asset, F: Fn(A::Output) -> O, O> Asset for Map<A, F> {
     fn modified(&self) -> Modified {
         self.asset.modified()
     }
-    fn generate(&self) -> anyhow::Result<Self::Output> {
-        self.asset.generate().map(&self.f)
+    fn generate(&self) -> Self::Output {
+        (self.f)(self.asset.generate())
     }
 }
 
-pub(crate) struct AndThen<A, F> {
+pub(crate) struct Flatten<A> {
     asset: A,
-    f: F,
 }
-impl<A, F> AndThen<A, F> {
-    fn new(asset: A, f: F) -> Self {
-        Self { asset, f }
+impl<A> Flatten<A> {
+    fn new(asset: A) -> Self {
+        Self { asset }
     }
 }
-impl<A: Asset, F: Fn(A::Output) -> anyhow::Result<O>, O> Asset for AndThen<A, F> {
-    type Output = O;
+impl<A: Asset> Asset for Flatten<A>
+where
+    A::Output: Asset,
+{
+    type Output = <A::Output as Asset>::Output;
 
     fn modified(&self) -> Modified {
-        self.asset.modified()
+        Ord::max(self.asset.modified(), self.asset.generate().modified())
     }
-    fn generate(&self) -> anyhow::Result<Self::Output> {
-        self.asset.generate().and_then(&self.f)
+    fn generate(&self) -> Self::Output {
+        self.asset.generate().generate()
     }
 }
 
@@ -134,15 +137,15 @@ where
     fn modified(&self) -> Modified {
         self.asset.modified()
     }
-    fn generate(&self) -> anyhow::Result<Self::Output> {
+    fn generate(&self) -> Self::Output {
         let inner_modified = self.asset.modified();
         let (last_modified, output) = self
             .cached
             .take()
             .filter(|&(last_modified, _)| last_modified >= inner_modified)
-            .map_or_else(|| Ok((inner_modified, self.asset.generate()?)), anyhow::Ok)?;
+            .unwrap_or_else(|| (inner_modified, self.asset.generate()));
         self.cached.set(Some((last_modified, output.clone())));
-        Ok(output)
+        output
     }
 }
 
@@ -159,12 +162,12 @@ impl<A: Asset, P: AsRef<Path>> Asset for ToFile<A, P>
 where
     A::Output: AsRef<[u8]>,
 {
-    type Output = ();
+    type Output = anyhow::Result<()>;
 
     fn modified(&self) -> Modified {
-        Modified::Never
+        Modified::path(&self.path).unwrap_or(Modified::Now)
     }
-    fn generate(&self) -> anyhow::Result<Self::Output> {
+    fn generate(&self) -> Self::Output {
         static EXE_MODIFIED: Lazy<Modified> = Lazy::new(|| {
             env::current_exe()
                 .ok()
@@ -173,16 +176,14 @@ where
         });
 
         let output = self.path.as_ref();
-        let output_modified = Modified::path(&output).unwrap_or(Modified::Never);
+        let output_modified = Modified::path(output).unwrap_or(Modified::Never);
         if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
-            if let Some(parent) = output.parent() {
+            if let Some(parent) = self.path.as_ref().parent() {
                 fs::create_dir_all(parent)
                     .with_context(|| format!("failed to create dir `{}`", parent.display()))?;
             }
 
-            let bytes = self.asset.generate()?;
-
-            fs::write(&output, bytes)
+            fs::write(&output, self.asset.generate())
                 .with_context(|| format!("couldn't write asset to `{}`", output.display()))?;
         }
         Ok(())
@@ -197,7 +198,7 @@ macro_rules! impl_for_refs {
             fn modified(&self) -> Modified {
                 (**self).modified()
             }
-            fn generate(&self) -> anyhow::Result<Self::Output> {
+            fn generate(&self) -> Self::Output {
                 (**self).generate()
             }
         }
@@ -206,6 +207,15 @@ macro_rules! impl_for_refs {
 
 impl_for_refs!(&A, std::rc::Rc<A>);
 
+pub(crate) fn all<T: IntoAll>(into_all: T) -> T::All {
+    into_all.into_all()
+}
+
+pub(crate) trait IntoAll: Sized {
+    type All: Asset;
+    fn into_all(self) -> Self::All;
+}
+
 macro_rules! impl_for_tuples {
     (@$_:ident) => {};
     (@$first:ident $($ident:ident)*) => {
@@ -213,22 +223,33 @@ macro_rules! impl_for_tuples {
     };
     ($($ident:ident)*) => {
         #[allow(non_snake_case)]
-        impl<$($ident: Asset,)*> Asset for ($($ident,)*) {
-            type Output = ($(<$ident as Asset>::Output,)*);
+        const _: () = {
+            pub(crate) struct All<$($ident,)*>($($ident,)*);
+            impl<$($ident: Asset,)*> Asset for All<$($ident,)*> {
+                type Output = ($(<$ident as Asset>::Output,)*);
 
-            #[allow(unused_mut)]
-            fn modified(&self) -> Modified {
-                let ($($ident,)*) = self;
-                let mut latest = Modified::Never;
-                $(latest = Ord::max(latest, $ident.modified());)*
-                latest
+                #[allow(unused_mut)]
+                fn modified(&self) -> Modified {
+                    let Self($($ident,)*) = self;
+                    let mut latest = Modified::Never;
+                    $(latest = Ord::max(latest, $ident.modified());)*
+                    latest
+                }
+                #[allow(clippy::unused_unit)]
+                fn generate(&self) -> Self::Output {
+                    let Self($($ident,)*) = self;
+                    ($($ident.generate(),)*)
+                }
             }
-            #[allow(clippy::unused_unit)]
-            fn generate(&self) -> anyhow::Result<Self::Output> {
-                let ($($ident,)*) = self;
-                Ok(($($ident.generate()?,)*))
+
+            impl<$($ident: Asset,)*> IntoAll for ($($ident,)*) {
+                type All = All<$($ident,)*>;
+                fn into_all(self) -> Self::All {
+                    let ($($ident,)*) = self;
+                    All($($ident,)*)
+                }
             }
-        }
+        };
         impl_for_tuples!(@$($ident)*);
     };
 }
@@ -236,21 +257,50 @@ impl_for_tuples!(A B C D E F G);
 
 macro_rules! impl_for_seq {
     ($($ty:ty),*) => { $(
-        impl<A: Asset> Asset for $ty {
-            // TODO: don't allocate?
-            // TODO: maybe we should be filtering out errors here instead
-            type Output = Box<[A::Output]>;
+        const _: () = {
+            pub(crate) struct All<A>($ty);
 
-            fn modified(&self) -> Modified {
-                self.iter().map(|asset| asset.modified()).min().unwrap_or(Modified::Never)
+            impl<A: Asset> Asset for All<A> {
+                // TODO: don't allocate? I think that would need GATs
+                type Output = Box<[A::Output]>;
+
+                fn modified(&self) -> Modified {
+                    self.0.iter().map(A::modified).max().unwrap_or(Modified::Never)
+                }
+                fn generate(&self) -> Self::Output {
+                    self.0.iter().map(A::generate).collect()
+                }
             }
-            fn generate(&self) -> anyhow::Result<Self::Output> {
-                self.iter().map(|asset| asset.generate()).collect()
+
+            impl<A: Asset> IntoAll for $ty {
+                type All = All<A>;
+                fn into_all(self) -> Self::All {
+                    All(self)
+                }
             }
-        }
+        };
     )* };
 }
-impl_for_seq!([A], Vec<A>);
+impl_for_seq!(Box<[A]>, std::rc::Rc<[A]>, Vec<A>);
+
+pub(crate) struct Constant<C> {
+    constant: C,
+}
+impl<C> Constant<C> {
+    pub(crate) fn new(constant: C) -> Self {
+        Self { constant }
+    }
+}
+impl<C: Clone> Asset for Constant<C> {
+    type Output = C;
+
+    fn modified(&self) -> Modified {
+        Modified::Never
+    }
+    fn generate(&self) -> Self::Output {
+        self.constant.clone()
+    }
+}
 
 pub(crate) struct TextFile<P> {
     path: P,
@@ -261,12 +311,12 @@ impl<P: AsRef<Path>> TextFile<P> {
     }
 }
 impl<P: AsRef<Path>> Asset for TextFile<P> {
-    type Output = String;
+    type Output = anyhow::Result<String>;
 
     fn modified(&self) -> Modified {
         Modified::path(&self.path).unwrap_or(Modified::Now)
     }
-    fn generate(&self) -> anyhow::Result<Self::Output> {
+    fn generate(&self) -> Self::Output {
         let path = self.path.as_ref();
         fs::read_to_string(&path)
             .with_context(|| format!("failed to read file `{}`", path.display()))
@@ -282,12 +332,12 @@ impl<P: AsRef<Path>> Dir<P> {
     }
 }
 impl<P: AsRef<Path>> Asset for Dir<P> {
-    type Output = DirFiles;
+    type Output = anyhow::Result<DirFiles>;
 
     fn modified(&self) -> Modified {
         Modified::path(&self.path).unwrap_or(Modified::Now)
     }
-    fn generate(&self) -> anyhow::Result<Self::Output> {
+    fn generate(&self) -> Self::Output {
         let path = self.path.as_ref();
         Ok(DirFiles {
             iter: fs::read_dir(path)

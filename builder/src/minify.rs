@@ -26,7 +26,7 @@ pub(crate) fn init() -> anyhow::Result<()> {
 }
 
 #[context("failed to minify HTML")]
-pub(crate) fn html(html: &mut String) -> anyhow::Result<()> {
+pub(crate) fn html(html: &str) -> anyhow::Result<String> {
     let mut child = process::Command::new("npx")
         .arg("html-minifier-terser")
         .arg("--collapse-boolean-attributes")
@@ -56,12 +56,12 @@ pub(crate) fn html(html: &mut String) -> anyhow::Result<()> {
         .write_all(html.as_bytes())
         .context("failed to write to html-minifier-terser stdin")?;
 
-    html.clear();
+    let mut minfied = String::new();
     child
         .stdout
         .take()
         .unwrap()
-        .read_to_string(html)
+        .read_to_string(&mut minfied)
         .context("failed to read from html-minifier-terser stdout")?;
 
     let status = child
@@ -73,5 +73,5 @@ pub(crate) fn html(html: &mut String) -> anyhow::Result<()> {
         "html-minifier-terser exited with a non-zero exit status"
     );
 
-    Ok(())
+    Ok(minfied)
 }

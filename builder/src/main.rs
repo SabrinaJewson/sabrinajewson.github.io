@@ -32,6 +32,7 @@ mod blog;
 mod markdown;
 mod minify;
 mod push_str;
+mod template;
 
 /// Rust program that builds this website.
 #[derive(clap::Parser)]
@@ -51,7 +52,7 @@ fn main() -> anyhow::Result<()> {
     minify::init()?;
 
     let blog = blog::asset("./blog".as_ref(), "./dist/blog".as_ref());
-    blog.generate()?;
+    blog.generate();
 
     if args.watch {
         let (sender, receiver) = channel::bounded(1);
@@ -84,7 +85,7 @@ fn main() -> anyhow::Result<()> {
             while receiver.recv_deadline(debounce_deadline).is_ok() {}
 
             log::info!("rebuilding");
-            blog.generate()?;
+            blog.generate();
         }
     }
 

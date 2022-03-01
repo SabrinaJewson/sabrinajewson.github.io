@@ -1,25 +1,33 @@
-use crate::asset::{self, Asset};
+use crate::{
+    asset::{self, Asset},
+    markdown::{self, Markdown},
+    push_str::push,
+    template::Template,
+};
 use ::{
-    anyhow::{bail, Context as _},
-    fn_error_context::context,
-    std::{ops::Range, path::Path, rc::Rc},
+    anyhow::Context as _,
+    std::{cmp, path::Path, rc::Rc},
 };
 
 pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
         asset::TextFile::new(in_dir.join("post.html"))
-            .and_then(|src| Ok(Rc::new(Template::new(src)?)))
+            .map(|src| anyhow::Ok(Template::new(src?)?))
+            .map(|res| res.context("failed to load blog post template"))
+            .map(Rc::new)
             .cache(),
     );
 
     let index_template = Rc::new(
         asset::TextFile::new(in_dir.join("index.html"))
-            .and_then(|src| Ok(Rc::new(Template::new(src)?)))
+            .map(|src| anyhow::Ok(Template::new(src?)?))
+            .map(|res| res.context("failed to load blog index template"))
+            .map(Rc::new)
             .cache(),
     );
 
     asset::Dir::new(in_dir)
-        .and_then(move |files| {
+        .map(move |files| -> anyhow::Result<_> {
             // TODO: Whenever the directory is changed at all, this entire bit of code is re-run
             // which throws away all the old `Asset`s.
             // That's a problem because we loes all our in-memory cache.
@@ -27,7 +35,7 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
             let mut post_assets = Vec::new();
             let mut html_assets = Vec::new();
 
-            for path in files {
+            for path in files? {
                 let path = path?;
                 if path.extension() != Some("md".as_ref()) {
                     continue;
@@ -45,230 +53,165 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
 
                 let post_asset = Rc::new(
                     asset::TextFile::new(path)
-                        .map(move |src| Rc::new(read_post(stem.clone(), &src)))
+                        .map(move |src| Rc::new(read_post(stem.clone(), src)))
                         .cache(),
                 );
 
                 post_assets.push(post_asset.clone());
 
-                let html_asset = (post_asset, post_template.clone())
-                    .and_then(|(post, template)| build_post(&post, &template))
-                    .to_file(output_path);
+                let html_asset = asset::all((post_asset, post_template.clone()))
+                    .map(|(post, template)| build_post(&*post, (*template).as_ref()))
+                    .to_file(output_path)
+                    .map(|res| {
+                        if let Err(e) = &res {
+                            log::error!("{:?}", e);
+                        }
+                        res.is_ok()
+                    });
 
                 html_assets.push(html_asset);
             }
 
-            let index_asset = (post_assets, index_template.clone())
-                .and_then(|(mut posts, template)| build_index(&mut posts, &template))
-                .to_file(out_dir.join("index.html"));
+            let html_assets =
+                asset::all(html_assets).map(|successes: Box<[bool]>| successes.iter().all(|&x| x));
 
-            Ok(Rc::new((html_assets, index_asset)))
+            let index_asset = asset::all((asset::all(post_assets), index_template.clone()))
+                .map(|(mut posts, template)| build_index(&mut *posts, &*template))
+                .to_file(out_dir.join("index.html"))
+                .map(|res| {
+                    if let Err(e) = &res {
+                        log::error!("{:?}", e);
+                    }
+                    res.is_ok()
+                });
+
+            Ok(
+                asset::all((html_assets, index_asset)).map(|(blog_success, index_success)| {
+                    if blog_success && index_success {
+                        log::info!("successfully emitted blog posts");
+                    }
+                }),
+            )
         })
-        .cache()
-        // TODO: really we should be using a built-in helper for flattening assets
-        .and_then(|rc| {
-            let mut ok = true;
-            let (post_assets, index_asset) = &*rc;
-            for asset in &*post_assets {
-                if let Err(e) = asset.generate() {
-                    log::error!("skipping generating blog post: {:?}\n", e);
-                    ok = false;
+        .map(|res| -> Rc<dyn Asset<Output = _>> {
+            match res {
+                Ok(asset) => Rc::new(asset),
+                Err(e) => {
+                    log::error!("{:?}", e);
+                    Rc::new(asset::Constant::new(()))
                 }
             }
-            if let Err(e) = index_asset.generate().context("failed to generate index") {
-                log::error!("{:?}\n", e);
-                ok = false;
-            }
-
-            if ok {
-                log::info!("succesfully build posts and index");
-            }
-
-            Ok(())
         })
+        .cache()
+        .flatten()
 }
 
 struct Post {
     stem: Rc<str>,
-    published: Box<str>,
-    title: String,
-    body: String,
-    outline: String,
+    content: anyhow::Result<Markdown>,
 }
 
-fn read_post(stem: Rc<str>, src: &str) -> Post {
-    let markdown = crate::markdown::parse(src);
+fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
     Post {
-        published: markdown
-            .published
-            .unwrap_or_else(|| "[error: no publish date provided]".into()),
-        title: if markdown.title.is_empty() {
-            format!("Untitled post from {stem}.md")
-        } else {
-            markdown.title
-        },
-        body: markdown.body,
-        outline: markdown.outline,
+        content: src.map(|src| {
+            let mut markdown = markdown::parse(&src);
+            if markdown.title.is_empty() {
+                log::warn!("Post in {stem}.md does not have title");
+                markdown.title = format!("Untitled post from {stem}.md");
+            }
+            markdown
+        }),
         stem,
     }
 }
 
-fn build_index(posts: &mut [Rc<Post>], template: &Template) -> anyhow::Result<String> {
-    posts.sort_by(|a, b| b.published.cmp(&a.published));
+fn build_index(posts: &mut [Rc<Post>], template: &anyhow::Result<Template>) -> String {
+    let template = match template {
+        Ok(template) => template,
+        Err(e) => return error_page([e]),
+    };
+
+    posts.sort_unstable_by(|a, b| match (&a.content, &b.content) {
+        (Ok(a_content), Ok(b_content)) => match (&a_content.published, &b_content.published) {
+            (Some(a_date), Some(b_date)) => b_date.cmp(a_date),
+            // Posts without a date should sort before those with one
+            (Some(_), None) => cmp::Ordering::Greater,
+            (None, Some(_)) => cmp::Ordering::Less,
+            (None, None) => a.stem.cmp(&b.stem),
+        },
+        // `Ok`s should sort after `Err`s
+        (Ok(_), Err(_)) => cmp::Ordering::Greater,
+        (Err(_), Ok(_)) => cmp::Ordering::Less,
+        (Err(_), Err(_)) => a.stem.cmp(&b.stem),
+    });
 
     let mut ul = "<ul>".to_owned();
     for post in &*posts {
         ul.push_str("<li><a href='");
         ul.push_str(&post.stem);
         ul.push_str("'>");
-        ul.push_str(&post.title);
-        ul.push_str("</a> (");
-        ul.push_str(&post.published);
-        ul.push_str(")</li>");
+        if let Ok(content) = &post.content {
+            ul.push_str(&content.title);
+            ul.push_str("</a> (");
+            const NO_DATE: &str = "no publish date provided";
+            ul.push_str(content.published.as_deref().unwrap_or(NO_DATE));
+            ul.push(')');
+
+            if content.published.is_none() {
+                log::error!("post '{}' does not have publish date", content.title);
+            }
+        } else {
+            log::error!("failed to generate post from {:?}.md", post.stem);
+            push!(ul, "Error generating post from {:?}.md</a>", post.stem);
+        }
+        ul.push_str("</li>");
     }
     ul.push_str("</ul>");
 
     let mut html = String::new();
-    template
-        .apply(&mut html, |var_name, output| {
-            if var_name == "list" {
-                output.push_str(&ul);
-            } else {
-                bail!("no known variable `{}`", var_name);
-            }
-            Ok(())
-        })
-        .context("failed to apply template to blog index")?;
+    template.apply(&mut html, [("list", &ul)]);
 
-    crate::minify::html(&mut html)?;
+    match crate::minify::html(&html) {
+        Ok(res) => html = res,
+        Err(e) => log::error!("{:?}", e.context("failed to minify index file")),
+    }
 
-    Ok(html)
+    html
 }
 
-fn build_post(post: &Post, template: &Template) -> anyhow::Result<String> {
+fn build_post(post: &Post, template: Result<&Template, &anyhow::Error>) -> String {
+    let (post_content, template) = match (&post.content, template) {
+        (Ok(post), Ok(template)) => (post, template),
+        (Ok(_), Err(e)) | (Err(e), Ok(_)) => return error_page([e]),
+        (Err(e1), Err(e2)) => return error_page([e1, e2]),
+    };
+
     let mut html = String::new();
-    template
-        .apply(&mut html, |var_name, output| {
-            match var_name {
-                "title" => output.push_str(&post.title),
-                "body" => output.push_str(&post.body),
-                "outline" => output.push_str(&post.outline),
-                _ => bail!("no known variable `{}`", var_name),
-            }
-            Ok(())
-        })
-        .context("failed to apply template to post")?;
+    template.apply(
+        &mut html,
+        [
+            ("title", &post_content.title),
+            ("body", &post_content.body),
+            ("outline", &post_content.outline),
+        ],
+    );
 
-    crate::minify::html(&mut html)?;
+    match crate::minify::html(&html) {
+        Ok(res) => html = res,
+        Err(e) => log::error!(
+            "{:?}",
+            e.context(format!("failed to minify {}", post_content.title))
+        ),
+    }
 
-    Ok(html)
+    html
 }
 
-struct Template {
-    origin: String,
-    substitutions: Vec<Range<usize>>,
-}
-
-impl Template {
-    #[context("failed to parse template")]
-    fn new(origin: String) -> anyhow::Result<Self> {
-        let mut substitutions = Vec::new();
-
-        let mut bytes = origin.as_bytes();
-        while let Some(start) = memchr::memchr(b'\\', bytes) {
-            let end = match bytes.get(start + 1).context("trailing backslash")? {
-                b'\\' => start + 2,
-                b'{' => memchr::memchr(b'}', bytes).context("no closing `}`")? + 1,
-                &c => bail!("unexpected character '{}' after backslash", char::from(c)),
-            };
-
-            bytes = &bytes[end..];
-            substitutions.push(start..end);
-        }
-
-        Ok(Self {
-            origin,
-            substitutions,
-        })
+fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {
+    let mut res = String::new();
+    for error in errors {
+        log::error!("{error:?}");
+        push!(res, "<p style='color:red'>Error: {error:?}</p>");
     }
-
-    fn apply<E>(
-        &self,
-        output: &mut String,
-        mut var: impl FnMut(&str, &mut String) -> Result<(), E>,
-    ) -> Result<(), E> {
-        let mut rest = &*self.origin;
-        for substitution in &self.substitutions {
-            output.push_str(&rest[..substitution.start]);
-            match rest.as_bytes()[substitution.start + 1] {
-                b'\\' => output.push('\\'),
-                b'{' => var(&rest[substitution.start + 2..substitution.end - 1], output)?,
-                _ => unreachable!(),
-            }
-            rest = &rest[substitution.end..];
-        }
-        output.push_str(rest);
-        Ok(())
-    }
-}
-
-#[cfg(test)]
-mod tests {
-    use super::Template;
-    use ::std::convert::Infallible;
-
-    #[track_caller]
-    fn template(src: &str, mut var: impl FnMut(&str) -> String) -> String {
-        let mut output = String::new();
-        let template = Template::new(src.to_owned()).unwrap();
-        template
-            .apply(&mut output, |name, output| {
-                output.push_str(&var(name));
-                Ok::<_, Infallible>(())
-            })
-            .unwrap();
-        output
-    }
-
-    #[test]
-    fn templating() {
-        assert_eq!(template(r"", |_| panic!()), r"");
-        assert_eq!(template(r"simple", |_| panic!()), r"simple");
-        assert_eq!(template(r"foo\\", |_| panic!()), r"foo\");
-        assert_eq!(template(r"foo\\bar", |_| panic!()), r"foo\bar");
-        assert_eq!(template(r"\\bar", |_| panic!()), r"\bar");
-        assert_eq!(
-            template(r"\{best programming lang}", |s| {
-                assert_eq!(s, "best programming lang");
-                "rust".to_owned()
-            }),
-            r"rust"
-        );
-        assert_eq!(
-            template(r":\{best programming lang}:", |s| {
-                assert_eq!(s, "best programming lang");
-                "rust".to_owned()
-            }),
-            r":rust:"
-        );
-        let mut count = 0;
-        assert_eq!(
-            template(r"\{1} text here \{2}", |s| {
-                let res = match count {
-                    0 => {
-                        assert_eq!(s, "1");
-                        "one"
-                    }
-                    1 => {
-                        assert_eq!(s, "2");
-                        "two"
-                    }
-                    _ => panic!(),
-                };
-                count += 1;
-                res.to_owned()
-            }),
-            r"one text here two"
-        );
-    }
+    res
 }
