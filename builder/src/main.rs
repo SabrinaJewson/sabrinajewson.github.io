@@ -12,6 +12,7 @@
     clippy::single_component_path_imports, // https://github.com/rust-lang/rust-clippy/issues/7923
     clippy::too_many_lines,
     clippy::items_after_statements,
+    clippy::struct_excessive_bools,
 )]
 
 use ::{
@@ -29,6 +30,8 @@ mod asset;
 use asset::Asset;
 
 mod blog;
+mod common_css;
+mod favicon;
 mod markdown;
 mod minify;
 mod push_str;
@@ -92,10 +95,13 @@ fn main() -> anyhow::Result<()> {
 
 fn asset() -> impl Asset<Output = ()> {
     asset::all((
+        // This must come first to initialize minification
         minify::asset(),
-        blog::asset("./blog".as_ref(), "./dist/blog".as_ref()),
+        blog::asset("blog".as_ref(), "dist/blog".as_ref()),
+        favicon::asset("favicon.png".as_ref(), "dist".as_ref()),
+        common_css::asset("common.css".as_ref(), "dist/common.css".as_ref()),
     ))
-    .map(|((), ())| {})
+    .map(|((), (), (), ())| {})
 }
 
 #[context("failed to set cwd to project root")]

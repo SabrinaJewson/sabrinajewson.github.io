@@ -1,19 +1,6 @@
-* {
-	box-sizing: border-box;
-}
-
 body {
-	font-family: sans-serif;
-}
-
-body > div {
-	display: flex;
-	flex-flow: row-reverse wrap;
-	justify-content: flex-end;
-}
-
-main {
 	max-width: 80ch;
+	margin: 0 auto;
 }
 
 /* Heading anchors */
@@ -25,7 +12,6 @@ main {
     margin-left: -1em;
     text-decoration: none;
     font-weight: normal;
-	color: black;
 }
 :hover > .anchor::before {
 	display: block;
@@ -44,6 +30,7 @@ code.scode {
 }
 pre.scode {
 	padding: 8px;
+	overflow-x: scroll;
 }
 .scode {
 	border-radius: 6px;

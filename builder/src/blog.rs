@@ -1,5 +1,6 @@
 use crate::{
     asset::{self, Asset},
+    favicon,
     markdown::{self, Markdown},
     minify,
     push_str::push,
@@ -174,7 +175,11 @@ fn build_index(posts: &mut [Rc<Post>], template: &anyhow::Result<Template>) -> S
         if let Ok(content) = &post.content {
             ul.push_str(&content.title);
             ul.push_str("</a> (");
-            ul.push_str(content.published.as_deref().unwrap_or("draft"));
+            if let Some(published) = &content.published {
+                push!(ul, "<time datetime='{published}'>{published}</time>");
+            } else {
+                ul.push_str("draft");
+            }
             ul.push(')');
         } else {
             log::error!("failed to generate post from {:?}.md", post.stem);
@@ -185,7 +190,14 @@ fn build_index(posts: &mut [Rc<Post>], template: &anyhow::Result<Template>) -> S
     ul.push_str("</ul>");
 
     let mut html = String::new();
-    template.apply(&mut html, [("list", &ul)]);
+    template.apply(
+        &mut html,
+        [
+            ("list", &ul),
+            ("favicon_path", favicon::FAVICON_PATH),
+            ("apple_touch_icon_path", favicon::APPLE_TOUCH_ICON_PATH),
+        ],
+    );
 
     match crate::minify::html(&html) {
         Ok(res) => html = res,
@@ -210,8 +222,11 @@ fn build_post(post: &Post, template: Result<&Template, &anyhow::Error>) -> Strin
         [
             ("title", &post_content.title),
             ("published", published),
+            ("description", &post_content.summary),
             ("outline", &post_content.outline),
             ("body", &post_content.body),
+            ("favicon_path", favicon::FAVICON_PATH),
+            ("apple_touch_icon_path", favicon::APPLE_TOUCH_ICON_PATH),
         ],
     );
 

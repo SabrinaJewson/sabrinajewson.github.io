@@ -72,7 +72,6 @@ pub(crate) trait Asset {
 pub(crate) enum Modified {
     Never,
     At(SystemTime),
-    Now,
 }
 
 impl Modified {
@@ -180,10 +179,10 @@ impl<E, A: Asset<Output = Result<(), E>>, P: AsRef<Path>> Asset for ModifiesPath
     type Output = Result<(), E>;
 
     fn modified(&self) -> Modified {
-        Modified::path(&self.path).unwrap_or(Modified::Now)
+        Modified::path(&self.path).unwrap_or(Modified::Never)
     }
     fn generate(&self) -> Self::Output {
-        let output_modified = Modified::path(&self.path).unwrap_or(Modified::Never);
+        let output_modified = self.modified();
         if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
             self.asset.generate()?;
         }
@@ -207,11 +206,11 @@ where
     type Output = anyhow::Result<()>;
 
     fn modified(&self) -> Modified {
-        Modified::path(&self.path).unwrap_or(Modified::Now)
+        Modified::path(&self.path).unwrap_or(Modified::Never)
     }
     fn generate(&self) -> Self::Output {
         let output = self.path.as_ref();
-        let output_modified = Modified::path(output).unwrap_or(Modified::Never);
+        let output_modified = self.modified();
         if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
             if let Some(parent) = output.parent() {
                 fs::create_dir_all(parent)
@@ -350,7 +349,7 @@ impl<P: AsRef<Path>> Asset for FsPath<P> {
     type Output = ();
 
     fn modified(&self) -> Modified {
-        Modified::path(&self.path).unwrap_or(Modified::Now)
+        Modified::path(&self.path).unwrap_or(Modified::Never)
     }
     fn generate(&self) -> Self::Output {}
 }
@@ -370,7 +369,7 @@ impl<P: AsRef<Path>> Asset for TextFile<P> {
     type Output = anyhow::Result<String>;
 
     fn modified(&self) -> Modified {
-        Modified::path(&self.path).unwrap_or(Modified::Now)
+        Modified::path(&self.path).unwrap_or(Modified::Never)
     }
     fn generate(&self) -> Self::Output {
         let path = self.path.as_ref();
@@ -394,7 +393,7 @@ impl<P: AsRef<Path>> Asset for Dir<P> {
     type Output = anyhow::Result<DirFiles>;
 
     fn modified(&self) -> Modified {
-        Modified::path(&self.path).unwrap_or(Modified::Now)
+        Modified::path(&self.path).unwrap_or(Modified::Never)
     }
     fn generate(&self) -> Self::Output {
         let path = self.path.as_ref();

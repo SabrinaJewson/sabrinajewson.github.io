@@ -14,6 +14,7 @@ pub(crate) struct Markdown {
     pub(crate) published: Option<Box<str>>,
     pub(crate) title: String,
     pub(crate) body: String,
+    pub(crate) summary: String,
     pub(crate) outline: String,
 }
 
@@ -37,6 +38,8 @@ pub(crate) fn parse(source: &str) -> Markdown {
         title: String::new(),
         in_title: false,
         body: String::new(),
+        summary: String::new(),
+        in_summary: false,
         in_table_head: false,
         used_classes: HashSet::new(),
         outline: String::new(),
@@ -58,6 +61,9 @@ struct Renderer<'a> {
     /// Whether we are currently writing to the title instead of the body.
     in_title: bool,
     body: String,
+    summary: String,
+    /// Whether we are currently writing to the summary.
+    in_summary: bool,
     /// Whether we are in a `<thead>`.
     /// Used to determine whether to output `<td>`s or `<th>`s.
     in_table_head: bool,
@@ -79,23 +85,38 @@ impl<'a> Renderer<'a> {
             match event {
                 pulldown_cmark::Event::Start(tag) => self.start_tag(tag),
                 pulldown_cmark::Event::End(tag) => self.end_tag(tag),
-                pulldown_cmark::Event::Text(text) => escape_html(&mut self, &text),
+                pulldown_cmark::Event::Text(text) => {
+                    self.push_summary(&text);
+                    escape_html(&mut self, &text);
+                }
                 pulldown_cmark::Event::Code(text) => {
                     self.push_str("<code class='scode'>");
 
-                    if let Some((language, code)) =
-                        text.strip_prefix('[').and_then(|rest| rest.split_once(']'))
-                    {
+                    let (language, code) =
+                        match text.strip_prefix('[').and_then(|rest| rest.split_once(']')) {
+                            Some((language, code)) => (Some(language), code),
+                            None => (None, &*text),
+                        };
+
+                    if let Some(language) = language {
                         self.syntax_highlight(language, code);
                     } else {
                         escape_html(&mut self, &text);
                     }
 
+                    self.push_summary(code);
+
                     self.push_str("</code>");
                 }
                 pulldown_cmark::Event::Html(html) => self.push_str(&html),
-                pulldown_cmark::Event::SoftBreak => self.push_str(" "),
-                pulldown_cmark::Event::HardBreak => self.push_str("<br>"),
+                pulldown_cmark::Event::SoftBreak => {
+                    self.push_summary(" ");
+                    self.push_str(" ");
+                }
+                pulldown_cmark::Event::HardBreak => {
+                    self.push_summary(" ");
+                    self.push_str("<br>");
+                }
                 pulldown_cmark::Event::Rule => self.push_str("<hr>"),
                 // We do not enable these extensions
                 pulldown_cmark::Event::FootnoteReference(_)
@@ -123,13 +144,19 @@ impl<'a> Renderer<'a> {
             published: self.published.map(Into::into),
             title: self.title,
             body: self.body,
+            summary: self.summary,
             outline: self.outline,
         }
     }
 
     fn start_tag(&mut self, tag: pulldown_cmark::Tag<'a>) {
         match tag {
-            pulldown_cmark::Tag::Paragraph => self.push_str("<p>"),
+            pulldown_cmark::Tag::Paragraph => {
+                if self.summary.is_empty() {
+                    self.in_summary = true;
+                }
+                self.push_str("<p>");
+            }
             pulldown_cmark::Tag::Heading(pulldown_cmark::HeadingLevel::H1, id, classes) => {
                 if !classes.is_empty() || id.is_some() {
                     self.error("title IDs and classes are disallowed");
@@ -289,6 +316,7 @@ impl<'a> Renderer<'a> {
         match tag {
             pulldown_cmark::Tag::Paragraph => {
                 self.push_str("</p>");
+                self.in_summary = false;
             }
             pulldown_cmark::Tag::Heading(pulldown_cmark::HeadingLevel::H1, _id, _classes) => {
                 self.in_title = false;
@@ -361,6 +389,12 @@ impl<'a> Renderer<'a> {
         self.push_str("<span style='color:red'>");
         push!(self, "{}", msg);
         self.push_str("</span>");
+    }
+
+    fn push_summary(&mut self, s: &str) {
+        if self.in_summary {
+            self.summary.push_str(s);
+        }
     }
 }
 
@@ -486,6 +520,7 @@ mod tests {
                 published: Some("2038-01-19".into()),
                 title: String::new(),
                 body: "<p>foo</p>".to_owned(),
+                summary: "foo".to_owned(),
                 outline: String::new(),
             }
         );
@@ -522,6 +557,7 @@ mod tests {
                 published: None,
                 title: "foo bar".to_owned(),
                 body: String::new(),
+                summary: String::new(),
                 outline: String::new(),
             },
         );
@@ -547,6 +583,7 @@ mod tests {
                     <h2 id='e'><a href='#e' class='anchor'></a>e</h2>\
                 "
                 .to_owned(),
+                summary: String::new(),
                 outline: "\
                     <ul>\
                         <li><a href='#a'>a</a><ul>\
@@ -723,5 +760,25 @@ mod tests {
             just_body("![a nice image](image.jpg)"),
             "<p><img src='image.jpg' alt='a nice image'></p>",
         );
+    }
+
+    #[track_caller]
+    fn just_summary(input: &str) -> String {
+        let markdown = parse(input);
+        assert_eq!(markdown.published, None, "published is present");
+        assert_eq!(markdown.title, "", "title is not empty");
+        assert_eq!(markdown.outline, "", "outline is not empty");
+        markdown.summary
+    }
+
+    #[test]
+    fn summary() {
+        assert_eq!(just_summary("lorem ipsum dolor"), "lorem ipsum dolor");
+        assert_eq!(just_summary("lorem\nipsum  \ndolor"), "lorem ipsum dolor");
+        assert_eq!(
+            just_summary("`[rs]lorem` **ipsum** _dolor_"),
+            "lorem ipsum dolor"
+        );
+        assert_eq!(just_summary("lorem ipsum\n\ndolor sit amet"), "lorem ipsum");
     }
 }

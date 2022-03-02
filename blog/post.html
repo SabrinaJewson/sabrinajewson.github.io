@@ -1,16 +1,29 @@
 <!DOCTYPE html>
-<html>
+<html lang="en">
 	<head>
 		<meta charset="utf-8">
-		<title>\{title}</title>
+		<meta name="viewport" content="width=device-width, initial-scale=1">
+
+		<meta name="color-scheme" content="dark light">
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
+		<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+
+		<meta property="og:site_name" content="Sabrina Jewson">
+		<link rel="icon" href="/\{favicon_path}">
+		<link rel="apple-touch-icon" href="/\{apple_touch_icon_path}">
+
+		<title>\{title} - Sabrina Jewson</title>
+		<meta property="og:title" content="\{title}">
+		<meta name="description" content="\{description}">
+		<meta property="og:type" content="article">
+
 		<link rel="stylesheet" href="post.css">
+		<link rel="stylesheet" href="../common.css">
 	</head>
 	<body>
 		<h1>\{title}</h1>
-		<p>\{published}</p>
-		<div>
-			<nav>\{outline}</nav>
-			<main>\{body}</main>
-		</div>
+		<p><time datetime="\{published}">\{published}</time></p>
+		<nav>\{outline}</nav>
+		<main>\{body}</main>
 	</body>
 </html>
