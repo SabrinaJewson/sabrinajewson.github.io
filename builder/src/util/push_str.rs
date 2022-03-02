@@ -24,13 +24,13 @@ macro_rules! push {
     ($target:expr, $($fmt:tt)*) => {{
         #[allow(unused_imports)]
         use {
-            $crate::push_str::PushStr as _,
+            $crate::util::push_str::PushStr as _,
             core::fmt::Write as _,
         };
         write!($target.writer(), $($fmt)*).unwrap()
     }}
 }
-pub(super) use push;
+pub(crate) use push;
 
 pub(crate) struct PushWriter<'a, T: ?Sized>(&'a mut T);
 

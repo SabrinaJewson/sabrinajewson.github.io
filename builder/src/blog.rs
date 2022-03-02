@@ -1,11 +1,13 @@
 use crate::{
     asset::{self, Asset},
-    favicon,
-    markdown::{self, Markdown},
-    minify,
-    push_str::push,
-    template::Template,
-    util::{log_errors, write_file},
+    favicon, minify,
+    util::{
+        log_errors,
+        markdown::{self, Markdown},
+        push_str::push,
+        template::Template,
+        write_file,
+    },
 };
 use ::{
     anyhow::Context as _,

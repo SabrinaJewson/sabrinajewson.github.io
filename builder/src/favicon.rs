@@ -1,4 +1,4 @@
-use crate::asset::{self, Asset};
+use crate::util::asset::{self, Asset};
 use ::{
     anyhow::Context as _,
     image::codecs::ico::{IcoEncoder, IcoFrame},

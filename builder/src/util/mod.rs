@@ -1,7 +1,15 @@
+//! This module contains many small independent components.
+
 use ::{
     anyhow::Context as _,
     std::{fs, path::Path},
 };
+
+pub(crate) mod asset;
+pub(crate) mod markdown;
+pub(crate) mod minify;
+pub(crate) mod push_str;
+pub(crate) mod template;
 
 pub(crate) fn log_errors(res: anyhow::Result<()>) -> Result<(), ()> {
     if let Err(e) = &res {

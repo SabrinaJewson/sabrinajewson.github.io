@@ -1,7 +1,6 @@
-use crate::{
+use crate::util::{
     asset::{self, Asset},
-    minify,
-    util::write_file,
+    minify, write_file,
 };
 use ::std::path::Path;
 

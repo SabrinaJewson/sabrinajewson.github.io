@@ -1,4 +1,4 @@
-use crate::push_str::{escape_href, escape_html, push, PushStr};
+use crate::util::push_str::{escape_href, escape_html, push, PushStr};
 use ::{
     once_cell::sync::Lazy,
     std::{

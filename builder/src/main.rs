@@ -26,17 +26,15 @@ use ::{
     },
 };
 
-mod asset;
-use asset::Asset;
-
 mod blog;
 mod common_css;
 mod favicon;
-mod markdown;
-mod minify;
-mod push_str;
-mod template;
+
 mod util;
+use self::util::{
+    asset::{self, Asset},
+    minify,
+};
 
 /// Rust program that builds this website.
 #[derive(clap::Parser)]
