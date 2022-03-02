@@ -1,6 +1,5 @@
-body {
-	max-width: 80ch;
-	margin: 0 auto;
+#published {
+	opacity: 0.7;
 }
 
 /* Heading anchors */

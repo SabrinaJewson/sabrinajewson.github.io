@@ -5,8 +5,8 @@
 		<meta name="viewport" content="width=device-width, initial-scale=1">
 
 		<meta name="color-scheme" content="dark light">
-		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme: light)">
-		<meta name="theme-color" content="#000000" media="(prefers-color-scheme: dark)">
+		<meta name="theme-color" content="#ffffff" media="(prefers-color-scheme:light)">
+		<meta name="theme-color" content="#000000" media="(prefers-color-scheme:dark)">
 
 		<meta property="og:site_name" content="Sabrina Jewson">
 		<link rel="icon" href="/\{favicon_path}">
@@ -18,6 +18,15 @@
 		<link rel="stylesheet" href="../common.css">
 	</head>
 	<body>
-		\{list}
+		<header>
+			<a href="/" class="name">Sabrina Jewson</a>
+			<nav>
+				<a href="/blog">Blog</a>
+			</nav>
+		</header>
+		<main>
+			<h1>Recent posts</h1>
+			\{list}
+		</main>
 	</body>
 </html>

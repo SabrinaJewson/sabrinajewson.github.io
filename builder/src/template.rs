@@ -22,7 +22,11 @@ impl Template {
                 .ok_or(ParseErrorKind::TrailingBackslash)?
             {
                 b'\\' => start + 2,
-                b'{' => memchr::memchr(b'}', bytes).ok_or(ParseErrorKind::NoClosingBrace)? + 1,
+                b'{' => {
+                    memchr::memchr(b'}', &bytes[start..]).ok_or(ParseErrorKind::NoClosingBrace)?
+                        + start
+                        + 1
+                }
                 &c => return Err(ParseErrorKind::UnexpectedAfterBackslash(char::from(c)).into()),
             };
 
@@ -120,12 +124,20 @@ mod tests {
     }
 
     #[test]
-    fn basic() {
+    fn plain() {
         assert_eq!(template(r"", []), r"");
         assert_eq!(template(r"simple", []), r"simple");
+    }
+
+    #[test]
+    fn escaped_blackslashes() {
         assert_eq!(template(r"foo\\", []), r"foo\");
         assert_eq!(template(r"foo\\bar", []), r"foo\bar");
         assert_eq!(template(r"\\bar", []), r"\bar");
+    }
+
+    #[test]
+    fn interpolations() {
         assert_eq!(
             template(
                 r"\{best programming lang}",
@@ -144,9 +156,18 @@ mod tests {
             template(r"\{1} text here \{2}", [("1", "one"), ("2", "two")]),
             r"one text here two"
         );
+    }
+
+    #[test]
+    fn not_present() {
         assert_eq!(
             template(r"(\{variable not present})", []),
             r"(\{variable not present})"
         );
+    }
+
+    #[test]
+    fn other_closing_brace() {
+        assert_eq!(template(r"}\{x}", []), r"}\{x}",);
     }
 }

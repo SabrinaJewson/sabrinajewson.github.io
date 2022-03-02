@@ -21,6 +21,10 @@ many
 hard  
 breaks.
 
+an `<hr>`:
+
+---
+
 ## Lists { #lists }
 
 An unordered list:
