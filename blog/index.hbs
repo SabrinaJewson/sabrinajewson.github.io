@@ -1,0 +1,23 @@
+{{#> base}}
+	{{#*inline "head"}}
+		<title>Sabrina Jewson's Blog</title>
+		<meta property="og:title" content="Sabrina Jewson's Blog">
+	{{/inline}}
+	{{#*inline "body"}}
+		<h1>Recent posts</h1>
+		{{#each posts}}
+			<li>
+				{{#if content}}
+					<a href="{{stem}}">{{content.title}}</a>
+					{{#if content.published}}
+						(<time datetime="{{content.published}}">{{content.published}}</time>)
+					{{else}}
+						(draft)
+					{{/if}}
+				{{else}}
+					<a href="{{stem}}">Error generating post from {{stem}}.md</a>
+				{{/if}}
+			</li>
+		{{/each}}
+	{{/inline}}
+{{/base}}

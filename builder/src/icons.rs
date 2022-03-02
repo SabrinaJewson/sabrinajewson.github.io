@@ -2,6 +2,7 @@ use crate::util::asset::{self, Asset};
 use ::{
     anyhow::Context as _,
     image::codecs::ico::{IcoEncoder, IcoFrame},
+    serde::Serialize,
     std::{
         fs::File,
         io::{BufWriter, Write as _},
@@ -9,8 +10,17 @@ use ::{
     },
 };
 
-pub(crate) const FAVICON_PATH: &str = "favicon.ico";
-pub(crate) const APPLE_TOUCH_ICON_PATH: &str = "apple-touch-icon.png";
+// Used in templates
+#[derive(Clone, Copy, Serialize)]
+pub(crate) struct Paths {
+    pub(crate) favicon: &'static str,
+    pub(crate) apple_touch_icon: &'static str,
+}
+
+pub(crate) const PATHS: Paths = Paths {
+    favicon: "favicon.ico",
+    apple_touch_icon: "apple-touch-icon.png",
+};
 
 pub(crate) fn asset<'a>(
     input_path: &'a Path,
@@ -25,10 +35,10 @@ pub(crate) fn asset<'a>(
 
             image
                 .resize(APPLE_TOUCH_ICON_SIZE, APPLE_TOUCH_ICON_SIZE, filter)
-                .save(output_path.join(APPLE_TOUCH_ICON_PATH))
-                .with_context(|| format!("couldn't save to {APPLE_TOUCH_ICON_PATH}"))?;
+                .save(output_path.join(PATHS.apple_touch_icon))
+                .with_context(|| format!("couldn't save to {}", PATHS.apple_touch_icon))?;
 
-            let favicon_path = output_path.join(FAVICON_PATH);
+            let favicon_path = output_path.join(PATHS.favicon);
             let mut file = BufWriter::new(
                 File::create(&favicon_path)
                     .with_context(|| format!("failed to create {}", favicon_path.display()))?,
@@ -58,8 +68,8 @@ pub(crate) fn asset<'a>(
 
             Ok(())
         })
-        .modifies_path(output_path.join(APPLE_TOUCH_ICON_PATH))
-        .modifies_path(output_path.join(FAVICON_PATH))
+        .modifies_path(output_path.join(PATHS.apple_touch_icon))
+        .modifies_path(output_path.join(PATHS.favicon))
         .map(|res| {
             if let Err(e) = res {
                 log::error!("{e:?}");

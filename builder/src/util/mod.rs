@@ -9,9 +9,8 @@ pub(crate) mod asset;
 pub(crate) mod markdown;
 pub(crate) mod minify;
 pub(crate) mod push_str;
-pub(crate) mod template;
 
-pub(crate) fn log_errors(res: anyhow::Result<()>) -> Result<(), ()> {
+pub(crate) fn log_errors<T>(res: anyhow::Result<T>) -> Result<T, ()> {
     if let Err(e) = &res {
         log::error!("{:?}", e);
     }

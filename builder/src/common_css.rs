@@ -4,29 +4,29 @@ use crate::util::{
 };
 use ::std::path::Path;
 
+pub(crate) const PATH: &str = "common.css";
+
 pub(crate) fn asset<'a>(in_path: &'a Path, out_path: &'a Path) -> impl Asset<Output = ()> + 'a {
-    asset::TextFile::new(in_path).map(move |res| {
-        let css = match res {
-            Ok(css) => css,
-            Err(e) => {
-                log::error!("{e:?}");
-                return;
-            }
-        };
+    asset::TextFile::new(in_path)
+        .map(move |res| -> anyhow::Result<_> {
+            let css = res?;
+            let minified = match minify::css(&*css) {
+                Ok(minified) => minified,
+                Err(e) => {
+                    log::error!("{:?}", e.context("failed to minify common CSS"));
+                    css
+                }
+            };
 
-        let minified = match minify::css(&css) {
-            Ok(minified) => minified,
-            Err(e) => {
-                log::error!("{:?}", e.context("failed to minify common CSS"));
-                css
-            }
-        };
+            write_file(out_path.join(PATH), &minified)?;
 
-        if let Err(e) = write_file(out_path, &minified) {
-            log::error!("{e:?}");
-            return;
-        }
+            log::info!("successfully emitted common CSS file");
 
-        log::info!("successfully emitted common CSS file");
-    })
+            Ok(())
+        })
+        .modifies_path(out_path.join(PATH))
+        .map(|res| match res {
+            Ok(()) => {}
+            Err(e) => log::error!("{e:?}"),
+        })
 }

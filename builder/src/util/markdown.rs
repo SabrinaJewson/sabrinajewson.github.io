@@ -1,6 +1,7 @@
 use crate::util::push_str::{escape_href, escape_html, push, PushStr};
 use ::{
     once_cell::sync::Lazy,
+    serde::Serialize,
     std::{
         collections::HashSet,
         fmt::Display,
@@ -9,6 +10,7 @@ use ::{
     syntect::{highlighting::Theme, parsing::SyntaxSet, util::LinesWithEndings},
 };
 
+#[derive(Serialize)] // Serialization used in templates
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub(crate) struct Markdown {
     pub(crate) published: Option<Box<str>>,

@@ -28,7 +28,8 @@ use ::{
 
 mod blog;
 mod common_css;
-mod favicon;
+mod icons;
+mod templater;
 
 mod util;
 use self::util::{
@@ -101,8 +102,8 @@ fn asset(drafts: bool) -> impl Asset<Output = ()> {
         // This must come first to initialize minification
         minify::asset(),
         blog::asset("blog".as_ref(), "dist/blog".as_ref(), drafts),
-        favicon::asset("favicon.png".as_ref(), "dist".as_ref()),
-        common_css::asset("common.css".as_ref(), "dist/common.css".as_ref()),
+        icons::asset("icon.png".as_ref(), "dist".as_ref()),
+        common_css::asset("common.css".as_ref(), "dist".as_ref()),
     ))
     .map(|((), (), (), ())| {})
 }

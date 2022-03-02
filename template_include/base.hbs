@@ -9,13 +9,12 @@
 		<meta name="theme-color" content="#000000" media="(prefers-color-scheme:dark)">
 
 		<meta property="og:site_name" content="Sabrina Jewson">
-		<link rel="icon" href="/\{favicon_path}">
-		<link rel="apple-touch-icon" href="/\{apple_touch_icon_path}">
+		<link rel="icon" href="/{{icons.favicon}}">
+		<link rel="apple-touch-icon" href="/{{icons.apple_touch_icon}}">
 
-		<title>Sabrina Jewson's Blog</title>
-		<meta property="og:title" content="Sabrina Jewson's Blog">
+		<link rel="stylesheet" href="/{{common_css}}">
 
-		<link rel="stylesheet" href="../common.css">
+		{{> head}}
 	</head>
 	<body>
 		<header>
@@ -25,8 +24,7 @@
 			</nav>
 		</header>
 		<main>
-			<h1>Recent posts</h1>
-			\{list}
+			{{> body}}
 		</main>
 	</body>
 </html>

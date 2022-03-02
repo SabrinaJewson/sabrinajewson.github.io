@@ -1,0 +1,22 @@
+{{#> base}}
+	{{#*inline "head"}}
+		<title>{{post.title}} - Sabrina Jewson</title>
+		<meta property="og:title" content="{{post.title}}">
+		<meta name="description" content="{{post.summary}}">
+		<meta property="og:type" content="article">
+
+		<link rel="stylesheet" href="{{post_css}}">
+	{{/inline}}
+	{{#*inline "body"}}
+		<h1>{{{post.title}}}</h1>
+		<p id="published">
+			{{#if post.published}}
+				<time datetime="{{post.published}}">{{post.published}}</time>
+			{{else}}
+				Draft
+			{{/if}}
+		</p>
+		<nav>{{{post.outline}}}</nav>
+		{{{post.body}}}
+	{{/inline}}
+{{/base}}

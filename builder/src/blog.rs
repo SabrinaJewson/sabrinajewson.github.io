@@ -1,16 +1,17 @@
 use crate::{
     asset::{self, Asset},
-    favicon, minify,
+    common_css, icons, minify, templater,
     util::{
         log_errors,
         markdown::{self, Markdown},
         push_str::push,
-        template::Template,
         write_file,
     },
 };
 use ::{
     anyhow::Context as _,
+    handlebars::{template::Template, Handlebars, Renderable as _},
+    serde::{Serialize, Serializer},
     std::{
         cmp,
         path::{Path, PathBuf},
@@ -24,18 +25,18 @@ pub(crate) fn asset<'a>(
     out_dir: &'a Path,
     drafts: bool,
 ) -> impl Asset<Output = ()> + 'a {
+    let templater = Rc::new(templater::asset());
+
     let post_template = Rc::new(
-        asset::TextFile::new(in_dir.join("post.html"))
-            .map(|src| anyhow::Ok(Template::new(src?)?))
-            .map(|res| res.context("failed to load blog post template"))
+        asset::TextFile::new(in_dir.join("post.hbs"))
+            .map(|src| Template::compile(&*src?).context("failed to compile blog post template"))
             .map(Rc::new)
             .cache(),
     );
 
     let index_template = Rc::new(
-        asset::TextFile::new(in_dir.join("index.html"))
-            .map(|src| anyhow::Ok(Template::new(src?)?))
-            .map(|res| res.context("failed to load blog index template"))
+        asset::TextFile::new(in_dir.join("index.hbs"))
+            .map(|src| Template::compile(&*src?).context("failed to compile blog index template"))
             .map(Rc::new)
             .cache(),
     );
@@ -73,14 +74,18 @@ pub(crate) fn asset<'a>(
 
                 posts.push(post.clone());
 
-                let post_page =
-                    asset::all((post, post_template.clone())).map(move |(post, template)| {
-                        if let Some(post) = post {
-                            let built = build_post(&post, (*template).as_ref());
-                            log_errors(write_file(&output_path, built))?;
+                let post_page = asset::all((post, templater.clone(), post_template.clone()))
+                    .map({
+                        let output_path = output_path.clone();
+                        move |(post, templater, template)| {
+                            if let Some(post) = post {
+                                let built = build_post(&post, &*templater, (*template).as_ref());
+                                log_errors(write_file(&output_path, built))?;
+                            }
+                            Ok(())
                         }
-                        Ok(())
-                    });
+                    })
+                    .modifies_path(output_path);
 
                 post_pages.push(post_page);
             }
@@ -88,13 +93,14 @@ pub(crate) fn asset<'a>(
             let post_pages = asset::all(post_pages)
                 .map(|successes| successes.iter().copied().fold(Ok(()), Result::and));
 
-            let index =
-                asset::all((asset::all(posts), index_template.clone())).map(|(posts, template)| {
+            let index = asset::all((asset::all(posts), templater.clone(), index_template.clone()))
+                .map(|(posts, templater, template)| {
                     // Remove drafts from the index
                     let posts = Vec::from(posts).into_iter().flatten().collect();
-                    let index = build_index(posts, &*template);
+                    let index = build_index(posts, &*templater, &*template);
                     log_errors(write_file(out_dir.join("index.html"), index))
-                });
+                })
+                .modifies_path(out_dir.join("index.html"));
 
             Ok(asset::all((post_pages, index))
                 .map(|(blog_success, index_success)| Result::and(blog_success, index_success)))
@@ -118,8 +124,8 @@ pub(crate) fn asset<'a>(
     let dark_theme = theme_asset(code_themes_dir.join("dark.tmTheme"));
     let light_theme = theme_asset(code_themes_dir.join("light.tmTheme"));
 
-    let css = asset::all((post_css, light_theme, dark_theme)).map(
-        |(mut post_css, light_theme, dark_theme)| {
+    let css = asset::all((post_css, light_theme, dark_theme))
+        .map(|(mut post_css, light_theme, dark_theme)| {
             post_css.push_str(&**dark_theme);
             post_css.push_str("@media(prefers-color-scheme:light){");
             post_css.push_str(&**light_theme);
@@ -131,9 +137,9 @@ pub(crate) fn asset<'a>(
                     post_css
                 }
             };
-            log_errors(write_file(out_dir.join("post.css"), css))
-        },
-    );
+            log_errors(write_file(out_dir.join(POST_CSS_PATH), css))
+        })
+        .modifies_path(out_dir.join(POST_CSS_PATH));
 
     asset::all((html, css)).map(|(html_success, css_success)| {
         if Result::and(html_success, css_success).is_ok() {
@@ -142,8 +148,16 @@ pub(crate) fn asset<'a>(
     })
 }
 
+const POST_CSS_PATH: &str = "post.css";
+
+// Serialization used in the templates
+#[derive(Serialize)]
 struct Post {
     stem: Rc<str>,
+    #[serde(
+        skip_serializing_if = "Result::is_err",
+        serialize_with = "serialize_unwrap"
+    )]
     content: anyhow::Result<Markdown>,
 }
 
@@ -171,7 +185,11 @@ fn read_post(stem: Rc<str>, src: anyhow::Result<String>, drafts: bool) -> Option
     }
 }
 
-fn build_index(mut posts: Vec<Rc<Post>>, template: &anyhow::Result<Template>) -> String {
+fn build_index(
+    mut posts: Vec<Rc<Post>>,
+    templater: &Handlebars<'static>,
+    template: &anyhow::Result<Template>,
+) -> String {
     let template = match template {
         Ok(template) => template,
         Err(e) => return error_page([e]),
@@ -191,78 +209,82 @@ fn build_index(mut posts: Vec<Rc<Post>>, template: &anyhow::Result<Template>) ->
         (Err(_), Err(_)) => a.stem.cmp(&b.stem),
     });
 
-    let mut ul = "<ul>".to_owned();
-    for post in &*posts {
-        ul.push_str("<li><a href='");
-        ul.push_str(&post.stem);
-        ul.push_str("'>");
-        if let Ok(content) = &post.content {
-            ul.push_str(&content.title);
-            ul.push_str("</a> (");
-            if let Some(published) = &content.published {
-                push!(ul, "<time datetime='{published}'>{published}</time>");
-            } else {
-                ul.push_str("draft");
-            }
-            ul.push(')');
-        } else {
-            log::error!("failed to generate post from {:?}.md", post.stem);
-            push!(ul, "Error generating post from {:?}.md</a>", post.stem);
+    #[derive(Serialize)]
+    struct TemplateVars<'a> {
+        posts: &'a [Rc<Post>],
+        icons: icons::Paths,
+        common_css: &'static str,
+    }
+    let context = handlebars::Context::wraps(TemplateVars {
+        posts: &*posts,
+        icons: icons::PATHS,
+        common_css: common_css::PATH,
+    })
+    .unwrap();
+
+    let mut render_context = handlebars::RenderContext::new(None);
+    let res = template
+        .renders(templater, &context, &mut render_context)
+        .context("failed to render blog index template");
+    let rendered = match res {
+        Ok(rendered) => rendered,
+        Err(e) => return error_page([&e]),
+    };
+
+    match crate::minify::html(&rendered) {
+        Ok(minified) => minified,
+        Err(e) => {
+            log::error!("{:?}", e.context("failed to minify index file"));
+            rendered
         }
-        ul.push_str("</li>");
     }
-    ul.push_str("</ul>");
-
-    let mut html = String::new();
-    template.apply(
-        &mut html,
-        [
-            ("list", &ul),
-            ("favicon_path", favicon::FAVICON_PATH),
-            ("apple_touch_icon_path", favicon::APPLE_TOUCH_ICON_PATH),
-        ],
-    );
-
-    match crate::minify::html(&html) {
-        Ok(res) => html = res,
-        Err(e) => log::error!("{:?}", e.context("failed to minify index file")),
-    }
-
-    html
 }
 
-fn build_post(post: &Post, template: Result<&Template, &anyhow::Error>) -> String {
+fn build_post(
+    post: &Post,
+    templater: &Handlebars<'static>,
+    template: Result<&Template, &anyhow::Error>,
+) -> String {
     let (post_content, template) = match (&post.content, template) {
         (Ok(post), Ok(template)) => (post, template),
         (Ok(_), Err(e)) | (Err(e), Ok(_)) => return error_page([e]),
         (Err(e1), Err(e2)) => return error_page([e1, e2]),
     };
 
-    let published = post_content.published.as_deref().unwrap_or("Draft");
-
-    let mut html = String::new();
-    template.apply(
-        &mut html,
-        [
-            ("title", &post_content.title),
-            ("published", published),
-            ("description", &post_content.summary),
-            ("outline", &post_content.outline),
-            ("body", &post_content.body),
-            ("favicon_path", favicon::FAVICON_PATH),
-            ("apple_touch_icon_path", favicon::APPLE_TOUCH_ICON_PATH),
-        ],
-    );
-
-    match crate::minify::html(&html) {
-        Ok(res) => html = res,
-        Err(e) => log::error!(
-            "{:?}",
-            e.context(format!("failed to minify {}", post_content.title))
-        ),
+    #[derive(Serialize)]
+    struct TemplateVars<'a> {
+        post: &'a Markdown,
+        icons: icons::Paths,
+        common_css: &'static str,
+        post_css: &'static str,
     }
+    let context = handlebars::Context::wraps(TemplateVars {
+        post: post_content,
+        icons: icons::PATHS,
+        common_css: common_css::PATH,
+        post_css: POST_CSS_PATH,
+    })
+    .unwrap();
 
-    html
+    let mut render_context = handlebars::RenderContext::new(None);
+    let res = template
+        .renders(templater, &context, &mut render_context)
+        .context("failed to render blog post template");
+    let rendered = match res {
+        Ok(rendered) => rendered,
+        Err(e) => return error_page([&e]),
+    };
+
+    match crate::minify::html(&rendered) {
+        Ok(minified) => minified,
+        Err(e) => {
+            log::error!(
+                "{:?}",
+                e.context(format!("failed to minify {}", post_content.title))
+            );
+            rendered
+        }
+    }
 }
 
 fn theme_asset(path: PathBuf) -> impl Asset<Output = Rc<String>> {
@@ -279,6 +301,17 @@ fn theme_asset(path: PathBuf) -> impl Asset<Output = Rc<String>> {
             })
         })
         .cache()
+}
+
+fn serialize_unwrap<S, T, E>(result: &Result<T, E>, serializer: S) -> Result<S::Ok, S::Error>
+where
+    S: Serializer,
+    T: Serialize,
+{
+    result
+        .as_ref()
+        .unwrap_or_else(|_| panic!())
+        .serialize(serializer)
 }
 
 fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {
