@@ -1,5 +1,6 @@
 //! This module contains many small independent components.
 
+use self::push_str::push;
 use ::{
     anyhow::Context as _,
     std::{fs, path::Path},
@@ -15,6 +16,15 @@ pub(crate) fn log_errors<T>(res: anyhow::Result<T>) -> Result<T, ()> {
         log::error!("{:?}", e);
     }
     res.map_err(drop)
+}
+
+pub(crate) fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {
+    let mut res = String::new();
+    for error in errors {
+        log::error!("{error:?}");
+        push!(res, "<p style='color:red'>Error: {error:?}</p>");
+    }
+    res
 }
 
 pub(crate) fn write_file<P: AsRef<Path>, D: AsRef<[u8]>>(path: P, data: D) -> anyhow::Result<()> {

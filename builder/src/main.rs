@@ -22,6 +22,7 @@ use ::{
     notify::Watcher,
     std::{
         env,
+        rc::Rc,
         time::{Duration, Instant},
     },
 };
@@ -29,6 +30,7 @@ use ::{
 mod blog;
 mod common_css;
 mod icons;
+mod index;
 mod templater;
 
 mod util;
@@ -98,14 +100,22 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn asset(drafts: bool) -> impl Asset<Output = ()> {
+    let templater = Rc::new(templater::asset());
+
     asset::all((
         // This must come first to initialize minification
         minify::asset(),
-        blog::asset("blog".as_ref(), "dist/blog".as_ref(), drafts),
-        icons::asset("icon.png".as_ref(), "dist".as_ref()),
+        blog::asset(
+            "blog".as_ref(),
+            "dist/blog".as_ref(),
+            templater.clone(),
+            drafts,
+        ),
+        index::asset(".".as_ref(), "dist".as_ref(), templater),
         common_css::asset("common.css".as_ref(), "dist".as_ref()),
+        icons::asset("icon.png".as_ref(), "dist".as_ref()),
     ))
-    .map(|((), (), (), ())| {})
+    .map(|((), (), (), (), ())| {})
 }
 
 #[context("failed to set cwd to project root")]

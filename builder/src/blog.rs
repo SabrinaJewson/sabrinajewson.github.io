@@ -1,10 +1,9 @@
 use crate::{
     asset::{self, Asset},
-    common_css, icons, minify, templater,
+    common_css, icons, minify,
     util::{
-        log_errors,
+        error_page, log_errors,
         markdown::{self, Markdown},
-        push_str::push,
         write_file,
     },
 };
@@ -23,10 +22,9 @@ use ::{
 pub(crate) fn asset<'a>(
     in_dir: &'a Path,
     out_dir: &'a Path,
+    templater: impl Asset<Output = Rc<Handlebars<'static>>> + Clone + 'a,
     drafts: bool,
 ) -> impl Asset<Output = ()> + 'a {
-    let templater = Rc::new(templater::asset());
-
     let post_template = Rc::new(
         asset::TextFile::new(in_dir.join("post.hbs"))
             .map(|src| Template::compile(&*src?).context("failed to compile blog post template"))
@@ -312,13 +310,4 @@ where
         .as_ref()
         .unwrap_or_else(|_| panic!())
         .serialize(serializer)
-}
-
-fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {
-    let mut res = String::new();
-    for error in errors {
-        log::error!("{error:?}");
-        push!(res, "<p style='color:red'>Error: {error:?}</p>");
-    }
-    res
 }
