@@ -55,17 +55,6 @@ pub(crate) trait Asset {
     {
         ModifiesPath::new(self, path)
     }
-
-    /// Output the asset to a file.
-    ///
-    /// Conceptually this is just a `.map` that writes the file followed by a `.modifies_path`.
-    fn to_file<P: AsRef<Path>>(self, path: P) -> ToFile<Self, P>
-    where
-        Self: Sized,
-        Self::Output: AsRef<[u8]>,
-    {
-        ToFile::new(self, path)
-    }
 }
 
 #[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
@@ -185,40 +174,6 @@ impl<E, A: Asset<Output = Result<(), E>>, P: AsRef<Path>> Asset for ModifiesPath
         let output_modified = self.modified();
         if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
             self.asset.generate()?;
-        }
-        Ok(())
-    }
-}
-
-pub(crate) struct ToFile<A, P> {
-    asset: A,
-    path: P,
-}
-impl<A, P> ToFile<A, P> {
-    fn new(asset: A, path: P) -> Self {
-        Self { asset, path }
-    }
-}
-impl<A: Asset, P: AsRef<Path>> Asset for ToFile<A, P>
-where
-    A::Output: AsRef<[u8]>,
-{
-    type Output = anyhow::Result<()>;
-
-    fn modified(&self) -> Modified {
-        Modified::path(&self.path).unwrap_or(Modified::Never)
-    }
-    fn generate(&self) -> Self::Output {
-        let output = self.path.as_ref();
-        let output_modified = self.modified();
-        if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
-            if let Some(parent) = output.parent() {
-                fs::create_dir_all(parent)
-                    .with_context(|| format!("failed to create dir `{}`", parent.display()))?;
-            }
-
-            fs::write(&output, self.asset.generate())
-                .with_context(|| format!("couldn't write asset to `{}`", output.display()))?;
         }
         Ok(())
     }

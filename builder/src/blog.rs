@@ -5,6 +5,7 @@ use crate::{
     minify,
     push_str::push,
     template::Template,
+    util::{log_errors, write_file},
 };
 use ::{
     anyhow::Context as _,
@@ -16,7 +17,11 @@ use ::{
     syntect::highlighting::ThemeSet,
 };
 
-pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Output = ()> + 'a {
+pub(crate) fn asset<'a>(
+    in_dir: &'a Path,
+    out_dir: &'a Path,
+    drafts: bool,
+) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
         asset::TextFile::new(in_dir.join("post.html"))
             .map(|src| anyhow::Ok(Template::new(src?)?))
@@ -60,16 +65,20 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
 
                 let post = Rc::new(
                     asset::TextFile::new(path)
-                        .map(move |src| Rc::new(read_post(stem.clone(), src)))
+                        .map(move |src| read_post(stem.clone(), src, drafts).map(Rc::new))
                         .cache(),
                 );
 
                 posts.push(post.clone());
 
-                let post_page = asset::all((post, post_template.clone()))
-                    .map(|(post, template)| build_post(&*post, (*template).as_ref()))
-                    .to_file(output_path)
-                    .map(log_errors);
+                let post_page =
+                    asset::all((post, post_template.clone())).map(move |(post, template)| {
+                        if let Some(post) = post {
+                            let built = build_post(&post, (*template).as_ref());
+                            log_errors(write_file(&output_path, built))?;
+                        }
+                        Ok(())
+                    });
 
                 post_pages.push(post_page);
             }
@@ -77,10 +86,13 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
             let post_pages = asset::all(post_pages)
                 .map(|successes| successes.iter().copied().fold(Ok(()), Result::and));
 
-            let index = asset::all((asset::all(posts), index_template.clone()))
-                .map(|(mut posts, template)| build_index(&mut *posts, &*template))
-                .to_file(out_dir.join("index.html"))
-                .map(log_errors);
+            let index =
+                asset::all((asset::all(posts), index_template.clone())).map(|(posts, template)| {
+                    // Remove drafts from the index
+                    let posts = Vec::from(posts).into_iter().flatten().collect();
+                    let index = build_index(posts, &*template);
+                    log_errors(write_file(out_dir.join("index.html"), index))
+                });
 
             Ok(asset::all((post_pages, index))
                 .map(|(blog_success, index_success)| Result::and(blog_success, index_success)))
@@ -104,22 +116,22 @@ pub(crate) fn asset<'a>(in_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outpu
     let dark_theme = theme_asset(code_themes_dir.join("dark.tmTheme"));
     let light_theme = theme_asset(code_themes_dir.join("light.tmTheme"));
 
-    let css = asset::all((post_css, light_theme, dark_theme))
-        .map(|(mut post_css, light_theme, dark_theme)| {
+    let css = asset::all((post_css, light_theme, dark_theme)).map(
+        |(mut post_css, light_theme, dark_theme)| {
             post_css.push_str(&**dark_theme);
             post_css.push_str("@media(prefers-color-scheme:light){");
             post_css.push_str(&**light_theme);
             post_css.push('}');
-            match minify::css(&post_css) {
+            let css = match minify::css(&post_css) {
                 Ok(minified) => minified,
                 Err(e) => {
                     log::error!("{:?}", e.context("failed to minify post CSS"));
                     post_css
                 }
-            }
-        })
-        .to_file(out_dir.join("post.css"))
-        .map(log_errors);
+            };
+            log_errors(write_file(out_dir.join("post.css"), css))
+        },
+    );
 
     asset::all((html, css)).map(|(html_success, css_success)| {
         if Result::and(html_success, css_success).is_ok() {
@@ -133,8 +145,8 @@ struct Post {
     content: anyhow::Result<Markdown>,
 }
 
-fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
-    Post {
+fn read_post(stem: Rc<str>, src: anyhow::Result<String>, drafts: bool) -> Option<Post> {
+    let post = Post {
         content: src.map(|src| {
             let mut markdown = markdown::parse(&src);
             if markdown.title.is_empty() {
@@ -144,10 +156,20 @@ fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
             markdown
         }),
         stem,
+    };
+    if !drafts
+        && post
+            .content
+            .as_ref()
+            .map_or(false, |content| content.published.is_none())
+    {
+        None
+    } else {
+        Some(post)
     }
 }
 
-fn build_index(posts: &mut [Rc<Post>], template: &anyhow::Result<Template>) -> String {
+fn build_index(mut posts: Vec<Rc<Post>>, template: &anyhow::Result<Template>) -> String {
     let template = match template {
         Ok(template) => template,
         Err(e) => return error_page([e]),
@@ -255,13 +277,6 @@ fn theme_asset(path: PathBuf) -> impl Asset<Output = Rc<String>> {
             })
         })
         .cache()
-}
-
-fn log_errors(res: anyhow::Result<()>) -> Result<(), ()> {
-    if let Err(e) = &res {
-        log::error!("{:?}", e);
-    }
-    res.map_err(drop)
 }
 
 fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {

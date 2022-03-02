@@ -36,10 +36,15 @@ mod markdown;
 mod minify;
 mod push_str;
 mod template;
+mod util;
 
 /// Rust program that builds this website.
 #[derive(clap::Parser)]
 struct Args {
+    /// Whether to build drafts.
+    #[clap(long)]
+    drafts: bool,
+
     /// Whether to watch the directory for changes.
     #[clap(long)]
     watch: bool,
@@ -52,7 +57,7 @@ fn main() -> anyhow::Result<()> {
 
     set_cwd()?;
 
-    let asset = asset();
+    let asset = asset(args.drafts);
     asset.generate();
 
     if args.watch {
@@ -93,11 +98,11 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn asset() -> impl Asset<Output = ()> {
+fn asset(drafts: bool) -> impl Asset<Output = ()> {
     asset::all((
         // This must come first to initialize minification
         minify::asset(),
-        blog::asset("blog".as_ref(), "dist/blog".as_ref()),
+        blog::asset("blog".as_ref(), "dist/blog".as_ref(), drafts),
         favicon::asset("favicon.png".as_ref(), "dist".as_ref()),
         common_css::asset("common.css".as_ref(), "dist/common.css".as_ref()),
     ))
