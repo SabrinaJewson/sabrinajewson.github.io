@@ -100,20 +100,26 @@ fn main() -> anyhow::Result<()> {
 }
 
 fn asset(drafts: bool) -> impl Asset<Output = ()> {
-    let templater = Rc::new(templater::asset());
+    let templater = Rc::new(templater::asset("template/include".as_ref()));
 
     asset::all((
         // This must come first to initialize minification
         minify::asset(),
         blog::asset(
-            "blog".as_ref(),
+            "template/blog".as_ref(),
+            "src/blog".as_ref(),
             "dist/blog".as_ref(),
             templater.clone(),
             asset::Dynamic::new(drafts),
         ),
-        index::asset(".".as_ref(), "dist".as_ref(), templater),
-        common_css::asset("common.css".as_ref(), "dist".as_ref()),
-        icons::asset("icon.png".as_ref(), "dist".as_ref()),
+        index::asset(
+            "template/index.hbs".as_ref(),
+            "src/index.md".as_ref(),
+            "dist/index.html".as_ref(),
+            templater,
+        ),
+        common_css::asset("template/common.css".as_ref(), "dist".as_ref()),
+        icons::asset("src/icon.png".as_ref(), "dist".as_ref()),
     ))
     .map(|((), (), (), (), ())| {})
 }

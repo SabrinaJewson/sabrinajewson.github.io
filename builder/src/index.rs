@@ -13,16 +13,17 @@ use ::{
 };
 
 pub(crate) fn asset<'a>(
-    in_dir: &'a Path,
-    out_dir: &'a Path,
+    template_path: &'a Path,
+    src_path: &'a Path,
+    out_path: &'a Path,
     templater: impl Asset<Output = Templater> + Clone + 'a,
 ) -> impl Asset<Output = ()> + 'a {
-    let template = asset::TextFile::new(in_dir.join("index.hbs"))
+    let template = asset::TextFile::new(template_path)
         .map(|src| Template::compile(&*src?).context("failed to compile index template"))
         .map(Rc::new)
         .cache();
 
-    let markdown = asset::TextFile::new(in_dir.join("index.md"))
+    let markdown = asset::TextFile::new(src_path)
         .map(|src| Rc::new(src.map(|src| markdown::parse(&src))))
         .cache();
 
@@ -56,8 +57,8 @@ pub(crate) fn asset<'a>(
                 }
             }
         })
-        .map(|html| log_errors(write_file(out_dir.join("index.html"), html)))
-        .modifies_path(out_dir.join("index.html"))
+        .map(move |html| log_errors(write_file(out_path, html)))
+        .modifies_path(out_path)
         .map(|res| {
             if res.is_ok() {
                 log::info!("successfully emitted index.html");

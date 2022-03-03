@@ -21,26 +21,27 @@ use ::{
 };
 
 pub(crate) fn asset<'a>(
-    in_dir: &'a Path,
+    template_dir: &'a Path,
+    src_dir: &'a Path,
     out_dir: &'a Path,
     templater: impl Asset<Output = Templater> + Clone + 'a,
     drafts: impl Asset<Output = bool> + Clone + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
-        asset::TextFile::new(in_dir.join("post.hbs"))
+        asset::TextFile::new(template_dir.join("post.hbs"))
             .map(|src| Template::compile(&*src?).context("failed to compile blog post template"))
             .map(Rc::new)
             .cache(),
     );
 
     let index_template = Rc::new(
-        asset::TextFile::new(in_dir.join("index.hbs"))
+        asset::TextFile::new(template_dir.join("index.hbs"))
             .map(|src| Template::compile(&*src?).context("failed to compile blog index template"))
             .map(Rc::new)
             .cache(),
     );
 
-    let html = asset::Dir::new(in_dir)
+    let html = asset::Dir::new(src_dir)
         .map(move |files| -> anyhow::Result<_> {
             // TODO: Whenever the directory is changed at all, this entire bit of code is re-run
             // which throws away all the old `Asset`s.
@@ -119,10 +120,10 @@ pub(crate) fn asset<'a>(
         .cache()
         .flatten();
 
-    let post_css = asset::TextFile::new(in_dir.join("post.css"))
+    let post_css = asset::TextFile::new(template_dir.join("post.css"))
         .map(|res| res.map_err(|e| log::error!("{e:?}")).unwrap_or_default());
 
-    let code_themes_dir = in_dir.join("code_themes");
+    let code_themes_dir = template_dir.join("code_themes");
     let dark_theme = theme_asset(code_themes_dir.join("dark.tmTheme"));
     let light_theme = theme_asset(code_themes_dir.join("light.tmTheme"));
 

@@ -10,7 +10,7 @@ use ::{
     fn_error_context::context,
     handlebars::{template::Template, Handlebars, Renderable as _},
     serde::Serialize,
-    std::rc::Rc,
+    std::{path::Path, rc::Rc},
 };
 
 #[derive(Clone)]
@@ -51,8 +51,8 @@ thread_local! {
     };
 }
 
-pub(crate) fn asset() -> impl Asset<Output = Templater> {
-    asset::Dir::new("template_include")
+pub(crate) fn asset(include_dir: &Path) -> impl Asset<Output = Templater> + '_ {
+    asset::Dir::new(include_dir)
         .map(|files| -> anyhow::Result<_> {
             let mut includes = Vec::new();
 
