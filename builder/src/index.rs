@@ -1,5 +1,5 @@
 use crate::{
-    common_css, icons,
+    templater::Templater,
     util::{
         asset::{self, Asset},
         error_page, log_errors, markdown, write_file,
@@ -7,7 +7,7 @@ use crate::{
 };
 use ::{
     anyhow::Context as _,
-    handlebars::{Handlebars, Renderable as _, Template},
+    handlebars::Template,
     serde::Serialize,
     std::{path::Path, rc::Rc},
 };
@@ -15,7 +15,7 @@ use ::{
 pub(crate) fn asset<'a>(
     in_dir: &'a Path,
     out_dir: &'a Path,
-    templater: impl Asset<Output = Rc<Handlebars<'static>>> + Clone + 'a,
+    templater: impl Asset<Output = Templater> + Clone + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(in_dir.join("index.hbs"))
         .map(|src| Template::compile(&*src?).context("failed to compile index template"))
@@ -38,23 +38,12 @@ pub(crate) fn asset<'a>(
             struct TemplateVars<'a> {
                 body: &'a str,
                 summary: &'a str,
-                // TODO: refactor `icons` and `common_css` into a common type
-                icons: icons::Paths,
-                common_css: &'static str,
             }
-            let context = handlebars::Context::wraps(TemplateVars {
+            let vars = TemplateVars {
                 body: &*markdown.body,
                 summary: &*markdown.summary,
-                icons: icons::PATHS,
-                common_css: common_css::PATH,
-            })
-            .unwrap();
-
-            let mut render_context = handlebars::RenderContext::new(None);
-            let res = template
-                .renders(&*templater, &context, &mut render_context)
-                .context("failed to render blog post template");
-            let rendered = match res {
+            };
+            let rendered = match templater.render(template, vars) {
                 Ok(rendered) => rendered,
                 Err(e) => return error_page([&e]),
             };

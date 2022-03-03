@@ -1,6 +1,7 @@
 use crate::{
     asset::{self, Asset},
-    common_css, icons, minify,
+    minify,
+    templater::Templater,
     util::{
         error_page, log_errors,
         markdown::{self, Markdown},
@@ -9,7 +10,7 @@ use crate::{
 };
 use ::{
     anyhow::Context as _,
-    handlebars::{template::Template, Handlebars, Renderable as _},
+    handlebars::template::Template,
     serde::{Serialize, Serializer},
     std::{
         cmp,
@@ -22,7 +23,7 @@ use ::{
 pub(crate) fn asset<'a>(
     in_dir: &'a Path,
     out_dir: &'a Path,
-    templater: impl Asset<Output = Rc<Handlebars<'static>>> + Clone + 'a,
+    templater: impl Asset<Output = Templater> + Clone + 'a,
     // TODO: make this variable an asset
     drafts: bool,
 ) -> impl Asset<Output = ()> + 'a {
@@ -78,7 +79,7 @@ pub(crate) fn asset<'a>(
                         let output_path = output_path.clone();
                         move |(post, templater, template)| {
                             if let Some(post) = post {
-                                let built = build_post(&post, &*templater, (*template).as_ref());
+                                let built = build_post(&post, &templater, (*template).as_ref());
                                 log_errors(write_file(&output_path, built))?;
                             }
                             Ok(())
@@ -96,7 +97,7 @@ pub(crate) fn asset<'a>(
                 .map(|(posts, templater, template)| {
                     // Remove drafts from the index
                     let posts = Vec::from(posts).into_iter().flatten().collect();
-                    let index = build_index(posts, &*templater, &*template);
+                    let index = build_index(posts, &templater, &*template);
                     log_errors(write_file(out_dir.join("index.html"), index))
                 })
                 .modifies_path(out_dir.join("index.html"));
@@ -204,7 +205,7 @@ fn read_post(stem: Rc<str>, src: anyhow::Result<String>, drafts: bool) -> Option
 
 fn build_index(
     mut posts: Vec<Rc<Post>>,
-    templater: &Handlebars<'static>,
+    templater: &Templater,
     template: &anyhow::Result<Template>,
 ) -> String {
     let template = match template {
@@ -229,21 +230,9 @@ fn build_index(
     #[derive(Serialize)]
     struct TemplateVars<'a> {
         posts: &'a [Rc<Post>],
-        icons: icons::Paths,
-        common_css: &'static str,
     }
-    let context = handlebars::Context::wraps(TemplateVars {
-        posts: &*posts,
-        icons: icons::PATHS,
-        common_css: common_css::PATH,
-    })
-    .unwrap();
-
-    let mut render_context = handlebars::RenderContext::new(None);
-    let res = template
-        .renders(templater, &context, &mut render_context)
-        .context("failed to render blog index template");
-    let rendered = match res {
+    let vars = TemplateVars { posts: &*posts };
+    let rendered = match templater.render(template, vars) {
         Ok(rendered) => rendered,
         Err(e) => return error_page([&e]),
     };
@@ -259,7 +248,7 @@ fn build_index(
 
 fn build_post(
     post: &Post,
-    templater: &Handlebars<'static>,
+    templater: &Templater,
     template: Result<&Template, &anyhow::Error>,
 ) -> String {
     let (post_content, template) = match (&post.content, template) {
@@ -271,23 +260,14 @@ fn build_post(
     #[derive(Serialize)]
     struct TemplateVars<'a> {
         post: &'a PostContent,
-        icons: icons::Paths,
-        common_css: &'static str,
         post_css: &'static str,
     }
-    let context = handlebars::Context::wraps(TemplateVars {
+    let vars = TemplateVars {
         post: post_content,
-        icons: icons::PATHS,
-        common_css: common_css::PATH,
         post_css: POST_CSS_PATH,
-    })
-    .unwrap();
+    };
 
-    let mut render_context = handlebars::RenderContext::new(None);
-    let res = template
-        .renders(templater, &context, &mut render_context)
-        .context("failed to render blog post template");
-    let rendered = match res {
+    let rendered = match templater.render(template, vars) {
         Ok(rendered) => rendered,
         Err(e) => return error_page([&e]),
     };
