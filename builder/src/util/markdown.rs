@@ -13,7 +13,6 @@ use ::{
 #[derive(Serialize)] // Serialization used in templates
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub(crate) struct Markdown {
-    pub(crate) published: Option<Box<str>>,
     pub(crate) title: String,
     pub(crate) body: String,
     pub(crate) summary: String,
@@ -21,13 +20,6 @@ pub(crate) struct Markdown {
 }
 
 pub(crate) fn parse(source: &str) -> Markdown {
-    let (published, markdown) = if let Some(rest) = source.strip_prefix("published: ") {
-        let (published, rest) = rest.split_once('\n').unwrap_or((rest, ""));
-        (Some(published), rest)
-    } else {
-        (None, source)
-    };
-
     let options = pulldown_cmark::Options::empty()
         | pulldown_cmark::Options::ENABLE_TABLES
         | pulldown_cmark::Options::ENABLE_HEADING_ATTRIBUTES
@@ -35,8 +27,7 @@ pub(crate) fn parse(source: &str) -> Markdown {
         | pulldown_cmark::Options::ENABLE_SMART_PUNCTUATION;
 
     Renderer {
-        published,
-        parser: pulldown_cmark::Parser::new_ext(markdown, options),
+        parser: pulldown_cmark::Parser::new_ext(source, options),
         title: String::new(),
         in_title: false,
         body: String::new(),
@@ -57,7 +48,6 @@ pub(crate) fn theme_css(theme: &Theme) -> String {
 }
 
 struct Renderer<'a> {
-    published: Option<&'a str>,
     parser: pulldown_cmark::Parser<'a, 'a>,
     title: String,
     /// Whether we are currently writing to the title instead of the body.
@@ -143,7 +133,6 @@ impl<'a> Renderer<'a> {
         }
 
         Markdown {
-            published: self.published.map(Into::into),
             title: self.title,
             body: self.body,
             summary: self.summary,
@@ -514,24 +503,9 @@ mod tests {
         assert_eq!(buf, css);
     }
 
-    #[test]
-    fn published() {
-        assert_eq!(
-            parse("published: 2038-01-19\nfoo"),
-            Markdown {
-                published: Some("2038-01-19".into()),
-                title: String::new(),
-                body: "<p>foo</p>".to_owned(),
-                summary: "foo".to_owned(),
-                outline: String::new(),
-            }
-        );
-    }
-
     #[track_caller]
     fn just_body(input: &str) -> String {
         let markdown = parse(input);
-        assert_eq!(markdown.published, None, "published is present");
         assert_eq!(markdown.title, "", "title is not empty");
         assert_eq!(markdown.outline, "", "outline is not empty");
         markdown.body
@@ -556,7 +530,6 @@ mod tests {
         assert_eq!(
             parse("# foo bar"),
             Markdown {
-                published: None,
                 title: "foo bar".to_owned(),
                 body: String::new(),
                 summary: String::new(),
@@ -575,7 +548,6 @@ mod tests {
                 ",
             ),
             Markdown {
-                published: None,
                 title: "the <em>title</em>".to_owned(),
                 body: "\
                     <h2 id='a'><a href='#a' class='anchor'></a>a</h2>\
@@ -767,7 +739,6 @@ mod tests {
     #[track_caller]
     fn just_summary(input: &str) -> String {
         let markdown = parse(input);
-        assert_eq!(markdown.published, None, "published is present");
         assert_eq!(markdown.title, "", "title is not empty");
         assert_eq!(markdown.outline, "", "outline is not empty");
         markdown.summary

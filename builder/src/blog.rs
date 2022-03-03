@@ -23,6 +23,7 @@ pub(crate) fn asset<'a>(
     in_dir: &'a Path,
     out_dir: &'a Path,
     templater: impl Asset<Output = Rc<Handlebars<'static>>> + Clone + 'a,
+    // TODO: make this variable an asset
     drafts: bool,
 ) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
@@ -156,18 +157,36 @@ struct Post {
         skip_serializing_if = "Result::is_err",
         serialize_with = "serialize_unwrap"
     )]
-    content: anyhow::Result<Markdown>,
+    content: anyhow::Result<PostContent>,
+}
+
+#[derive(Serialize)]
+struct PostContent {
+    published: Option<Box<str>>,
+    markdown: Markdown,
 }
 
 fn read_post(stem: Rc<str>, src: anyhow::Result<String>, drafts: bool) -> Option<Post> {
     let post = Post {
         content: src.map(|src| {
-            let mut markdown = markdown::parse(&src);
+            let (published, markdown) = if let Some((published, markdown)) = src
+                .strip_prefix("published: ")
+                .and_then(|rest| rest.split_once('\n'))
+            {
+                (Some(Box::from(published)), markdown)
+            } else {
+                (None, &*src)
+            };
+
+            let mut markdown = markdown::parse(markdown);
             if markdown.title.is_empty() {
                 log::warn!("Post in {stem}.md does not have title");
                 markdown.title = format!("Untitled post from {stem}.md");
             }
-            markdown
+            PostContent {
+                published,
+                markdown,
+            }
         }),
         stem,
     };
@@ -251,7 +270,7 @@ fn build_post(
 
     #[derive(Serialize)]
     struct TemplateVars<'a> {
-        post: &'a Markdown,
+        post: &'a PostContent,
         icons: icons::Paths,
         common_css: &'static str,
         post_css: &'static str,
@@ -278,7 +297,7 @@ fn build_post(
         Err(e) => {
             log::error!(
                 "{:?}",
-                e.context(format!("failed to minify {}", post_content.title))
+                e.context(format!("failed to minify {}", post_content.markdown.title))
             );
             rendered
         }
