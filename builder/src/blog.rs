@@ -133,13 +133,7 @@ pub(crate) fn asset<'a>(
             post_css.push_str("@media(prefers-color-scheme:light){");
             post_css.push_str(&**light_theme);
             post_css.push('}');
-            let css = match minify::css(&post_css) {
-                Ok(minified) => minified,
-                Err(e) => {
-                    log::error!("{:?}", e.context("failed to minify post CSS"));
-                    post_css
-                }
-            };
+            let css = minify::css(&post_css);
             log_errors(write_file(out_dir.join(POST_CSS_PATH), css))
         })
         .modifies_path(out_dir.join(POST_CSS_PATH));
@@ -238,13 +232,7 @@ fn build_index(
         Err(e) => return error_page([&e]),
     };
 
-    match crate::minify::html(&rendered) {
-        Ok(minified) => minified,
-        Err(e) => {
-            log::error!("{:?}", e.context("failed to minify index file"));
-            rendered
-        }
-    }
+    minify::html(&rendered)
 }
 
 fn build_post(
@@ -273,16 +261,7 @@ fn build_post(
         Err(e) => return error_page([&e]),
     };
 
-    match crate::minify::html(&rendered) {
-        Ok(minified) => minified,
-        Err(e) => {
-            log::error!(
-                "{:?}",
-                e.context(format!("failed to minify {}", post_content.markdown.title))
-            );
-            rendered
-        }
-    }
+    minify::html(&rendered)
 }
 
 fn theme_asset(path: PathBuf) -> impl Asset<Output = Rc<String>> {

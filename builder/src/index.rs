@@ -1,4 +1,5 @@
 use crate::{
+    minify,
     templater::Templater,
     util::{
         asset::{self, Asset},
@@ -49,13 +50,7 @@ pub(crate) fn asset<'a>(
                 Err(e) => return error_page([&e]),
             };
 
-            match crate::minify::html(&rendered) {
-                Ok(minified) => minified,
-                Err(e) => {
-                    log::error!("{:?}", e.context("failed to minify index"));
-                    rendered
-                }
-            }
+            minify::html(&rendered)
         })
         .map(move |html| log_errors(write_file(out_path, html)))
         .modifies_path(out_path)

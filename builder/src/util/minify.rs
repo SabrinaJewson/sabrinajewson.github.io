@@ -1,7 +1,6 @@
 use crate::asset::{self, Asset};
 use ::{
     anyhow::{ensure, Context as _},
-    fn_error_context::context,
     std::{
         io::{Read as _, Write as _},
         process,
@@ -34,9 +33,8 @@ fn npm_install() -> anyhow::Result<()> {
     Ok(())
 }
 
-#[context("failed to minify HTML with html-minifier-terser")]
-pub(crate) fn html(html: &str) -> anyhow::Result<String> {
-    pipe(
+pub(crate) fn html(src: &str) -> String {
+    let res = pipe(
         process::Command::new("npx")
             .arg("html-minifier-terser")
             .arg("--collapse-boolean-attributes")
@@ -54,19 +52,37 @@ pub(crate) fn html(html: &str) -> anyhow::Result<String> {
             .arg("--sort-attributes")
             .arg("--sort-class-name")
             .current_dir("./builder/js"),
-        html,
-    )
+        src,
+    );
+
+    match res {
+        Ok(minified) => minified,
+        Err(e) => {
+            log::error!(
+                "{:?}",
+                e.context("failed to minify HTML with html-minifier-terser")
+            );
+            src.to_owned()
+        }
+    }
 }
 
-#[context("failed to minify CSS with cleancss")]
-pub(crate) fn css(css: &str) -> anyhow::Result<String> {
-    pipe(
+pub(crate) fn css(src: &str) -> String {
+    let res = pipe(
         process::Command::new("npx")
             .arg("cleancss")
             .arg("-O2")
             .current_dir("./builder/js"),
-        css,
-    )
+        src,
+    );
+
+    match res {
+        Ok(minified) => minified,
+        Err(e) => {
+            log::error!("{:?}", e.context("failed to minify CSS with cleancss"));
+            src.to_owned()
+        }
+    }
 }
 
 fn pipe(command: &mut process::Command, input: &str) -> anyhow::Result<String> {
