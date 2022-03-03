@@ -31,6 +31,7 @@ mod blog;
 mod common_css;
 mod icons;
 mod index;
+mod not_found;
 mod templater;
 
 mod util;
@@ -116,12 +117,17 @@ fn asset(drafts: bool) -> impl Asset<Output = ()> {
             "template/index.hbs".as_ref(),
             "src/index.md".as_ref(),
             "dist/index.html".as_ref(),
+            templater.clone(),
+        ),
+        not_found::asset(
+            "template/404.hbs".as_ref(),
+            "dist/404.html".as_ref(),
             templater,
         ),
         common_css::asset("template/common.css".as_ref(), "dist".as_ref()),
         icons::asset("src/icon.png".as_ref(), "dist".as_ref()),
     ))
-    .map(|((), (), (), (), ())| {})
+    .map(|((), (), (), (), (), ())| {})
 }
 
 #[context("failed to set cwd to project root")]
