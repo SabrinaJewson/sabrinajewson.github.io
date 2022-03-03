@@ -272,22 +272,46 @@ macro_rules! impl_for_seq {
 }
 impl_for_seq!(Box<[A]>, std::rc::Rc<[A]>, Vec<A>);
 
-pub(crate) struct Constant<C> {
-    constant: C,
+pub(crate) struct Constant<T> {
+    value: T,
 }
-impl<C> Constant<C> {
-    pub(crate) fn new(constant: C) -> Self {
-        Self { constant }
+impl<T> Constant<T> {
+    pub(crate) fn new(value: T) -> Self {
+        Self { value }
     }
 }
-impl<C: Clone> Asset for Constant<C> {
-    type Output = C;
+impl<T: Clone> Asset for Constant<T> {
+    type Output = T;
 
     fn modified(&self) -> Modified {
         Modified::Never
     }
     fn generate(&self) -> Self::Output {
-        self.constant.clone()
+        self.value.clone()
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct Dynamic<T> {
+    value: T,
+    created: SystemTime,
+}
+impl<T> Dynamic<T> {
+    pub(crate) fn new(value: T) -> Self {
+        Self {
+            value,
+            created: SystemTime::now(),
+        }
+    }
+}
+impl<T: Clone> Asset for Dynamic<T> {
+    type Output = T;
+
+    fn modified(&self) -> Modified {
+        Modified::At(self.created)
+    }
+    fn generate(&self) -> Self::Output {
+        self.value.clone()
     }
 }
 

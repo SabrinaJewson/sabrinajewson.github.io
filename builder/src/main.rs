@@ -109,7 +109,7 @@ fn asset(drafts: bool) -> impl Asset<Output = ()> {
             "blog".as_ref(),
             "dist/blog".as_ref(),
             templater.clone(),
-            drafts,
+            asset::Dynamic::new(drafts),
         ),
         index::asset(".".as_ref(), "dist".as_ref(), templater),
         common_css::asset("common.css".as_ref(), "dist".as_ref()),

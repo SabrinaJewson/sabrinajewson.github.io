@@ -24,8 +24,7 @@ pub(crate) fn asset<'a>(
     in_dir: &'a Path,
     out_dir: &'a Path,
     templater: impl Asset<Output = Templater> + Clone + 'a,
-    // TODO: make this variable an asset
-    drafts: bool,
+    drafts: impl Asset<Output = bool> + Clone + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
         asset::TextFile::new(in_dir.join("post.hbs"))
@@ -66,10 +65,13 @@ pub(crate) fn asset<'a>(
                 let mut output_path = out_dir.join(&*stem);
                 output_path.set_extension("html");
 
+                let post = asset::TextFile::new(path)
+                    .map(move |src| Rc::new(read_post(stem.clone(), src)))
+                    .cache();
+
                 let post = Rc::new(
-                    asset::TextFile::new(path)
-                        .map(move |src| read_post(stem.clone(), src, drafts).map(Rc::new))
-                        .cache(),
+                    asset::all((drafts.clone(), post))
+                        .map(move |(drafts, post)| (drafts || !post.is_draft()).then(|| post)),
                 );
 
                 posts.push(post.clone());
@@ -161,14 +163,22 @@ struct Post {
     content: anyhow::Result<PostContent>,
 }
 
+impl Post {
+    fn is_draft(&self) -> bool {
+        self.content
+            .as_ref()
+            .map_or(false, |content| content.published.is_none())
+    }
+}
+
 #[derive(Serialize)]
 struct PostContent {
     published: Option<Box<str>>,
     markdown: Markdown,
 }
 
-fn read_post(stem: Rc<str>, src: anyhow::Result<String>, drafts: bool) -> Option<Post> {
-    let post = Post {
+fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
+    Post {
         content: src.map(|src| {
             let (published, markdown) = if let Some((published, markdown)) = src
                 .strip_prefix("published: ")
@@ -190,16 +200,6 @@ fn read_post(stem: Rc<str>, src: anyhow::Result<String>, drafts: bool) -> Option
             }
         }),
         stem,
-    };
-    if !drafts
-        && post
-            .content
-            .as_ref()
-            .map_or(false, |content| content.published.is_none())
-    {
-        None
-    } else {
-        Some(post)
     }
 }
 
