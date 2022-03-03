@@ -172,7 +172,7 @@ impl<E, A: Asset<Output = Result<(), E>>, P: AsRef<Path>> Asset for ModifiesPath
     }
     fn generate(&self) -> Self::Output {
         let output_modified = self.modified();
-        if self.asset.modified() > output_modified || *EXE_MODIFIED > output_modified {
+        if self.asset.modified() >= output_modified || *EXE_MODIFIED >= output_modified {
             self.asset.generate()?;
         }
         Ok(())
