@@ -4,6 +4,7 @@ use crate::util::{
 };
 use ::std::path::Path;
 
+// TODO: Make this path a variable rather than a constant
 pub(crate) const PATH: &str = "common.css";
 
 pub(crate) fn asset<'a>(in_path: &'a Path, out_path: &'a Path) -> impl Asset<Output = ()> + 'a {
