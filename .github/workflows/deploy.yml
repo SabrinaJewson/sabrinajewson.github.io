@@ -20,6 +20,11 @@
                     },
                 },
                 {
+                    "name": "Cache Rust",
+                    "uses": "Swatinem/rust-cache@v1",
+                    "with": { "working-directory": "builder" },
+                },
+                {
                     "name": "Install npm",
                     "uses": "actions/setup-node@v2",
                     "with": {
