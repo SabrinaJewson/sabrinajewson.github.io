@@ -37,3 +37,8 @@ a {
 a:hover {
 	opacity: 0.7;
 }
+
+/* Headers */
+h2 {
+	border-bottom: 1px solid grey;
+}
