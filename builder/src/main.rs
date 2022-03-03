@@ -31,6 +31,7 @@ mod blog;
 mod common_css;
 mod icons;
 mod index;
+mod no_jekyll;
 mod not_found;
 mod templater;
 
@@ -126,8 +127,9 @@ fn asset(drafts: bool) -> impl Asset<Output = ()> {
         ),
         common_css::asset("template/common.css".as_ref(), "dist".as_ref()),
         icons::asset("src/icon.png".as_ref(), "dist".as_ref()),
+        no_jekyll::asset("dist".as_ref()),
     ))
-    .map(|((), (), (), (), (), ())| {})
+    .map(|((), (), (), (), (), (), ())| {})
 }
 
 #[context("failed to set cwd to project root")]
