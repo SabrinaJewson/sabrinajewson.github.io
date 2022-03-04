@@ -16,6 +16,7 @@ use ::{
 #[derive(Clone)]
 pub(crate) struct Templater {
     handlebars: Rc<Handlebars<'static>>,
+    live_reload: bool,
 }
 
 impl Templater {
@@ -31,12 +32,14 @@ impl Templater {
             rest: T,
             icons: icons::Paths,
             common_css: &'static str,
+            live_reload: bool,
         }
 
         let vars = TemplateVars {
             rest: vars,
             icons: icons::PATHS,
             common_css: common_css::PATH,
+            live_reload: self.live_reload,
         };
         let context = handlebars::Context::wraps(vars).unwrap();
 
@@ -48,12 +51,17 @@ impl Templater {
 thread_local! {
     static FALLBACK_TEMPLATER: Templater = Templater {
         handlebars: Rc::new(Handlebars::new()),
+        // This value doesn't matter since we haven't included templates that reference it
+        live_reload: false,
     };
 }
 
-pub(crate) fn asset(include_dir: &Path) -> impl Asset<Output = Templater> + '_ {
+pub(crate) fn asset<'a>(
+    include_dir: &'a Path,
+    live_reload: impl Asset<Output = bool> + Clone + 'a,
+) -> impl Asset<Output = Templater> + 'a {
     asset::Dir::new(include_dir)
-        .map(|files| -> anyhow::Result<_> {
+        .map(move |files| -> anyhow::Result<_> {
             let mut includes = Vec::new();
 
             for path in files? {
@@ -81,14 +89,15 @@ pub(crate) fn asset(include_dir: &Path) -> impl Asset<Output = Templater> + '_ {
                 includes.push(include);
             }
 
-            Ok(asset::all(includes)
-                .map(|includes| {
+            Ok(asset::all((live_reload.clone(), asset::all(includes)))
+                .map(|(live_reload, includes)| {
                     let mut handlebars = Handlebars::new();
                     for (name, include) in Vec::from(includes).into_iter().flatten() {
                         handlebars.register_template(&name, include);
                     }
                     Templater {
                         handlebars: Rc::new(handlebars),
+                        live_reload,
                     }
                 })
                 .cache())

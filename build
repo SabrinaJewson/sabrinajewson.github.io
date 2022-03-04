@@ -1,4 +1,4 @@
 #!/bin/sh
 set -e
 cd "$(dirname "$0")/builder"
-RUST_LOG=info exec cargo run -- "$@"
+RUST_LOG=info exec cargo run "$@"

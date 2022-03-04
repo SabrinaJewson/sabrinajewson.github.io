@@ -16,12 +16,13 @@
 )]
 
 use ::{
-    anyhow::Context as _,
+    anyhow::{ensure, Context as _},
     crossbeam::channel,
     fn_error_context::context,
     notify::Watcher,
     std::{
         env,
+        path::PathBuf,
         rc::Rc,
         time::{Duration, Instant},
     },
@@ -33,6 +34,8 @@ mod icons;
 mod index;
 mod no_jekyll;
 mod not_found;
+#[cfg(feature = "server")]
+mod server;
 mod templater;
 
 mod util;
@@ -51,6 +54,11 @@ struct Args {
     /// Whether to watch the directory for changes.
     #[clap(long)]
     watch: bool,
+
+    /// Serve a development server on the given port.
+    /// Implies `--watch`.
+    #[clap(long, conflicts_with = "watch")]
+    serve_port: Option<u16>,
 }
 
 fn main() -> anyhow::Result<()> {
@@ -58,13 +66,35 @@ fn main() -> anyhow::Result<()> {
 
     let args: Args = clap::Parser::parse();
 
-    set_cwd()?;
+    #[cfg_attr(not(feature = "server"), allow(unused_variables))]
+    let cwd = set_cwd()?;
 
-    let asset = asset(args.drafts);
+    ensure!(
+        args.serve_port.is_none() || cfg!(feature = "server"),
+        "server is not enabled; rebuild with `--features server` and try again"
+    );
+
+    let asset = asset(args.drafts, args.serve_port.is_some());
     asset.generate();
 
-    if args.watch {
-        let (sender, receiver) = channel::bounded(1);
+    if args.watch || args.serve_port.is_some() {
+        let (sender, receiver) = channel::bounded::<anyhow::Result<()>>(1);
+
+        #[cfg(feature = "server")]
+        let server = if let Some(port) = args.serve_port {
+            // Match the format that notifications generate
+            // TODO: Find a better solution than this. Maybe canonicalize all paths?
+            let serve_dir = cwd.join(".").join("dist");
+            let server = server::Server::new(&serve_dir);
+            std::thread::spawn({
+                let sender = sender.clone();
+                let server = server.clone();
+                move || sender.send(server.listen(port).map(|infallible| match infallible {}))
+            });
+            Some(server)
+        } else {
+            None
+        };
 
         let mut watcher = notify::recommended_watcher(move |event_res| {
             // TODO: more fine grained tracking of `notify::Event`s?
@@ -75,8 +105,15 @@ fn main() -> anyhow::Result<()> {
                     return;
                 }
             };
-            if !matches!(event.kind, notify::event::EventKind::Access(_)) {
-                let _ = sender.try_send(());
+            if matches!(event.kind, notify::event::EventKind::Access(_)) {
+                return;
+            }
+
+            drop(sender.try_send(Ok(())));
+
+            #[cfg(feature = "server")]
+            if let Some(server) = &server {
+                server.update(&event);
             }
         })
         .context("failed to create file watcher")?;
@@ -88,11 +125,12 @@ fn main() -> anyhow::Result<()> {
         log::info!("now watching for changes");
 
         loop {
-            let _ = receiver.recv();
+            receiver.recv().expect("senders are never dropped")?;
             // debounce
             let debounce_deadline = Instant::now() + Duration::from_millis(10);
-            while receiver.recv_deadline(debounce_deadline).is_ok() {}
-
+            while let Ok(msg) = receiver.recv_deadline(debounce_deadline) {
+                msg?;
+            }
             log::info!("rebuilding");
             asset.generate();
         }
@@ -101,8 +139,11 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn asset(drafts: bool) -> impl Asset<Output = ()> {
-    let templater = Rc::new(templater::asset("template/include".as_ref()));
+fn asset(drafts: bool, live_reload: bool) -> impl Asset<Output = ()> {
+    let templater = Rc::new(templater::asset(
+        "template/include".as_ref(),
+        asset::Dynamic::new(live_reload),
+    ));
 
     asset::all((
         // This must come first to initialize minification
@@ -133,17 +174,11 @@ fn asset(drafts: bool) -> impl Asset<Output = ()> {
 }
 
 #[context("failed to set cwd to project root")]
-fn set_cwd() -> anyhow::Result<()> {
-    let path = env::current_exe().context("couldn't get current executable path")?;
-    let cwd = (|| {
-        let profile_dir = path.parent()?;
-        let target_dir = profile_dir.parent()?;
-        let package_dir = target_dir.parent()?;
-        let root_dir = package_dir.parent()?;
-        Some(root_dir)
-    })()
-    .context("project root dir doesn't exist")?;
-
-    env::set_current_dir(cwd).context("couldn't set cwd")?;
-    Ok(())
+fn set_cwd() -> anyhow::Result<PathBuf> {
+    let mut path = env::current_exe().context("couldn't get current executable path")?;
+    for _ in 0..4 {
+        ensure!(path.pop(), "project root dir doesn't exit");
+    }
+    env::set_current_dir(&path).context("couldn't set cwd")?;
+    Ok(path)
 }
