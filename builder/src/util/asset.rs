@@ -66,7 +66,7 @@ pub(crate) enum Modified {
 impl Modified {
     fn path<P: AsRef<Path>>(path: P) -> Option<Self> {
         path.as_ref()
-            .metadata()
+            .symlink_metadata()
             .and_then(|meta| meta.modified())
             .map(Self::At)
             .ok()
