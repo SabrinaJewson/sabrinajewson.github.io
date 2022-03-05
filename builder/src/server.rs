@@ -66,8 +66,12 @@ impl Server {
             };
             let connection = http.serve_connection(stream, service);
             tokio::task::spawn(async move {
-                if let Err(e) = connection.await.context("connection error") {
-                    log::error!("{e:?}");
+                if let Err(e) = connection.await {
+                    // These "errors" are unavoidable with SSE. There's no point in logging them.
+                    if e.is_incomplete_message() {
+                        return;
+                    }
+                    log::error!("{:?}", anyhow!(e).context("connection error"));
                 }
             });
         }
@@ -151,6 +155,10 @@ impl Service {
                 }
             }
             if let Err(e) = sender.send_data("data:\n\n".into()).await {
+                // A closed channel is OK; it just means the client has disconnected.
+                if e.is_closed() {
+                    return;
+                }
                 let e = anyhow!(e).context("failed to send data to SSE stream");
                 log::error!("{e:?}");
             }
