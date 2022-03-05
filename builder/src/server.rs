@@ -178,6 +178,7 @@ impl Service {
 
         let content_type = match path.extension().and_then(OsStr::to_str) {
             Some("html") => "text/html",
+            Some("xml") => "application/xml",
             Some("css") => "text/css",
             Some("js") => "application/javascript",
             Some("png") => "image/png",

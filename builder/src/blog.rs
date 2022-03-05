@@ -10,8 +10,9 @@ use crate::{
 };
 use ::{
     anyhow::Context as _,
+    chrono::{naive::NaiveDate, DateTime},
     handlebars::template::Template,
-    serde::{Serialize, Serializer},
+    serde::{Deserialize, Serialize, Serializer},
     std::{
         cmp,
         path::{Path, PathBuf},
@@ -38,6 +39,15 @@ pub(crate) fn asset<'a>(
         asset::TextFile::new(template_dir.join("index.hbs"))
             .map(|src| Template::compile(&*src?).context("failed to compile blog index template"))
             .map(Rc::new)
+            .cache(),
+    );
+
+    let feed_metadata = Rc::new(
+        asset::TextFile::new(template_dir.join("feed.json"))
+            .map(|src| {
+                serde_json::from_str::<FeedMetadata>(&*src?).context("failed to read feed.json")
+            })
+            .map(|res| res.map(Rc::new).map_err(|e| log::error!("{e:?}")))
             .cache(),
     );
 
@@ -95,11 +105,25 @@ pub(crate) fn asset<'a>(
                 post_pages.push(post_page);
             }
 
-            let index = asset::all((asset::all(posts), templater.clone(), index_template.clone()))
+            let posts = Rc::new(asset::all(posts).map(process_posts).cache());
+
+            let feed = asset::all((posts.clone(), feed_metadata.clone()))
+                .map(|(posts, metadata)| {
+                    let metadata = match metadata {
+                        Ok(metadata) => metadata,
+                        Err(()) => return Ok(()),
+                    };
+                    let feed = build_feed(&**posts, &*metadata);
+                    write_file(out_dir.join(FEED_PATH), feed)?;
+                    log::info!("successfully emitted Atom feed");
+                    Ok(())
+                })
+                .map(log_errors)
+                .modifies_path(out_dir.join(FEED_PATH));
+
+            let index = asset::all((posts, templater.clone(), index_template.clone()))
                 .map(|(posts, templater, template)| {
-                    // Remove drafts from the index
-                    let posts = Vec::from(posts).into_iter().flatten().collect();
-                    let index = build_index(posts, &templater, &*template);
+                    let index = build_index(&**posts, &templater, &*template);
                     write_file(out_dir.join("index.html"), index)?;
                     log::info!("successfully emitted blog index");
                     Ok(())
@@ -107,7 +131,7 @@ pub(crate) fn asset<'a>(
                 .map(log_errors)
                 .modifies_path(out_dir.join("index.html"));
 
-            Ok(asset::all((asset::all(post_pages), index)).map(|_| {}))
+            Ok(asset::all((asset::all(post_pages), feed, index)).map(|_| {}))
         })
         .map(|res| -> Rc<dyn Asset<Output = _>> {
             match res {
@@ -172,8 +196,15 @@ impl Post {
 
 #[derive(Serialize)]
 struct PostContent {
-    published: Option<Box<str>>,
+    published: Option<NaiveDate>,
     markdown: Markdown,
+}
+
+impl PostContent {
+    fn published_datetime(&self) -> Option<DateTime<chrono::offset::FixedOffset>> {
+        let datetime = self.published?.and_hms(0, 0, 0);
+        Some(<DateTime<chrono::offset::Utc>>::from_utc(datetime, chrono::offset::Utc).into())
+    }
 }
 
 fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
@@ -182,8 +213,10 @@ fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
             let (published, markdown) = if let Some((published, markdown)) = src
                 .strip_prefix("published: ")
                 .and_then(|rest| rest.split_once('\n'))
-            {
-                (Some(Box::from(published)), markdown)
+                .and_then(|(published, markdown)| {
+                    Some((published.parse::<NaiveDate>().ok()?, markdown))
+                }) {
+                (Some(published), markdown)
             } else {
                 (None, &*src)
             };
@@ -202,8 +235,131 @@ fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
     }
 }
 
+fn process_posts(posts: Box<[Option<Rc<Post>>]>) -> Rc<Vec<Rc<Post>>> {
+    // Remove disabled posts: drafts when they are disabled
+    let mut posts: Vec<_> = Vec::from(posts).into_iter().flatten().collect();
+
+    posts.sort_unstable_by(|a, b| match (&a.content, &b.content) {
+        (Ok(a_content), Ok(b_content)) => match (&a_content.published, &b_content.published) {
+            (Some(a_date), Some(b_date)) => b_date.cmp(a_date),
+            // Posts without a date should sort before those with one
+            (Some(_), None) => cmp::Ordering::Greater,
+            (None, Some(_)) => cmp::Ordering::Less,
+            // Between drafts, sort alphabetically
+            (None, None) => a.stem.cmp(&b.stem),
+        },
+        // `Ok`s should sort after `Err`s
+        (Ok(_), Err(_)) => cmp::Ordering::Greater,
+        (Err(_), Ok(_)) => cmp::Ordering::Less,
+        // Between errored posts, sort alphabetically
+        (Err(_), Err(_)) => a.stem.cmp(&b.stem),
+    });
+
+    Rc::new(posts)
+}
+
+#[derive(Deserialize)]
+struct FeedMetadata {
+    site: String,
+    url: String,
+    title: String,
+    name: String,
+}
+
+const FEED_PATH: &str = "feed.xml";
+
+fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
+    let mut feed = atom_syndication::FeedBuilder::default();
+
+    feed.title(&*metadata.title);
+    feed.id(&*metadata.url);
+
+    // Last updated is the date of the lastest post
+    if let Some(updated) = posts
+        .iter()
+        .filter_map(|post| post.content.as_ref().ok()?.published_datetime())
+        .max()
+    {
+        feed.updated(updated);
+    }
+
+    feed.author(
+        atom_syndication::PersonBuilder::default()
+            .name(&*metadata.name)
+            .uri(metadata.site.clone())
+            .build(),
+    );
+
+    feed.generator(
+        atom_syndication::GeneratorBuilder::default()
+            .value("sabrinajewson.github.io")
+            .uri("https://github.com/SabrinaJewson/sabrinajewson.github.io".to_owned())
+            .build(),
+    );
+
+    feed.icon(format!(
+        "{}/{}",
+        metadata.site,
+        crate::icons::PATHS.apple_touch_icon
+    ));
+
+    // self-link
+    feed.link(
+        atom_syndication::LinkBuilder::default()
+            .href(format!("{}{FEED_PATH}", metadata.url))
+            .rel("self")
+            .mime_type("application/atom+xml".to_owned())
+            .build(),
+    );
+
+    // HTML link
+    feed.link(
+        atom_syndication::LinkBuilder::default()
+            .href(&*metadata.url)
+            .rel("alternate")
+            .mime_type("text/html".to_owned())
+            .build(),
+    );
+
+    for post in posts.iter().take(10) {
+        let content = match &post.content {
+            Ok(content) => content,
+            Err(_) => continue,
+        };
+
+        let post_url = format!("{}{}", metadata.url, post.stem);
+
+        feed.entry(
+            atom_syndication::EntryBuilder::default()
+                .title(&*content.markdown.title)
+                .id(&*post_url)
+                .link(
+                    atom_syndication::LinkBuilder::default()
+                        .href(&*post_url)
+                        .mime_type("text/html".to_owned())
+                        .title(content.markdown.title.clone())
+                        .build(),
+                )
+                .published(content.published_datetime())
+                .summary(atom_syndication::Text::plain(&*content.markdown.summary))
+                .content(
+                    atom_syndication::ContentBuilder::default()
+                        .base(post_url)
+                        .value(content.markdown.body.clone())
+                        .content_type("html".to_owned())
+                        .build(),
+                )
+                .build(),
+        );
+    }
+
+    feed.lang("en".to_owned());
+
+    feed.build().to_string()
+}
+
 fn build_index(
-    mut posts: Vec<Rc<Post>>,
+    posts: &[Rc<Post>],
     templater: &Templater,
     template: &anyhow::Result<Template>,
 ) -> String {
@@ -212,25 +368,15 @@ fn build_index(
         Err(e) => return error_page([e]),
     };
 
-    posts.sort_unstable_by(|a, b| match (&a.content, &b.content) {
-        (Ok(a_content), Ok(b_content)) => match (&a_content.published, &b_content.published) {
-            (Some(a_date), Some(b_date)) => b_date.cmp(a_date),
-            // Posts without a date should sort before those with one
-            (Some(_), None) => cmp::Ordering::Greater,
-            (None, Some(_)) => cmp::Ordering::Less,
-            (None, None) => a.stem.cmp(&b.stem),
-        },
-        // `Ok`s should sort after `Err`s
-        (Ok(_), Err(_)) => cmp::Ordering::Greater,
-        (Err(_), Ok(_)) => cmp::Ordering::Less,
-        (Err(_), Err(_)) => a.stem.cmp(&b.stem),
-    });
-
     #[derive(Serialize)]
     struct TemplateVars<'a> {
         posts: &'a [Rc<Post>],
+        feed: &'static str,
     }
-    let vars = TemplateVars { posts: &*posts };
+    let vars = TemplateVars {
+        posts,
+        feed: FEED_PATH,
+    };
     let rendered = match templater.render(template, vars) {
         Ok(rendered) => rendered,
         Err(e) => return error_page([&e]),
@@ -254,10 +400,12 @@ fn build_post(
     struct TemplateVars<'a> {
         post: &'a PostContent,
         post_css: &'static str,
+        feed: &'static str,
     }
     let vars = TemplateVars {
         post: post_content,
         post_css: POST_CSS_PATH,
+        feed: FEED_PATH,
     };
 
     let rendered = match templater.render(template, vars) {

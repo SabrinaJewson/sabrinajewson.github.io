@@ -6,7 +6,9 @@ publish = false
 
 [dependencies]
 anyhow = "1.0.55"
+atom_syndication = "0.11.0"
 bytes = { version = "1.1.0", optional = true }
+chrono = { version = "0.4.19", features = ["serde"] }
 clap = { version = "3.1.2", features = ["derive"] }
 crossbeam = "0.8.1"
 fn-error-context = "0.2.0"
@@ -21,6 +23,7 @@ percent-encoding = { version = "2.1.0", optional = true }
 pretty_env_logger = "0.4.0"
 pulldown-cmark = "0.9.1"
 serde = { version = "1.0.136", features = ["derive", "rc"] }
+serde_json = "1.0.79"
 syntect = "4.6.0"
 tokio = { version = "1.17.0", features = ["rt", "net"], optional = true }
 tower-service = { version = "0.3.1", optional = true }

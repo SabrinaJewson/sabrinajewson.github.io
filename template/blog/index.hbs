@@ -2,9 +2,16 @@
 	{{#*inline "head"}}
 		<title>Sabrina Jewson's Blog</title>
 		<meta property="og:title" content="Sabrina Jewson's Blog">
+
+		<link type="application/atom+xml" rel="alternate" href="{{feed}}" title="Sabrina Jewson's Blog">
 	{{/inline}}
 	{{#*inline "body"}}
-		<h1>Recent posts</h1>
+		<h1>
+			Recent posts
+			<a href="{{feed}}" title="Atom Feed">
+				<img height="16" src="https://upload.wikimedia.org/wikipedia/commons/4/43/Feed-icon.svg">
+			</a>
+		</h1>
 		{{#each posts}}
 			<li>
 				{{#if content}}
