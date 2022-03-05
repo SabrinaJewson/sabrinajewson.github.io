@@ -1,20 +1,21 @@
 use ::{
     anyhow::{anyhow, bail, Context as _},
+    bytes::{BufMut as _, BytesMut},
     fn_error_context::context,
     hyper::http,
     std::{
-        collections::HashMap,
         convert::Infallible,
         ffi::OsStr,
+        fmt::Display,
         fs,
         future::Future,
-        io,
+        io::{self, Write as _},
         path::{Path, PathBuf},
         pin::Pin,
-        sync::{Arc, Mutex},
+        sync::Arc,
         task::{self, Poll},
     },
-    tokio::{net::TcpListener, sync::Notify},
+    tokio::{net::TcpListener, sync::broadcast},
 };
 
 #[derive(Clone)]
@@ -28,7 +29,7 @@ impl Server {
             inner: Arc::from(Inner {
                 path: Box::from(path),
                 not_found_path: path.join("404.html"),
-                path_waiters: Mutex::new(HashMap::new()),
+                events: broadcast::channel(64).0,
             }),
         }
     }
@@ -72,13 +73,8 @@ impl Server {
         }
     }
 
-    pub(crate) fn update(&self, event: &notify::Event) {
-        let waiters = self.inner.path_waiters.lock().unwrap();
-        for path in &event.paths {
-            if let Some(notify) = waiters.get(path) {
-                notify.notify_waiters();
-            }
-        }
+    pub(crate) fn update(&self, event: notify::Event) {
+        drop(self.inner.events.send(Arc::new(event)));
     }
 }
 
@@ -90,7 +86,7 @@ struct Service {
 struct Inner {
     path: Box<Path>,
     not_found_path: PathBuf,
-    path_waiters: Mutex<HashMap<PathBuf, Arc<Notify>>>,
+    events: broadcast::Sender<Arc<notify::Event>>,
 }
 
 impl tower_service::Service<http::Request<hyper::Body>> for Service {
@@ -109,73 +105,99 @@ impl tower_service::Service<http::Request<hyper::Body>> for Service {
 
 impl Service {
     async fn respond(&self, req: http::Request<hyper::Body>) -> http::Response<hyper::Body> {
+        if req.uri().path() == "/watch" {
+            self.respond_sse(req).await
+        } else {
+            self.respond_file(req).await
+        }
+    }
+
+    async fn respond_sse(&self, req: http::Request<hyper::Body>) -> http::Response<hyper::Body> {
+        let mut paths = Vec::new();
+        let query = match req.uri().query() {
+            Some(query) => query,
+            None => return bad_request("no query parameters in URI"),
+        };
+        for (key, value) in form_urlencoded::parse(query.as_bytes()) {
+            if key != "path" {
+                return bad_request("query key was not `path`");
+            }
+            paths.push(match self.fs_path(&value).await {
+                Some((path, _metadata)) => path,
+                // TODO: Live-reload on the 404 page as well
+                None => return self.not_found().await,
+            });
+        }
+
+        let (mut sender, body) = hyper::Body::channel();
+
+        let mut receiver = self.inner.events.subscribe();
+
+        tokio::spawn(async move {
+            loop {
+                match receiver.recv().await {
+                    Ok(event) => {
+                        if event.paths.iter().any(|changed_path| {
+                            paths
+                                .iter()
+                                .any(|watched_path| changed_path.ends_with(watched_path))
+                        }) {
+                            break;
+                        }
+                    }
+                    // Server shutdown; exit without reloading
+                    Err(broadcast::error::RecvError::Closed) => return,
+                    Err(broadcast::error::RecvError::Lagged(_)) => break,
+                }
+            }
+            if let Err(e) = sender.send_data("data:\n\n".into()).await {
+                let e = anyhow!(e).context("failed to send data to SSE stream");
+                log::error!("{e:?}");
+            }
+        });
+
+        http::Response::builder()
+            .header("content-type", "text/event-stream")
+            .body(body)
+            .unwrap()
+    }
+
+    async fn respond_file(&self, req: http::Request<hyper::Body>) -> http::Response<hyper::Body> {
         let (path, metadata) = match self.fs_path(req.uri().path()).await {
             Some(t) => t,
             None => return self.not_found().await,
         };
 
-        if req
-            .headers()
-            .get("accept")
-            .and_then(|s| s.to_str().ok())
-            .map_or(false, |val| val.contains("text/event-stream"))
-        {
-            // TODO: By only supporting one URL, dependency assets like `common.css` end up
-            // untracked. This endpoint should accept a list of files to track.
+        let content_type = match path.extension().and_then(OsStr::to_str) {
+            Some("html") => "text/html",
+            Some("css") => "text/css",
+            Some("js") => "application/javascript",
+            Some("png") => "image/png",
+            Some("ico") => "image/x-icon",
+            _ => "application/octet-stream",
+        };
 
-            // TODO: Live-reload on the 404 page as well
-            let (mut sender, body) = hyper::Body::channel();
-
-            let notify = {
-                let mut path_waiters = self.inner.path_waiters.lock().unwrap();
-                let notify = path_waiters.entry(path).or_insert_with(Default::default);
-                notify.clone()
-            };
-
-            tokio::spawn(async move {
-                notify.notified().await;
-                if let Err(e) = sender.send_data("data:\n\n".into()).await {
-                    let e = anyhow!(e).context("failed to send data to SSE stream");
-                    log::error!("{e:?}");
-                }
-            });
-
-            http::Response::builder()
-                .header("content-type", "text/event-stream")
-                .body(body)
-                .unwrap()
-        } else {
-            let content_type = match path.extension().and_then(OsStr::to_str) {
-                Some("html") => "text/html",
-                Some("css") => "text/css",
-                Some("js") => "application/javascript",
-                Some("png") => "image/png",
-                Some("ico") => "image/x-icon",
-                _ => "application/octet-stream",
-            };
-
-            let body = match *req.method() {
-                http::Method::HEAD => hyper::Body::empty(),
-                http::Method::GET => {
-                    let result = tokio::task::spawn_blocking(|| fs::read(path)).await;
-                    match result.unwrap() {
-                        Ok(bytes) => hyper::Body::from(bytes),
-                        Err(e) => {
-                            log::error!("{:?}", anyhow!(e).context("failed to read file"));
-                            return self.not_found().await;
-                        }
+        let body = match *req.method() {
+            http::Method::HEAD => hyper::Body::empty(),
+            http::Method::GET => {
+                let result = tokio::task::spawn_blocking(|| fs::read(path)).await;
+                match result.unwrap() {
+                    Ok(bytes) => hyper::Body::from(bytes),
+                    Err(e) => {
+                        log::error!("{:?}", anyhow!(e).context("failed to read file"));
+                        return self.not_found().await;
                     }
                 }
-                _ => return method_not_allowed(),
-            };
+            }
+            _ => return method_not_allowed(),
+        };
 
-            http::Response::builder()
-                .header("content-length", metadata.len())
-                .header("content-type", content_type)
-                .header("cache-control", "no-store")
-                .body(body)
-                .unwrap()
-        }
+        http::Response::builder()
+            .header("content-length", metadata.len())
+            .header("content-type", content_type)
+            .header("cache-control", "no-store")
+            .body(body)
+            .unwrap()
     }
 
     async fn fs_path(&self, path: &str) -> Option<(PathBuf, fs::Metadata)> {
@@ -226,6 +248,15 @@ impl Service {
         }
         .unwrap()
     }
+}
+
+fn bad_request(err: impl Display) -> http::Response<hyper::Body> {
+    let mut bytes = BytesMut::new();
+    write!((&mut bytes).writer(), "{}", err).unwrap();
+    http::Response::builder()
+        .status(http::StatusCode::BAD_REQUEST)
+        .body(hyper::Body::from(bytes.freeze()))
+        .unwrap()
 }
 
 fn method_not_allowed() -> http::Response<hyper::Body> {

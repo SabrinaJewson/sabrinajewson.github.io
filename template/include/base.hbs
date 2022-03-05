@@ -14,6 +14,22 @@
 
 		<link rel="stylesheet" href="/{{common_css}}">
 
+		{{#if live_reload}}
+		<script>
+			const params = new URLSearchParams();
+			function dependency(path) {
+				if (!path.startsWith("/")) {
+					const base = location.pathname.slice(0, location.pathname.lastIndexOf("/"));
+					path = base + "/" + path;
+				}
+				params.append("path", path);
+			}
+			dependency(location.pathname);
+			dependency("/{{icons.favicon}}");
+			dependency("/{{common_css}}");
+		</script>
+		{{/if}}
+
 		{{> head}}
 	</head>
 	<body>
@@ -28,7 +44,7 @@
 		</main>
 		{{#if live_reload}}
 		<script>
-			const source = new EventSource(location.pathname);
+			const source = new EventSource(`/watch?${params}`);
 			source.addEventListener("message", () => location.reload());
 		</script>
 		{{/if}}

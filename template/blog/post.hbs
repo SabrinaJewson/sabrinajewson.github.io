@@ -6,6 +6,7 @@
 		<meta property="og:type" content="article">
 
 		<link rel="stylesheet" href="{{post_css}}">
+		{{#if live_reload}}<script>dependency("{{post_css}}")</script>{{/if}}
 	{{/inline}}
 	{{#*inline "body"}}
 		<h1>{{{post.markdown.title}}}</h1>

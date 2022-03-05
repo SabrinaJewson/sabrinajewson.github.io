@@ -22,7 +22,6 @@ use ::{
     notify::Watcher,
     std::{
         env,
-        path::PathBuf,
         rc::Rc,
         time::{Duration, Instant},
     },
@@ -66,8 +65,7 @@ fn main() -> anyhow::Result<()> {
 
     let args: Args = clap::Parser::parse();
 
-    #[cfg_attr(not(feature = "server"), allow(unused_variables))]
-    let cwd = set_cwd()?;
+    set_cwd()?;
 
     ensure!(
         args.serve_port.is_none() || cfg!(feature = "server"),
@@ -82,10 +80,7 @@ fn main() -> anyhow::Result<()> {
 
         #[cfg(feature = "server")]
         let server = if let Some(port) = args.serve_port {
-            // Match the format that notifications generate
-            // TODO: Find a better solution than this. Maybe canonicalize all paths?
-            let serve_dir = cwd.join(".").join("dist");
-            let server = server::Server::new(&serve_dir);
+            let server = server::Server::new("dist".as_ref());
             std::thread::spawn({
                 let sender = sender.clone();
                 let server = server.clone();
@@ -113,7 +108,7 @@ fn main() -> anyhow::Result<()> {
 
             #[cfg(feature = "server")]
             if let Some(server) = &server {
-                server.update(&event);
+                server.update(event);
             }
         })
         .context("failed to create file watcher")?;
@@ -174,11 +169,11 @@ fn asset(drafts: bool, live_reload: bool) -> impl Asset<Output = ()> {
 }
 
 #[context("failed to set cwd to project root")]
-fn set_cwd() -> anyhow::Result<PathBuf> {
+fn set_cwd() -> anyhow::Result<()> {
     let mut path = env::current_exe().context("couldn't get current executable path")?;
     for _ in 0..4 {
         ensure!(path.pop(), "project root dir doesn't exit");
     }
     env::set_current_dir(&path).context("couldn't set cwd")?;
-    Ok(path)
+    Ok(())
 }
