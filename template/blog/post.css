@@ -29,11 +29,13 @@ code.scode {
 	padding: 3px 5px;
 }
 pre.scode {
-	padding: 8px;
+	padding: 16px;
 	overflow-x: scroll;
 }
 .scode {
 	border-radius: 6px;
+	font-size: 14px;
+	tab-size: 4;
 }
 
 /* Tables */
