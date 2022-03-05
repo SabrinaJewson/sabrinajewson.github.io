@@ -1,3 +1,3 @@
-[submodule "template/blog/code_themes/Solarized"]
-	path = template/blog/code_themes/Solarized
-	url = https://github.com/braver/Solarized
+[submodule "template/blog/code_themes/base16-textmate"]
+	path = template/blog/code_themes/base16-textmate
+	url = https://github.com/chriskempson/base16-textmate
