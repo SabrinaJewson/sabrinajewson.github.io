@@ -52,11 +52,11 @@ pub(crate) fn asset<'a>(
 
             minify::html(&rendered)
         })
-        .map(move |html| log_errors(write_file(out_path, html)))
-        .modifies_path(out_path)
-        .map(|res| {
-            if res.is_ok() {
-                log::info!("successfully emitted index.html");
-            }
+        .map(move |html| {
+            write_file(out_path, html)?;
+            log::info!("successfully emitted index.html");
+            Ok(())
         })
+        .map(log_errors)
+        .modifies_path(out_path)
 }

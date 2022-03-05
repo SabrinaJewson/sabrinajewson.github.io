@@ -11,11 +11,10 @@ pub(crate) mod markdown;
 pub(crate) mod minify;
 pub(crate) mod push_str;
 
-pub(crate) fn log_errors<T>(res: anyhow::Result<T>) -> Result<T, ()> {
-    if let Err(e) = &res {
-        log::error!("{:?}", e);
+pub(crate) fn log_errors<T>(res: anyhow::Result<T>) {
+    if let Err(e) = res {
+        log::error!("{e:?}");
     }
-    res.map_err(drop)
 }
 
 pub(crate) fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {

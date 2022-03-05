@@ -49,9 +49,9 @@ pub(crate) trait Asset {
     /// Cache the output of the asset based on the fact that it modifies a certain path.
     ///
     /// `to_file` already does this caching, so it's not necessary to apply after that.
-    fn modifies_path<E, P: AsRef<Path>>(self, path: P) -> ModifiesPath<Self, P>
+    fn modifies_path<P: AsRef<Path>>(self, path: P) -> ModifiesPath<Self, P>
     where
-        Self: Asset<Output = Result<(), E>> + Sized,
+        Self: Asset<Output = ()> + Sized,
     {
         ModifiesPath::new(self, path)
     }
@@ -164,8 +164,11 @@ impl<A, P> ModifiesPath<A, P> {
         Self { asset, path }
     }
 }
-impl<E, A: Asset<Output = Result<(), E>>, P: AsRef<Path>> Asset for ModifiesPath<A, P> {
-    type Output = Result<(), E>;
+impl<A, P: AsRef<Path>> Asset for ModifiesPath<A, P>
+where
+    A: Asset<Output = ()>,
+{
+    type Output = ();
 
     fn modified(&self) -> Modified {
         Modified::path(&self.path).unwrap_or(Modified::Never)
@@ -173,9 +176,8 @@ impl<E, A: Asset<Output = Result<(), E>>, P: AsRef<Path>> Asset for ModifiesPath
     fn generate(&self) -> Self::Output {
         let output_modified = self.modified();
         if self.asset.modified() >= output_modified || *EXE_MODIFIED >= output_modified {
-            self.asset.generate()?;
+            self.asset.generate();
         }
-        Ok(())
     }
 }
 

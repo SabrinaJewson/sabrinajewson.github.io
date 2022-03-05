@@ -1,4 +1,7 @@
-use crate::asset::{self, Asset};
+use crate::util::{
+    asset::{self, Asset},
+    log_errors,
+};
 use ::{
     anyhow::{ensure, Context as _},
     std::{
@@ -9,13 +12,8 @@ use ::{
 
 pub(crate) fn asset() -> impl Asset<Output = ()> {
     asset::FsPath::new("./builder/js/package.json")
-        .map(|()| npm_install())
+        .map(|()| log_errors(npm_install()))
         .modifies_path("./builder/js/package-lock.json")
-        .map(|res| {
-            if let Err(e) = res {
-                log::error!("{:?}", e);
-            }
-        })
 }
 
 fn npm_install() -> anyhow::Result<()> {

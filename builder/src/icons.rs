@@ -1,4 +1,7 @@
-use crate::util::asset::{self, Asset};
+use crate::util::{
+    asset::{self, Asset},
+    log_errors,
+};
 use ::{
     anyhow::Context as _,
     image::codecs::ico::{IcoEncoder, IcoFrame},
@@ -68,13 +71,9 @@ pub(crate) fn asset<'a>(
 
             Ok(())
         })
+        .map(log_errors)
         .modifies_path(output_path.join(PATHS.apple_touch_icon))
         .modifies_path(output_path.join(PATHS.favicon))
-        .map(|res| {
-            if let Err(e) = res {
-                log::error!("{e:?}");
-            }
-        })
 }
 
 // The sizes included in the generated `favicon.ico` file.

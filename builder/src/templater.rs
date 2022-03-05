@@ -1,9 +1,6 @@
 use crate::{
     common_css, icons,
-    util::{
-        asset::{self, Asset},
-        log_errors,
-    },
+    util::asset::{self, Asset},
 };
 use ::{
     anyhow::Context as _,
@@ -83,7 +80,7 @@ pub(crate) fn asset<'a>(
                             .with_context(|| format!("failed to compile template {name}"))?;
                         Ok((name.clone(), template))
                     })
-                    .map(log_errors)
+                    .map(|res| res.map_err(|e| log::error!("{e:?}")))
                     .cache();
 
                 includes.push(include);

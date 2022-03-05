@@ -36,11 +36,11 @@ pub(crate) fn asset<'a>(
 
             minify::html(&rendered)
         })
-        .map(move |html| log_errors(write_file(output_path, html)))
-        .modifies_path(output_path)
-        .map(|res| {
-            if res.is_ok() {
-                log::info!("successfully emitted 404 file");
-            }
+        .map(move |html| {
+            write_file(output_path, html)?;
+            log::info!("successfully emitted 404 file");
+            Ok(())
         })
+        .map(log_errors)
+        .modifies_path(output_path)
 }

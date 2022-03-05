@@ -14,13 +14,10 @@ pub(crate) fn asset(output_path: &Path) -> impl Asset<Output = ()> {
             let path = path.clone();
             move |()| {
                 File::create(&path).context("failed to create .nojekyll file")?;
+                log::info!("successfully emitted .nojekyll file");
                 Ok(())
             }
         })
+        .map(log_errors)
         .modifies_path(path)
-        .map(|res| {
-            if log_errors(res).is_ok() {
-                log::info!("successfully emitted .nojekyll file");
-            }
-        })
 }

@@ -83,45 +83,50 @@ pub(crate) fn asset<'a>(
                         move |(post, templater, template)| {
                             if let Some(post) = post {
                                 let built = build_post(&post, &templater, (*template).as_ref());
-                                log_errors(write_file(&output_path, built))?;
+                                write_file(&output_path, built)?;
+                                log::info!("successfully emitted {}.html", post.stem);
                             }
                             Ok(())
                         }
                     })
+                    .map(log_errors)
                     .modifies_path(output_path);
 
                 post_pages.push(post_page);
             }
-
-            let post_pages = asset::all(post_pages)
-                .map(|successes| successes.iter().copied().fold(Ok(()), Result::and));
 
             let index = asset::all((asset::all(posts), templater.clone(), index_template.clone()))
                 .map(|(posts, templater, template)| {
                     // Remove drafts from the index
                     let posts = Vec::from(posts).into_iter().flatten().collect();
                     let index = build_index(posts, &templater, &*template);
-                    log_errors(write_file(out_dir.join("index.html"), index))
+                    write_file(out_dir.join("index.html"), index)?;
+                    log::info!("successfully emitted blog index");
+                    Ok(())
                 })
+                .map(log_errors)
                 .modifies_path(out_dir.join("index.html"));
 
-            Ok(asset::all((post_pages, index))
-                .map(|(blog_success, index_success)| Result::and(blog_success, index_success)))
+            Ok(asset::all((asset::all(post_pages), index)).map(|_| {}))
         })
         .map(|res| -> Rc<dyn Asset<Output = _>> {
             match res {
                 Ok(asset) => Rc::new(asset),
                 Err(e) => {
                     log::error!("{:?}", e);
-                    Rc::new(asset::Constant::new(Err(())))
+                    Rc::new(asset::Constant::new(()))
                 }
             }
         })
         .cache()
         .flatten();
 
-    let post_css = asset::TextFile::new(template_dir.join("post.css"))
-        .map(|res| res.map_err(|e| log::error!("{e:?}")).unwrap_or_default());
+    let post_css = asset::TextFile::new(template_dir.join("post.css")).map(|res| {
+        res.unwrap_or_else(|e| {
+            log::error!("{e:?}");
+            String::new()
+        })
+    });
 
     let code_themes_dir = template_dir.join("code_themes");
     let dark_theme = theme_asset(code_themes_dir.join("dark.tmTheme"));
@@ -134,15 +139,14 @@ pub(crate) fn asset<'a>(
             post_css.push_str(&**light_theme);
             post_css.push('}');
             let css = minify::css(&post_css);
-            log_errors(write_file(out_dir.join(POST_CSS_PATH), css))
+            write_file(out_dir.join(POST_CSS_PATH), css)?;
+            log::info!("successfully emitted post CSS");
+            Ok(())
         })
+        .map(log_errors)
         .modifies_path(out_dir.join(POST_CSS_PATH));
 
-    asset::all((html, css)).map(|(html_success, css_success)| {
-        if Result::and(html_success, css_success).is_ok() {
-            log::info!("successfully emitted blog posts");
-        }
-    })
+    asset::all((html, css)).map(|((), ())| {})
 }
 
 const POST_CSS_PATH: &str = "post.css";
