@@ -126,7 +126,7 @@ fn main() -> anyhow::Result<()> {
             while let Ok(msg) = receiver.recv_deadline(debounce_deadline) {
                 msg?;
             }
-            log::info!("rebuilding");
+            log::debug!("rebuilding");
             asset.generate();
         }
     }
