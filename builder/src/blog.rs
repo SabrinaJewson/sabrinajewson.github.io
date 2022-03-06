@@ -341,7 +341,6 @@ fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
                         .build(),
                 )
                 .published(content.published_datetime())
-                .summary(atom_syndication::Text::plain(&*content.markdown.summary))
                 .content(
                     atom_syndication::ContentBuilder::default()
                         .base(post_url)
