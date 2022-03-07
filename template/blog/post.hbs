@@ -13,10 +13,13 @@
 	{{#*inline "body"}}
 		<h1>{{{post.markdown.title}}}</h1>
 		<p id="published">
-			{{#if post.published}}
-				<time datetime="{{post.published}}">{{post.published}}</time>
+			{{#if post.metadata.published}}
+				<time datetime="{{post.metadata.published}}">{{post.metadata.published}}</time>
 			{{else}}
 				Draft
+			{{/if}}
+			{{#if post.metadata.updated}}
+				(updated <time datetime="{{post.metadata.updated}}">{{post.metadata.updated}}</time>)
 			{{/if}}
 		</p>
 		<nav>{{{post.markdown.outline}}}</nav>

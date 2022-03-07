@@ -10,7 +10,7 @@ use crate::{
 };
 use ::{
     anyhow::Context as _,
-    chrono::{naive::NaiveDate, DateTime},
+    chrono::{naive::NaiveDate, offset::TimeZone as _, DateTime},
     handlebars::template::Template,
     serde::{Deserialize, Serialize, Serializer},
     std::{
@@ -190,46 +190,35 @@ impl Post {
     fn is_draft(&self) -> bool {
         self.content
             .as_ref()
-            .map_or(false, |content| content.published.is_none())
+            .map_or(false, |content| content.metadata.published.is_none())
     }
 }
 
 #[derive(Serialize)]
 struct PostContent {
-    published: Option<NaiveDate>,
+    metadata: PostMetadata,
     markdown: Markdown,
 }
 
-impl PostContent {
-    fn published_datetime(&self) -> Option<DateTime<chrono::offset::FixedOffset>> {
-        let datetime = self.published?.and_hms(0, 0, 0);
-        Some(<DateTime<chrono::offset::Utc>>::from_utc(datetime, chrono::offset::Utc).into())
-    }
+#[derive(Default, Serialize, Deserialize)]
+struct PostMetadata {
+    published: Option<NaiveDate>,
+    updated: Option<NaiveDate>,
 }
 
 fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
     Post {
         content: src.map(|src| {
-            let (published, markdown) = if let Some((published, markdown)) = src
-                .strip_prefix("published: ")
-                .and_then(|rest| rest.split_once('\n'))
-                .and_then(|(published, markdown)| {
-                    Some((published.parse::<NaiveDate>().ok()?, markdown))
-                }) {
-                (Some(published), markdown)
-            } else {
-                (None, &*src)
-            };
+            let mut json = serde_json::Deserializer::from_str(&*src).into_iter();
+            let metadata = json.next().and_then(Result::ok).unwrap_or_default();
+            let markdown = &src[json.byte_offset()..];
 
             let mut markdown = markdown::parse(markdown);
             if markdown.title.is_empty() {
                 log::warn!("Post in {stem}.md does not have title");
                 markdown.title = format!("Untitled post from {stem}.md");
             }
-            PostContent {
-                published,
-                markdown,
-            }
+            PostContent { metadata, markdown }
         }),
         stem,
     }
@@ -240,14 +229,16 @@ fn process_posts(posts: Box<[Option<Rc<Post>>]>) -> Rc<Vec<Rc<Post>>> {
     let mut posts: Vec<_> = Vec::from(posts).into_iter().flatten().collect();
 
     posts.sort_unstable_by(|a, b| match (&a.content, &b.content) {
-        (Ok(a_content), Ok(b_content)) => match (&a_content.published, &b_content.published) {
-            (Some(a_date), Some(b_date)) => b_date.cmp(a_date),
-            // Posts without a date should sort before those with one
-            (Some(_), None) => cmp::Ordering::Greater,
-            (None, Some(_)) => cmp::Ordering::Less,
-            // Between drafts, sort alphabetically
-            (None, None) => a.stem.cmp(&b.stem),
-        },
+        (Ok(a_content), Ok(b_content)) => {
+            match (&a_content.metadata.published, &b_content.metadata.published) {
+                (Some(a_date), Some(b_date)) => b_date.cmp(a_date),
+                // Posts without a date should sort before those with one
+                (Some(_), None) => cmp::Ordering::Greater,
+                (None, Some(_)) => cmp::Ordering::Less,
+                // Between drafts, sort alphabetically
+                (None, None) => a.stem.cmp(&b.stem),
+            }
+        }
         // `Ok`s should sort after `Err`s
         (Ok(_), Err(_)) => cmp::Ordering::Greater,
         (Err(_), Ok(_)) => cmp::Ordering::Less,
@@ -269,6 +260,12 @@ struct FeedMetadata {
 const FEED_PATH: &str = "feed.xml";
 
 fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
+    fn datetime(date: NaiveDate) -> DateTime<chrono::offset::FixedOffset> {
+        chrono::offset::Utc
+            .from_utc_datetime(&date.and_hms(0, 0, 0))
+            .into()
+    }
+
     let mut feed = atom_syndication::FeedBuilder::default();
 
     feed.title(&*metadata.title);
@@ -277,7 +274,7 @@ fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
     // Last updated is the date of the lastest post
     if let Some(updated) = posts
         .iter()
-        .filter_map(|post| post.content.as_ref().ok()?.published_datetime())
+        .filter_map(|post| post.content.as_ref().ok()?.metadata.published.map(datetime))
         .max()
     {
         feed.updated(updated);
@@ -326,6 +323,10 @@ fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
             Ok(content) => content,
             Err(_) => continue,
         };
+        let published = match content.metadata.published {
+            Some(published) => datetime(published),
+            None => continue,
+        };
 
         let post_url = format!("{}{}", metadata.url, post.stem);
 
@@ -340,7 +341,8 @@ fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
                         .title(content.markdown.title.clone())
                         .build(),
                 )
-                .published(content.published_datetime())
+                .published(published)
+                .updated(content.metadata.updated.map_or(published, datetime))
                 .content(
                     atom_syndication::ContentBuilder::default()
                         .base(post_url)

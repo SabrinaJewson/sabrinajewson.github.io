@@ -16,8 +16,8 @@
 			<li>
 				{{#if content}}
 					<a href="{{stem}}">{{content.markdown.title}}</a>
-					{{#if content.published}}
-						(<time datetime="{{content.published}}">{{content.published}}</time>)
+					{{#if content.metadata.published}}
+						(<time datetime="{{content.metadata.published}}">{{content.metadata.published}}</time>)
 					{{else}}
 						(draft)
 					{{/if}}
