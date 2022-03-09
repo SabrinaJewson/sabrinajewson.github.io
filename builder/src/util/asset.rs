@@ -244,7 +244,7 @@ macro_rules! impl_for_tuples {
         impl_for_tuples!(@$($ident)*);
     };
 }
-impl_for_tuples!(A B C D E F G);
+impl_for_tuples!(A B C D E F G H);
 
 macro_rules! impl_for_seq {
     ($($ty:ty),*) => { $(
