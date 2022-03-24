@@ -1647,6 +1647,8 @@ Out of all possible options,
 I think it to be quite a promising one
 and definitely possible to implement in some form.
 
+Many thanks to Yoshua Wuyts for proofreading this for me!
+
 ## Appendix A: Completion futures { #completion-futures }
 
 Completion futures are a concept for a special type of future
