@@ -1,8 +1,16 @@
 {
-	"published": "2022-05-01"
+	"published": "2022-05-01",
+	"updated": "2022-05-30"
 }
 
 # The Better Alternative to Lifetime GATs
+
+Update (2022-05-30):
+[danielhenrymantilla] recently released a crate, [nougat],
+which provides a proc macro
+that allows you to use the technique presented in this article
+with the same syntax as regular GATs.
+I encourage you to check it out!
 
 ## Where real GATs fall short { #where-real-gats-fall-short }
 
@@ -1134,6 +1142,8 @@ I predict it'll likely still be useful
 for a long time to come,
 so you might want to familiarize yourself with it.
 
+[danielhenrymantilla]: https://github.com/danielhenrymantilla
+[nougat]: https://docs.rs/nougat
 [GATs]: https://github.com/rust-lang/rust/issues/44265
 [HRTBs]: https://doc.rust-lang.org/nomicon/hrtb.html
 [where hrtb issue]: https://github.com/rust-lang/rust/issues/95268
