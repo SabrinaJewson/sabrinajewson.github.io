@@ -41,48 +41,28 @@ pub(crate) fn write_file<P: AsRef<Path>, D: AsRef<[u8]>>(path: P, data: D) -> an
 }
 
 pub(crate) mod bump {
-    use ::{
-        bumpalo::Bump,
-        std::{alloc, ptr, slice, str},
-    };
+    use ::{bumpalo::Bump, std::str};
 
-    pub(crate) fn alloc_str_concat<'bump, const N: usize>(
-        bump: &'bump Bump,
-        data: [&str; N],
-    ) -> &'bump mut str {
-        let s = alloc_slice_concat_copy(bump, data.map(|s| s.as_bytes()));
+    #[allow(clippy::mut_from_ref)]
+    pub(crate) fn alloc_str_concat<'bump>(bump: &'bump Bump, data: &[&str]) -> &'bump mut str {
+        let total_len = data
+            .iter()
+            .fold(0_usize, |len, s| len.checked_add(s.len()).unwrap());
+        let mut bytes = data.iter().flat_map(|s| s.bytes());
+        let s = bump.alloc_slice_fill_with(total_len, |_| bytes.next().unwrap());
         unsafe { str::from_utf8_unchecked_mut(s) }
-    }
-
-    pub(crate) fn alloc_slice_concat_copy<'bump, T, const N: usize>(
-        bump: &'bump Bump,
-        data: [&[T]; N],
-    ) -> &'bump mut [T]
-    where
-        T: Copy,
-    {
-        let total_len = data.iter().map(|slice| slice.len()).sum::<usize>();
-        let layout = alloc::Layout::array::<T>(total_len).unwrap();
-        let pointer = bump.alloc_layout(layout).as_ptr().cast::<T>();
-        let mut i = 0;
-        for slice in data {
-            let dst = unsafe { pointer.add(i) };
-            unsafe { ptr::copy_nonoverlapping(slice.as_ptr(), dst, slice.len()) };
-            i += slice.len();
-        }
-        unsafe { slice::from_raw_parts_mut(pointer, total_len) }
     }
 
     #[cfg(test)]
     mod tests {
-        use super::alloc_slice_concat_copy;
+        use super::alloc_str_concat;
         use ::bumpalo::Bump;
 
         #[test]
-        fn slices() {
+        fn strings() {
             let bump = Bump::new();
-            let res = alloc_slice_concat_copy(&bump, [&[0, 1, 2], &[3, 4], &[], &[5]]);
-            assert_eq!(res, [0, 1, 2, 3, 4, 5]);
+            let res = alloc_str_concat(&bump, &["hello ", "", "world"]);
+            assert_eq!(res, "hello world");
         }
     }
 }

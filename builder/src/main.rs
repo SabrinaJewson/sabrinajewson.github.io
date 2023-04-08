@@ -89,7 +89,7 @@ fn main() -> anyhow::Result<()> {
 
         #[cfg(feature = "server")]
         let server = if let Some(port) = args.serve_port {
-            let server = server::Server::new(&args.output);
+            let server = server::Server::new(Path::new(&args.output));
             std::thread::spawn({
                 let sender = sender.clone();
                 let server = server.clone();
@@ -160,19 +160,19 @@ fn asset<'asset>(
         blog::asset(
             "template/blog".as_ref(),
             "src/blog".as_ref(),
-            Path::new(util::bump::alloc_str_concat(bump, [output, "/blog"])),
+            Path::new(util::bump::alloc_str_concat(bump, &[output, "/blog"])),
             templater.clone(),
             asset::Dynamic::new(drafts),
         ),
         index::asset(
             "template/index.hbs".as_ref(),
             "src/index.md".as_ref(),
-            Path::new(util::bump::alloc_str_concat(bump, [output, "/index.html"])),
+            Path::new(util::bump::alloc_str_concat(bump, &[output, "/index.html"])),
             templater.clone(),
         ),
         not_found::asset(
             "template/404.hbs".as_ref(),
-            Path::new(util::bump::alloc_str_concat(bump, [output, "/404.html"])),
+            Path::new(util::bump::alloc_str_concat(bump, &[output, "/404.html"])),
             templater,
         ),
         common_css::asset("template/common.css".as_ref(), Path::new(output)),
@@ -180,7 +180,7 @@ fn asset<'asset>(
         no_jekyll::asset(Path::new(output)),
         cname::asset(
             "template/CNAME".as_ref(),
-            Path::new(util::bump::alloc_str_concat(bump, [output, "/CNAME"])),
+            Path::new(util::bump::alloc_str_concat(bump, &[output, "/CNAME"])),
         ),
     ))
     .map(|((), (), (), (), (), (), (), ())| {})
