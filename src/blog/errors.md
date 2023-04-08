@@ -699,7 +699,9 @@ pub enum FromFileErrorKind {
 While it does make sense to implement `From<ParseError>`,
 because `Parse` is literally the name of one of the variants of `FromFileErrorKind`,
 it does not make sense to implement `From<io::Error>`
-because such an implementation would implicitly add the state that one is reading a file —
+because such an implementation would
+implicitly add meaning that one failed during the process of reading the file from disk
+(as the variant is named `ReadFile` instead of `Io`) —
 in other words,
 while the conversion from `ParseError` to `FromFileErrorKind`
 is trivial and carries no semantic meaning,
