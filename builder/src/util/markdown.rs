@@ -38,13 +38,13 @@ pub(crate) fn parse(source: &str) -> Markdown {
         outline: String::new(),
         outline_level: 1,
         in_heading: false,
-        syntax_set: &*SYNTAX_SET,
+        syntax_set: &SYNTAX_SET,
     }
     .render()
 }
 
 pub(crate) fn theme_css(theme: &Theme) -> String {
-    syntect::html::css_for_theme_with_class_style(theme, SYNTECT_CLASS_STYLE)
+    syntect::html::css_for_theme_with_class_style(theme, SYNTECT_CLASS_STYLE).unwrap()
 }
 
 struct Renderer<'a> {
@@ -253,7 +253,7 @@ impl<'a> Renderer<'a> {
                     self.syntax_highlight(&language, &code);
                 } else {
                     while let Some(part) = self.parser.next().and_then(event_text) {
-                        escape_html(self, &*part);
+                        escape_html(self, &part);
                     }
                 }
 
@@ -355,9 +355,7 @@ impl<'a> Renderer<'a> {
     }
 
     fn syntax_highlight(&mut self, language: &str, code: &str) {
-        let syntax = if let Some(syntax) = self.syntax_set.find_syntax_by_token(language) {
-            syntax
-        } else {
+        let Some(syntax) = self.syntax_set.find_syntax_by_token(language) else {
             self.error(format_args!("no known language {language}"));
             self.push_str(code);
             return;
@@ -370,7 +368,8 @@ impl<'a> Renderer<'a> {
         );
 
         for line in LinesWithEndings::from(code) {
-            generator.parse_html_for_line_which_includes_newline(line);
+            generator.parse_html_for_line_which_includes_newline(line)
+                .expect("thanks syntect, really good API design where you return a `Result` but don’t specify when it can even fail");
         }
 
         self.push_str(&generator.finalize());

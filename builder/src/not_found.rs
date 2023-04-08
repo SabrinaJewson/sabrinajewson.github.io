@@ -18,7 +18,7 @@ pub(crate) fn asset<'a>(
     templater: impl Asset<Output = Templater> + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(template_path)
-        .map(|src| Template::compile(&*src?).context("failed to compile 404 template"))
+        .map(|src| Template::compile(&src?).context("failed to compile 404 template"))
         .map(Rc::new)
         .cache();
 

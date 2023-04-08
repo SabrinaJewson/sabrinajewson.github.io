@@ -30,14 +30,14 @@ pub(crate) fn asset<'a>(
 ) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
         asset::TextFile::new(template_dir.join("post.hbs"))
-            .map(|src| Template::compile(&*src?).context("failed to compile blog post template"))
+            .map(|src| Template::compile(&src?).context("failed to compile blog post template"))
             .map(Rc::new)
             .cache(),
     );
 
     let index_template = Rc::new(
         asset::TextFile::new(template_dir.join("index.hbs"))
-            .map(|src| Template::compile(&*src?).context("failed to compile blog index template"))
+            .map(|src| Template::compile(&src?).context("failed to compile blog index template"))
             .map(Rc::new)
             .cache(),
     );
@@ -45,7 +45,7 @@ pub(crate) fn asset<'a>(
     let feed_metadata = Rc::new(
         asset::TextFile::new(template_dir.join("feed.json"))
             .map(|src| {
-                serde_json::from_str::<FeedMetadata>(&*src?).context("failed to read feed.json")
+                serde_json::from_str::<FeedMetadata>(&src?).context("failed to read feed.json")
             })
             .map(|res| res.map(Rc::new).map_err(|e| log::error!("{e:?}")))
             .cache(),
@@ -82,7 +82,7 @@ pub(crate) fn asset<'a>(
 
                 let post = Rc::new(
                     asset::all((drafts.clone(), post))
-                        .map(move |(drafts, post)| (drafts || !post.is_draft()).then(|| post)),
+                        .map(move |(drafts, post)| (drafts || !post.is_draft()).then_some(post)),
                 );
 
                 posts.push(post.clone());
@@ -109,11 +109,8 @@ pub(crate) fn asset<'a>(
 
             let feed = asset::all((posts.clone(), feed_metadata.clone()))
                 .map(|(posts, metadata)| {
-                    let metadata = match metadata {
-                        Ok(metadata) => metadata,
-                        Err(()) => return Ok(()),
-                    };
-                    let feed = build_feed(&**posts, &*metadata);
+                    let Ok(metadata) = metadata else { return Ok(()) };
+                    let feed = build_feed(&posts, &metadata);
                     write_file(out_dir.join(FEED_PATH), feed)?;
                     log::info!("successfully emitted Atom feed");
                     Ok(())
@@ -123,7 +120,7 @@ pub(crate) fn asset<'a>(
 
             let index = asset::all((posts, templater.clone(), index_template.clone()))
                 .map(|(posts, templater, template)| {
-                    let index = build_index(&**posts, &templater, &*template);
+                    let index = build_index(&posts, &templater, &template);
                     write_file(out_dir.join("index.html"), index)?;
                     log::info!("successfully emitted blog index");
                     Ok(())
@@ -158,9 +155,9 @@ pub(crate) fn asset<'a>(
 
     let css = asset::all((post_css, light_theme, dark_theme))
         .map(|(mut post_css, light_theme, dark_theme)| {
-            post_css.push_str(&**dark_theme);
+            post_css.push_str(&dark_theme);
             post_css.push_str("@media(prefers-color-scheme:light){");
-            post_css.push_str(&**light_theme);
+            post_css.push_str(&light_theme);
             post_css.push('}');
             let css = minify::css(&post_css);
             write_file(out_dir.join(POST_CSS_PATH), css)?;
@@ -209,7 +206,7 @@ struct PostMetadata {
 fn read_post(stem: Rc<str>, src: anyhow::Result<String>) -> Post {
     Post {
         content: src.map(|src| {
-            let mut json = serde_json::Deserializer::from_str(&*src).into_iter();
+            let mut json = serde_json::Deserializer::from_str(&src).into_iter();
             let metadata = json.next().and_then(Result::ok).unwrap_or_default();
             let markdown = &src[json.byte_offset()..];
 
@@ -262,14 +259,14 @@ const FEED_PATH: &str = "feed.xml";
 fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
     fn datetime(date: NaiveDate) -> DateTime<chrono::offset::FixedOffset> {
         chrono::offset::Utc
-            .from_utc_datetime(&date.and_hms(0, 0, 0))
+            .from_utc_datetime(&date.and_hms_opt(0, 0, 0).unwrap())
             .into()
     }
 
     let mut feed = atom_syndication::FeedBuilder::default();
 
     feed.title(&*metadata.title);
-    feed.id(&*metadata.url);
+    feed.id(metadata.url.clone());
 
     // Last updated is the date of the lastest post
     if let Some(updated) = posts
@@ -282,79 +279,74 @@ fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
 
     feed.author(
         atom_syndication::PersonBuilder::default()
-            .name(&*metadata.name)
-            .uri(metadata.site.clone())
+            .name(metadata.name.clone())
+            .uri(Some(metadata.site.clone()))
             .build(),
     );
 
-    feed.generator(
-        atom_syndication::GeneratorBuilder::default()
-            .value("sabrinajewson.github.io")
-            .uri("https://github.com/SabrinaJewson/sabrinajewson.github.io".to_owned())
-            .build(),
-    );
+    let generator = atom_syndication::GeneratorBuilder::default()
+        .value("sabrinajewson.github.io".to_owned())
+        .uri(Some(
+            "https://github.com/SabrinaJewson/sabrinajewson.github.io".to_owned(),
+        ))
+        .build();
+    feed.generator(Some(generator));
 
-    feed.icon(format!(
+    feed.icon(Some(format!(
         "{}/{}",
         metadata.site,
         crate::icons::PATHS.apple_touch_icon
-    ));
+    )));
 
     // self-link
     feed.link(
         atom_syndication::LinkBuilder::default()
             .href(format!("{}{FEED_PATH}", metadata.url))
-            .rel("self")
-            .mime_type("application/atom+xml".to_owned())
+            .rel("self".to_owned())
+            .mime_type(Some("application/atom+xml".to_owned()))
             .build(),
     );
 
     // HTML link
     feed.link(
         atom_syndication::LinkBuilder::default()
-            .href(&*metadata.url)
-            .rel("alternate")
-            .mime_type("text/html".to_owned())
+            .href(metadata.url.clone())
+            .rel("alternate".to_owned())
+            .mime_type(Some("text/html".to_owned()))
             .build(),
     );
 
     for post in posts.iter().take(10) {
-        let content = match &post.content {
-            Ok(content) => content,
-            Err(_) => continue,
-        };
-        let published = match content.metadata.published {
-            Some(published) => datetime(published),
-            None => continue,
-        };
+        let Ok(content) = &post.content else { continue };
+        let Some(published) = content.metadata.published.map(datetime) else { continue };
 
         let post_url = format!("{}{}", metadata.url, post.stem);
 
         feed.entry(
             atom_syndication::EntryBuilder::default()
                 .title(&*content.markdown.title)
-                .id(&*post_url)
+                .id(post_url.clone())
                 .link(
                     atom_syndication::LinkBuilder::default()
-                        .href(&*post_url)
-                        .mime_type("text/html".to_owned())
-                        .title(content.markdown.title.clone())
+                        .href(post_url.clone())
+                        .mime_type(Some("text/html".to_owned()))
+                        .title(Some(content.markdown.title.clone()))
                         .build(),
                 )
                 .published(published)
                 .updated(content.metadata.updated.map_or(published, datetime))
                 .content(
                     atom_syndication::ContentBuilder::default()
-                        .base(post_url)
-                        .value(content.markdown.body.clone())
-                        .content_type("html".to_owned())
+                        .base(Some(post_url))
+                        .value(Some(content.markdown.body.clone()))
+                        .content_type(Some("html".to_owned()))
                         .build(),
                 )
                 .build(),
         );
     }
 
-    feed.lang("en".to_owned());
+    feed.lang(Some("en".to_owned()));
 
     feed.build().to_string()
 }

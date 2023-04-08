@@ -41,7 +41,7 @@ impl Templater {
         let context = handlebars::Context::wraps(vars).unwrap();
 
         let mut render_context = handlebars::RenderContext::new(None);
-        Ok(template.renders(&*self.handlebars, &context, &mut render_context)?)
+        Ok(template.renders(&self.handlebars, &context, &mut render_context)?)
     }
 }
 
@@ -76,7 +76,7 @@ pub(crate) fn asset<'a>(
 
                 let include = asset::TextFile::new(path)
                     .map(move |source| -> anyhow::Result<_> {
-                        let template = Template::compile(&*source?)
+                        let template = Template::compile(&source?)
                             .with_context(|| format!("failed to compile template {name}"))?;
                         Ok((name.clone(), template))
                     })

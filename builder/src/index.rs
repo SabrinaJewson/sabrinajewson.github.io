@@ -20,7 +20,7 @@ pub(crate) fn asset<'a>(
     templater: impl Asset<Output = Templater> + Clone + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(template_path)
-        .map(|src| Template::compile(&*src?).context("failed to compile index template"))
+        .map(|src| Template::compile(&src?).context("failed to compile index template"))
         .map(Rc::new)
         .cache();
 
@@ -42,8 +42,8 @@ pub(crate) fn asset<'a>(
                 summary: &'a str,
             }
             let vars = TemplateVars {
-                body: &*markdown.body,
-                summary: &*markdown.summary,
+                body: &markdown.body,
+                summary: &markdown.summary,
             };
             let rendered = match templater.render(template, vars) {
                 Ok(rendered) => rendered,

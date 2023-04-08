@@ -354,7 +354,7 @@ impl<P: AsRef<Path>> Asset for TextFile<P> {
     }
     fn generate(&self) -> Self::Output {
         let path = self.path.as_ref();
-        fs::read_to_string(&path)
+        fs::read_to_string(path)
             .with_context(|| format!("failed to read file `{}`", path.display()))
     }
 }

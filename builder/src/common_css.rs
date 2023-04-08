@@ -10,8 +10,8 @@ pub(crate) const PATH: &str = "common.css";
 pub(crate) fn asset<'a>(in_path: &'a Path, out_path: &'a Path) -> impl Asset<Output = ()> + 'a {
     asset::TextFile::new(in_path)
         .map(move |res| -> anyhow::Result<_> {
-            let css = minify::css(&*res?);
-            write_file(out_path.join(PATH), &css)?;
+            let css = minify::css(&res?);
+            write_file(out_path.join(PATH), css)?;
             log::info!("successfully emitted common CSS file");
             Ok(())
         })
