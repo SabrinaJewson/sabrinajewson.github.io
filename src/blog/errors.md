@@ -701,11 +701,10 @@ because `Parse` is literally the name of one of the variants of `FromFileErrorKi
 it does not make sense to implement `From<io::Error>`
 because such an implementation would
 implicitly add meaning that one failed during the process of reading the file from disk
-(as the variant is named `ReadFile` instead of `Io`) —
-in other words,
-while the conversion from `ParseError` to `FromFileErrorKind`
-is trivial and carries no semantic meaning,
-the conversion from `io::Error` is non-trivial and carries meaning,
+(as the variant is named `ReadFile` instead of `Io`).
+Constraining the meaning of “any I/O error”
+to “an error reading the file from the disk”
+is helpful but should not be done implicitly,
 thus rendering `From` inappropriate.
 
 ### On “nearness” { #on-nearness }
