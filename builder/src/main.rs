@@ -17,12 +17,15 @@
 
 use ::{
     anyhow::{ensure, Context as _},
+    bumpalo::Bump,
     crossbeam::channel,
     fn_error_context::context,
     notify::Watcher,
     std::{
         env,
+        path::Path,
         rc::Rc,
+        str,
         time::{Duration, Instant},
     },
 };
@@ -55,6 +58,10 @@ struct Args {
     #[clap(long)]
     watch: bool,
 
+    /// Output directory.
+    #[clap(short, default_value = "dist")]
+    output: String,
+
     /// Serve a development server on the given port.
     /// Implies `--watch`.
     #[clap(long, conflicts_with = "watch")]
@@ -73,7 +80,8 @@ fn main() -> anyhow::Result<()> {
         "server is not enabled; rebuild with `--features server` and try again"
     );
 
-    let asset = asset(args.drafts, args.serve_port.is_some());
+    let bump = Bump::new();
+    let asset = asset(&bump, &args.output, args.drafts, args.serve_port.is_some());
     asset.generate();
 
     if args.watch || args.serve_port.is_some() {
@@ -81,7 +89,7 @@ fn main() -> anyhow::Result<()> {
 
         #[cfg(feature = "server")]
         let server = if let Some(port) = args.serve_port {
-            let server = server::Server::new("dist".as_ref());
+            let server = server::Server::new(&args.output);
             std::thread::spawn({
                 let sender = sender.clone();
                 let server = server.clone();
@@ -135,7 +143,12 @@ fn main() -> anyhow::Result<()> {
     Ok(())
 }
 
-fn asset(drafts: bool, live_reload: bool) -> impl Asset<Output = ()> {
+fn asset<'asset>(
+    bump: &'asset Bump,
+    output: &'asset str,
+    drafts: bool,
+    live_reload: bool,
+) -> impl Asset<Output = ()> + 'asset {
     let templater = Rc::new(templater::asset(
         "template/include".as_ref(),
         asset::Dynamic::new(live_reload),
@@ -147,25 +160,28 @@ fn asset(drafts: bool, live_reload: bool) -> impl Asset<Output = ()> {
         blog::asset(
             "template/blog".as_ref(),
             "src/blog".as_ref(),
-            "dist/blog".as_ref(),
+            Path::new(util::bump::alloc_str_concat(bump, [output, "/blog"])),
             templater.clone(),
             asset::Dynamic::new(drafts),
         ),
         index::asset(
             "template/index.hbs".as_ref(),
             "src/index.md".as_ref(),
-            "dist/index.html".as_ref(),
+            Path::new(util::bump::alloc_str_concat(bump, [output, "/index.html"])),
             templater.clone(),
         ),
         not_found::asset(
             "template/404.hbs".as_ref(),
-            "dist/404.html".as_ref(),
+            Path::new(util::bump::alloc_str_concat(bump, [output, "/404.html"])),
             templater,
         ),
-        common_css::asset("template/common.css".as_ref(), "dist".as_ref()),
-        icons::asset("src/icon.png".as_ref(), "dist".as_ref()),
-        no_jekyll::asset("dist".as_ref()),
-        cname::asset("template/CNAME".as_ref(), "dist/CNAME".as_ref()),
+        common_css::asset("template/common.css".as_ref(), Path::new(output)),
+        icons::asset("src/icon.png".as_ref(), Path::new(output)),
+        no_jekyll::asset(Path::new(output)),
+        cname::asset(
+            "template/CNAME".as_ref(),
+            Path::new(util::bump::alloc_str_concat(bump, [output, "/CNAME"])),
+        ),
     ))
     .map(|((), (), (), (), (), (), (), ())| {})
 }

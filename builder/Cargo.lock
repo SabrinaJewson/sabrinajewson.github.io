@@ -138,6 +138,7 @@ version = "0.0.0"
 dependencies = [
  "anyhow",
  "atom_syndication",
+ "bumpalo",
  "bytes",
  "chrono",
  "clap",
