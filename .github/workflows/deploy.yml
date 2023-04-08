@@ -2,7 +2,7 @@
     "name": "Deploy",
     "on": {
         "push": {
-            "branches": ["prod"],
+            "branches": ["main"],
         },
     },
     "jobs": {
@@ -40,7 +40,7 @@
                 },
                 {
                     "name": "Build",
-                    "run": "./build",
+                    "run": "./prod-build",
                 },
                 {
                     "name": "Deploy",
