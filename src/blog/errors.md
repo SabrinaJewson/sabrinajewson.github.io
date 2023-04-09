@@ -59,7 +59,7 @@ It looks a bit like this:
 
 This file tells you that, for example,
 the character “½”, `U+00BD`, is in the block “Latin-1 Supplement”
-because `0x0800 ≤ 0x00BD ≤ 0x00FF`.
+because `0x0080 ≤ 0x00BD ≤ 0x00FF`.
 Every character has an associated block;
 characters which have not yet been assigned a block in the file above
 are considered to be in the special pseudo-block `No_Block`.
