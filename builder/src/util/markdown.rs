@@ -1,15 +1,3 @@
-use crate::util::push_str::{escape_href, escape_html, push, PushStr};
-use ::{
-    once_cell::sync::Lazy,
-    serde::Serialize,
-    std::{
-        collections::HashSet,
-        fmt::Display,
-        hash::{Hash, Hasher},
-    },
-    syntect::{highlighting::Theme, parsing::SyntaxSet, util::LinesWithEndings},
-};
-
 #[derive(Serialize)] // Serialization used in templates
 #[cfg_attr(test, derive(Debug, PartialEq))]
 pub(crate) struct Markdown {
@@ -474,9 +462,6 @@ static SYNTAX_SET: Lazy<SyntaxSet> = Lazy::new(SyntaxSet::load_defaults_newlines
 
 #[cfg(test)]
 mod tests {
-    use super::{parse, Classes, Markdown, TableAlignments};
-    use ::pulldown_cmark::Alignment;
-
     #[test]
     fn table_class() {
         let class = TableAlignments(vec![
@@ -753,4 +738,24 @@ mod tests {
         );
         assert_eq!(just_summary("lorem ipsum\n\ndolor sit amet"), "lorem ipsum");
     }
+
+    use super::parse;
+    use super::Classes;
+    use super::Markdown;
+    use super::TableAlignments;
+    use pulldown_cmark::Alignment;
 }
+
+use crate::util::push_str::escape_href;
+use crate::util::push_str::escape_html;
+use crate::util::push_str::push;
+use crate::util::push_str::PushStr;
+use once_cell::sync::Lazy;
+use serde::Serialize;
+use std::collections::HashSet;
+use std::fmt::Display;
+use std::hash::Hash;
+use std::hash::Hasher;
+use syntect::highlighting::Theme;
+use syntect::parsing::SyntaxSet;
+use syntect::util::LinesWithEndings;

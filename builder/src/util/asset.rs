@@ -1,16 +1,5 @@
 //! Makefile-like system.
 
-use ::{
-    anyhow::Context as _,
-    once_cell::sync::Lazy,
-    std::{
-        cell::Cell,
-        env, fs,
-        path::{Path, PathBuf},
-        time::SystemTime,
-    },
-};
-
 pub(crate) trait Asset {
     type Output;
 
@@ -403,3 +392,12 @@ impl Iterator for DirFiles {
         )
     }
 }
+
+use anyhow::Context as _;
+use once_cell::sync::Lazy;
+use std::cell::Cell;
+use std::env;
+use std::fs;
+use std::path::Path;
+use std::path::PathBuf;
+use std::time::SystemTime;

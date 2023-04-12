@@ -1,26 +1,3 @@
-use crate::{
-    asset::{self, Asset},
-    minify,
-    templater::Templater,
-    util::{
-        error_page, log_errors,
-        markdown::{self, Markdown},
-        write_file,
-    },
-};
-use ::{
-    anyhow::Context as _,
-    chrono::{naive::NaiveDate, offset::TimeZone as _, DateTime},
-    handlebars::template::Template,
-    serde::{Deserialize, Serialize, Serializer},
-    std::{
-        cmp,
-        path::{Path, PathBuf},
-        rc::Rc,
-    },
-    syntect::highlighting::ThemeSet,
-};
-
 pub(crate) fn asset<'a>(
     template_dir: &'a Path,
     src_dir: &'a Path,
@@ -435,3 +412,26 @@ where
         .unwrap_or_else(|_| panic!())
         .serialize(serializer)
 }
+
+use crate::templater::Templater;
+use crate::util::asset;
+use crate::util::asset::Asset;
+use crate::util::error_page;
+use crate::util::log_errors;
+use crate::util::markdown;
+use crate::util::markdown::Markdown;
+use crate::util::minify;
+use crate::util::write_file;
+use anyhow::Context as _;
+use chrono::naive::NaiveDate;
+use chrono::offset::TimeZone as _;
+use chrono::DateTime;
+use handlebars::template::Template;
+use serde::Deserialize;
+use serde::Serialize;
+use serde::Serializer;
+use std::cmp;
+use std::path::Path;
+use std::path::PathBuf;
+use std::rc::Rc;
+use syntect::highlighting::ThemeSet;

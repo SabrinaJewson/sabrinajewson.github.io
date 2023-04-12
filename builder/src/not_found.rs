@@ -1,17 +1,3 @@
-use crate::{
-    minify,
-    templater::Templater,
-    util::{
-        asset::{self, Asset},
-        error_page, log_errors, write_file,
-    },
-};
-use ::{
-    anyhow::Context as _,
-    handlebars::Template,
-    std::{path::Path, rc::Rc},
-};
-
 pub(crate) fn asset<'a>(
     template_path: &'a Path,
     output_path: &'a Path,
@@ -44,3 +30,15 @@ pub(crate) fn asset<'a>(
         .map(log_errors)
         .modifies_path(output_path)
 }
+
+use crate::templater::Templater;
+use crate::util::asset;
+use crate::util::asset::Asset;
+use crate::util::error_page;
+use crate::util::log_errors;
+use crate::util::minify;
+use crate::util::write_file;
+use anyhow::Context as _;
+use handlebars::Template;
+use std::path::Path;
+use std::rc::Rc;

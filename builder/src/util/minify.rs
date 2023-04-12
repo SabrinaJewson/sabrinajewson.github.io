@@ -1,15 +1,3 @@
-use crate::util::{
-    asset::{self, Asset},
-    log_errors,
-};
-use ::{
-    anyhow::{ensure, Context as _},
-    std::{
-        io::{Read as _, Write as _},
-        process,
-    },
-};
-
 pub(crate) fn asset() -> impl Asset<Output = ()> {
     asset::FsPath::new("./builder/js/package.json")
         .map(|()| log_errors(npm_install()))
@@ -114,3 +102,12 @@ fn pipe(command: &mut process::Command, input: &str) -> anyhow::Result<String> {
 
     Ok(output)
 }
+
+use crate::util::asset;
+use crate::util::asset::Asset;
+use crate::util::log_errors;
+use anyhow::ensure;
+use anyhow::Context as _;
+use std::io::Read as _;
+use std::io::Write as _;
+use std::process;

@@ -1,18 +1,3 @@
-use crate::util::{
-    asset::{self, Asset},
-    log_errors,
-};
-use ::{
-    anyhow::Context as _,
-    image::codecs::ico::{IcoEncoder, IcoFrame},
-    serde::Serialize,
-    std::{
-        fs::File,
-        io::{BufWriter, Write as _},
-        path::Path,
-    },
-};
-
 // Used in templates
 #[derive(Clone, Copy, Serialize)]
 pub(crate) struct Paths {
@@ -81,3 +66,15 @@ pub(crate) fn asset<'a>(
 const ICO_SIZES: [u32; 3] = [16, 32, 48];
 
 const APPLE_TOUCH_ICON_SIZE: u32 = 180;
+
+use crate::util::asset;
+use crate::util::asset::Asset;
+use crate::util::log_errors;
+use anyhow::Context as _;
+use image::codecs::ico::IcoEncoder;
+use image::codecs::ico::IcoFrame;
+use serde::Serialize;
+use std::fs::File;
+use std::io::BufWriter;
+use std::io::Write as _;
+use std::path::Path;

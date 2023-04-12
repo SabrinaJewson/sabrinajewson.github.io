@@ -1,23 +1,3 @@
-use ::{
-    anyhow::{anyhow, bail, Context as _},
-    bytes::{BufMut as _, BytesMut},
-    fn_error_context::context,
-    hyper::http,
-    std::{
-        convert::Infallible,
-        ffi::OsStr,
-        fmt::Display,
-        fs,
-        future::Future,
-        io::{self, Write as _},
-        path::{Path, PathBuf},
-        pin::Pin,
-        sync::Arc,
-        task::{self, Poll},
-    },
-    tokio::{net::TcpListener, sync::broadcast},
-};
-
 #[derive(Clone)]
 pub(crate) struct Server {
     inner: Arc<Inner>,
@@ -57,7 +37,7 @@ impl Server {
                 Ok((stream, _)) => stream,
                 Err(e) if CONNECTION_ERROR_KINDS.contains(&e.kind()) => continue,
                 Err(e) => {
-                    bail!(anyhow!(e).context("failed to accept on listener"));
+                    anyhow::bail!(anyhow!(e).context("failed to accept on listener"));
                 }
             };
 
@@ -118,9 +98,8 @@ impl Service {
 
     async fn respond_sse(&self, req: http::Request<hyper::Body>) -> http::Response<hyper::Body> {
         let mut paths = Vec::new();
-        let query = match req.uri().query() {
-            Some(query) => query,
-            None => return bad_request("no query parameters in URI"),
+        let Some(query) = req.uri().query() else {
+            return bad_request("no query parameters in URI");
         };
         for (key, value) in form_urlencoded::parse(query.as_bytes()) {
             if key != "path" {
@@ -171,9 +150,8 @@ impl Service {
     }
 
     async fn respond_file(&self, req: http::Request<hyper::Body>) -> http::Response<hyper::Body> {
-        let (path, metadata) = match self.fs_path(req.uri().path()).await {
-            Some(t) => t,
-            None => return self.not_found().await,
+        let Some((path, metadata)) = self.fs_path(req.uri().path()).await else {
+            return self.not_found().await;
         };
 
         let content_type = match path.extension().and_then(OsStr::to_str) {
@@ -261,7 +239,7 @@ impl Service {
 
 fn bad_request(err: impl Display) -> http::Response<hyper::Body> {
     let mut bytes = BytesMut::new();
-    write!((&mut bytes).writer(), "{}", err).unwrap();
+    write!((&mut bytes).writer(), "{err}").unwrap();
     http::Response::builder()
         .status(http::StatusCode::BAD_REQUEST)
         .body(hyper::Body::from(bytes.freeze()))
@@ -280,3 +258,25 @@ const CONNECTION_ERROR_KINDS: [io::ErrorKind; 3] = [
     io::ErrorKind::ConnectionAborted,
     io::ErrorKind::ConnectionReset,
 ];
+
+use anyhow::anyhow;
+use anyhow::Context as _;
+use bytes::BufMut as _;
+use bytes::BytesMut;
+use fn_error_context::context;
+use hyper::http;
+use std::convert::Infallible;
+use std::ffi::OsStr;
+use std::fmt::Display;
+use std::fs;
+use std::future::Future;
+use std::io;
+use std::io::Write as _;
+use std::path::Path;
+use std::path::PathBuf;
+use std::pin::Pin;
+use std::sync::Arc;
+use std::task;
+use std::task::Poll;
+use tokio::net::TcpListener;
+use tokio::sync::broadcast;

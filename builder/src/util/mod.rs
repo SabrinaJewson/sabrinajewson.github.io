@@ -1,11 +1,5 @@
 //! This module contains many small independent components.
 
-use self::push_str::push;
-use ::{
-    anyhow::Context as _,
-    std::{fs, path::Path},
-};
-
 pub(crate) mod asset;
 pub(crate) mod markdown;
 pub(crate) mod minify;
@@ -41,8 +35,6 @@ pub(crate) fn write_file<P: AsRef<Path>, D: AsRef<[u8]>>(path: P, data: D) -> an
 }
 
 pub(crate) mod bump {
-    use ::{bumpalo::Bump, std::str};
-
     #[allow(clippy::mut_from_ref)]
     pub(crate) fn alloc_str_concat<'bump>(bump: &'bump Bump, data: &[&str]) -> &'bump mut str {
         let total_len = data
@@ -56,7 +48,7 @@ pub(crate) mod bump {
     #[cfg(test)]
     mod tests {
         use super::alloc_str_concat;
-        use ::bumpalo::Bump;
+        use bumpalo::Bump;
 
         #[test]
         fn strings() {
@@ -65,4 +57,12 @@ pub(crate) mod bump {
             assert_eq!(res, "hello world");
         }
     }
+
+    use bumpalo::Bump;
+    use std::str;
 }
+
+use self::push_str::push;
+use anyhow::Context as _;
+use std::fs;
+use std::path::Path;

@@ -1,5 +1,3 @@
-use ::std::{fmt, io};
-
 /// Infallible write trait.
 pub(crate) trait PushStr {
     fn push_str(&mut self, s: &str);
@@ -59,3 +57,6 @@ pub(crate) fn escape_html(buf: &mut impl PushStr, s: &str) {
 pub(crate) fn escape_href(buf: &mut impl PushStr, s: &str) {
     pulldown_cmark::escape::escape_html(buf.writer(), s).unwrap();
 }
+
+use std::fmt;
+use std::io;

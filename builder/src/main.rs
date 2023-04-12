@@ -15,21 +15,6 @@
     clippy::struct_excessive_bools,
 )]
 
-use ::{
-    anyhow::{ensure, Context as _},
-    bumpalo::Bump,
-    crossbeam::channel,
-    fn_error_context::context,
-    notify::Watcher,
-    std::{
-        env,
-        path::Path,
-        rc::Rc,
-        str,
-        time::{Duration, Instant},
-    },
-};
-
 mod blog;
 mod cname;
 mod common_css;
@@ -42,10 +27,9 @@ mod server;
 mod templater;
 
 mod util;
-use self::util::{
-    asset::{self, Asset},
-    minify,
-};
+use self::util::asset;
+use self::util::asset::Asset;
+use self::util::minify;
 
 /// Rust program that builds this website.
 #[derive(clap::Parser)]
@@ -195,3 +179,16 @@ fn set_cwd() -> anyhow::Result<()> {
     env::set_current_dir(&path).context("couldn't set cwd")?;
     Ok(())
 }
+
+use anyhow::ensure;
+use anyhow::Context as _;
+use bumpalo::Bump;
+use crossbeam::channel;
+use fn_error_context::context;
+use notify::Watcher;
+use std::env;
+use std::path::Path;
+use std::rc::Rc;
+use std::str;
+use std::time::Duration;
+use std::time::Instant;

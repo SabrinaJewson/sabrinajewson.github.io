@@ -1,15 +1,3 @@
-use crate::{
-    common_css, icons,
-    util::asset::{self, Asset},
-};
-use ::{
-    anyhow::Context as _,
-    fn_error_context::context,
-    handlebars::{template::Template, Handlebars, Renderable as _},
-    serde::Serialize,
-    std::{path::Path, rc::Rc},
-};
-
 #[derive(Clone)]
 pub(crate) struct Templater {
     handlebars: Rc<Handlebars<'static>>,
@@ -113,3 +101,16 @@ pub(crate) fn asset<'a>(
         .cache()
         .flatten()
 }
+
+use crate::common_css;
+use crate::icons;
+use crate::util::asset;
+use crate::util::asset::Asset;
+use anyhow::Context as _;
+use fn_error_context::context;
+use handlebars::template::Template;
+use handlebars::Handlebars;
+use handlebars::Renderable as _;
+use serde::Serialize;
+use std::path::Path;
+use std::rc::Rc;
