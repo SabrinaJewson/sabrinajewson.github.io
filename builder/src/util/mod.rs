@@ -47,15 +47,15 @@ pub(crate) mod bump {
 
     #[cfg(test)]
     mod tests {
-        use super::alloc_str_concat;
-        use bumpalo::Bump;
-
         #[test]
         fn strings() {
             let bump = Bump::new();
             let res = alloc_str_concat(&bump, &["hello ", "", "world"]);
             assert_eq!(res, "hello world");
         }
+
+        use super::alloc_str_concat;
+        use bumpalo::Bump;
     }
 
     use bumpalo::Bump;
