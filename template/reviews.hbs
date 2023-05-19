@@ -1,0 +1,64 @@
+{{#> base}}
+	{{#*inline "head"}}
+		<title>Sabrina Jewson's Reviews</title>
+		<meta property="og:title" content="Sabrina Jewson's Reviews">
+		<meta name="description" content="{{summary}}">
+
+		<link rel="stylesheet" href="/{{reviews_css}}">
+		{{#if live_reload}}<script>dependency("/{{reviews_css}}")</script>{{/if}}
+	{{/inline}}
+	{{#*inline "body"}}
+		{{{introduction}}}
+		<table>
+			<thead>
+				<tr>
+					<th>Title</th>
+					<th>Genres</th>
+					<th>Score</th>
+				</tr>
+			</thead>
+			<tbody id="reviews"></tbody>
+		</table>
+		<template id="rows">
+			{{#each entries}}
+				<template>
+					<tr>
+						<td>
+							<small>{{artists}}</small>
+							<br>
+							<strong>{{title}}</strong>
+							<br>
+							<small>
+								<span class='links'>
+									{{#if links.rym}}<a href="{{links.rym}}"><img
+											src="https://e.snmc.io/3.0/img/logo/sonemic-16.png"
+											alt="RateYourMusic"
+									/></a>{{/if}}
+								</span>
+								<span>{{{type}}}</span>
+								• <span title='{{released}}'>{{released_year}}</span>
+							</small>
+						</td>
+						<td><small>{{genres}}</small></td>
+						<td>
+							{{#if review}}
+								<strong>{{review.score}}</strong>
+								<br>
+								<small>
+									<time datetime="{{review.date}}">{{review.date}}</time>
+								</small>
+							{{else}}
+								-
+							{{/if}}
+						</td>
+					</tr>
+					{{#if review.comment}}
+						<tr><td colspan="8">{{review.comment}}</td></tr>
+					{{/if}}
+				</template>
+			{{/each}}
+		</template>
+		<script src="/{{reviews_js}}"></script>
+		{{#if live_reload}}<script>dependency("/{{reviews_js}}")</script>{{/if}}
+	{{/inline}}
+{{/base}}

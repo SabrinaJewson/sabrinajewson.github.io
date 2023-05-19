@@ -4,6 +4,7 @@ pub(crate) mod asset;
 pub(crate) mod markdown;
 pub(crate) mod minify;
 pub(crate) mod push_str;
+pub(crate) mod serde;
 
 pub(crate) fn log_errors<T>(res: anyhow::Result<T>) {
     if let Err(e) = res {

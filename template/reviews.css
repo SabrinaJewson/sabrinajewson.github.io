@@ -1,0 +1,17 @@
+abbr {
+	text-decoration: none;
+}
+table {
+	line-height: 1.2;
+}
+small {
+	font-size: 0.8em;
+}
+.links img {
+	vertical-align: middle;
+}
+.links {
+	border-right: 1px solid grey;
+	padding-right: 1ex;
+	margin-right: 1ex;
+}

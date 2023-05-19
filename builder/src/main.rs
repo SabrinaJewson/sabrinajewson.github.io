@@ -22,6 +22,7 @@ mod icons;
 mod index;
 mod no_jekyll;
 mod not_found;
+mod reviews;
 #[cfg(feature = "server")]
 mod server;
 mod templater;
@@ -148,6 +149,14 @@ fn asset<'asset>(
             templater.clone(),
             asset::Dynamic::new(drafts),
         ),
+        reviews::asset(
+            "src/reviews.toml".as_ref(),
+            "template/reviews.hbs".as_ref(),
+            "template/reviews.css".as_ref(),
+            "template/reviews.js".as_ref(),
+            Path::new(output),
+            templater.clone(),
+        ),
         index::asset(
             "template/index.hbs".as_ref(),
             "src/index.md".as_ref(),
@@ -167,7 +176,7 @@ fn asset<'asset>(
             Path::new(util::bump::alloc_str_concat(bump, &[output, "/CNAME"])),
         ),
     ))
-    .map(|((), (), (), (), (), (), (), ())| {})
+    .map(|((), (), (), (), (), (), (), (), ())| {})
 }
 
 #[context("failed to set cwd to project root")]

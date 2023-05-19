@@ -71,6 +71,27 @@ pub(crate) fn css(src: &str) -> String {
     }
 }
 
+pub(crate) fn js(src: &str) -> String {
+    let res = pipe(
+        process::Command::new("npx")
+            .arg("terser")
+            .arg("--mangle")
+            .arg("toplevel")
+            .arg("--mangle-props")
+            .arg("--compress")
+            .current_dir("./builder/js"),
+        src,
+    );
+
+    match res {
+        Ok(minified) => minified,
+        Err(e) => {
+            log::error!("{:?}", e.context("failed to minify JS with terser"));
+            src.to_owned()
+        }
+    }
+}
+
 fn pipe(command: &mut process::Command, input: &str) -> anyhow::Result<String> {
     let mut child = command
         .stdin(process::Stdio::piped())

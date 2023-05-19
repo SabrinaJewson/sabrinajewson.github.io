@@ -1,0 +1,2565 @@
+# Table columns:
+# - Form (film/lit/manga/music/stage)
+# - Artist
+# - Title
+# - Type
+# 	- film: short film, movie
+# 	- lit: short story, book
+# 	- manga: oneshot, series
+# 	- music: single, EP, album, mixtape, compilation, live
+# 	- stage: play
+# - Genres
+# - Released
+# - Reviewed
+# - Score
+# - Links?
+# - Comments
+# TODO: Images?
+# TODO: black midi - crow’s perch
+# TODO: black midi - talking heads
+# TODO: black midi - ded sheeran
+# TODO: black midi - sweater
+# TODO: dallon weeks - sickly sweet holidays
+# TODO: squid - sludge / broadcaster
+# TODO: swans - body to body, job to job
+# TODO: swans - is there really a mind
+introduction = """
+I attempt to rate every piece of art I experience on the same 11-point scale, out of 5.
+This page collates all the ratings.
+The specification for the score numbers are given as follows:
+- 0.0: Actively harmful and really really bad, with zero artistic merit or interest.
+- 0.5: Uninteresting, poorly conceived and terribly executed, not enjoyable at all.
+- 1.0: Some interest, but it’s hard to find the good parts.
+- 1.5: Might have a few well-done elements, but still held back in many ways.
+- 2.0: Below average.
+- 2.5: Average and safe. Not fascinating and I probably won’t come back to it, but worth
+	experiencing.
+- 3.0: Some real merit, displaying creätivity, skill and originality.
+- 3.5: A serious amount of merit. Executed cleanly and has excellent consistency. Thoroughly
+	enjoyable.
+- 4.0: In the realm of excellence. The artist has made something quite special.
+- 4.5: Goes above and beyond anything else in the field. Every aspect is near perfect.
+- 5.0: Perfect, not in that it can’t be improved upon, but in that it truly masters everything
+	it possibly could.
+
+All music ratings here are additionally kept in sync with my [rateyourmusic] page.
+
+[rateyourmusic]: https://rateyourmusic.com/~SabrinaJewson
+"""
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "100 gecs"
+title = "1000 gecs"
+released = "2019-05-31"
+genres = ["Hyperpop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/100-gecs/1000-gecs/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Animals As Leaders"
+title = "The Joy of Motion"
+released = "2014-03-25"
+genres = ["Progressive Metal"]
+review.date = 2023-04-06
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/animals-as-leaders/the-joy-of-motion/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Aphex Twin"
+title = "Selected Ambient Works 85–92"
+released = "1992-11-09"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/aphex-twin/selected-ambient-works-85-92/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Aphex Twin"
+title = "drukqs"
+released = "2001-10-22"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/aphex-twin/drukqs/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Arcade Fire"
+title = "Funeral"
+released = "2004-09-14"
+genres = ["Indie Rock", "Chamber Pop"]
+review.date = 2023-04-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/arcade-fire/funeral-5/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Arctic Monkeys"
+title = "Favourite Worst Nightmare"
+released = "2007-04-23"
+genres = ["Indie Rock", "Post-Punk Revival"]
+review.date = 2023-05-18
+review.score = "2.5"
+links.rym = "https://rateyourmusic.com/release/album/arctic-monkeys/favourite-worst-nightmare/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Automatic"
+title = "Excess"
+released = "2022-06-24"
+genres = ["Post-Punk", "Synth Pop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/automatic/excess/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Baby Dee"
+title = "Love’s Small Song"
+released = "2002"
+genres = ["Chamber Folk", "Singer-Songwriter"]
+review.date = 2023-04-06
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/baby-dee/loves-small-song-1/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Big Black"
+title = "Atomizer"
+released = "1986"
+genres = ["Noise Rock", "Post-Hardcore"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/big-black/atomizer/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Big Black"
+title = "Songs About Fucking"
+released = "1987-09-10"
+genres = ["Noise Rock", "Post-Hardcore"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/big-black/songs-about-fucking/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Björk"
+title = "Homogenic"
+released = "1997-09-22"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/bjork/homogenic/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Black Country, New Road"
+title = "For the First Time"
+released = "2021-02-05"
+genres = ["Post-Rock", "Post-Punk"]
+review.date = 2022-07-28
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/black-country-new-road/for-the-first-time/"
+
+[[entries]]
+type = ["music release", "bootleg", "album"]
+artists = ["Black Country, New Road", "black midi"]
+title = "Black Midi, New Road"
+released = "2020-12-10"
+genres = ["Post-Rock", "Free Improvisation"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/black-country-new-road/for-the-first-time/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Black Country, New Road"
+title = "Ants From Up There"
+released = "2022-02-04"
+genres = ["Art Rock", "Post-Rock", "Chamber Pop"]
+review.date = 2022-07-28
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/black-country-new-road/ants-from-up-there-1/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Black Country, New Road"
+title = "Live at Bush Hall"
+released = "2023-03-24"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/black-country-new-road/live-at-bush-hall/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "black midi"
+title = "Schlagenheim"
+released = "2019-06-21"
+genres = ["Math Rock", "Noise Rock", "Post-Punk"]
+review.date = 2022-07-28
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/black-midi/schlagenheim/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "black midi"
+title = "Cavalcade"
+released = "2021-05-26"
+genres = ["Avant-Prog"]
+review.date = 2022-07-28
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/black-midi/cavalcade/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "black midi"
+title = "Hellfire"
+released = "2022-07-15"
+genres = ["Avant-PRog", "Brutal Prog"]
+review.date = 2022-07-28
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/black-midi/hellfire/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Blue Öyster Cult"
+title = "Fire of Unknown Origin"
+released = "1981-06"
+genres = ["Hard Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/blue-oyster-cult/fire-of-unknown-origin/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Boris"
+title = "Amplifier Worship"
+released = "1998-11-26"
+genres = ["Drone Metal", "Sludge Metal"]
+review.date = 2023-05-17
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/boris/amplifier-worship/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Boris"
+title = "Boris at Last -Feedbacker-"
+released = "2003-12-25"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/boris/boris-at-last-feedbacker-/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Bring Me the Horizon"
+title = "Amo"
+released = "2019-01-25"
+genres = ["Pop Rock", "Alternative Rock"]
+review.date = 2022-07-28
+review.score = "2.5"
+links.rym = "https://rateyourmusic.com/release/album/bring-me-the-horizon/amo/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Brooklyn"
+title = "Clandestine"
+released = "2009-01-19"
+genres = ["Indie Rock", "Pop Rock"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/brooklyn/clandestine/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "CAN"
+title = "Ege Bamyası"
+released = "1972-10"
+genres = ["Krautrock"]
+review.date = 2022-07-28
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/can/ege-bamyasi/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "CAN"
+title = "Future Days"
+released = "1973-09"
+genres = ["Krautrock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/can/future-days/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Car Seat Headrest"
+title = "Twin Fantasy (Face to Face)"
+released = "2018-02-16"
+genres = ["Indie Rock"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/car-seat-headrest/twin-fantasy-2/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Car Seat Headrest"
+title = "How to Leave Town"
+released = "2014-10-31"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/ep/car-seat-headrest/how-to-leave-town/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Car Seat Headrest"
+title = "Teens of Style"
+released = "2015-10-30"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/car-seat-headrest/teens-of-style/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Car Seat Headrest"
+title = "Teens of Denial"
+released = "2016-05-20"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/car-seat-headrest/teens-of-denial/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Charli XCX"
+title = "how i’m feeling now"
+released = "2020-05-15"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/charli-xcx/how-im-feeling-now/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Coil"
+title = "The Ape of Naples"
+released = "2005-12-02"
+genres = ["Post-Industrial", "Darkwave"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/coil/the-ape-of-naples/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Current 93"
+title = "Thunder Perfect Mind"
+released = "1992-07-28"
+genres = ["Neofolk"]
+review.date = 2023-04-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/current-93/thunder-perfect-mind/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Nature And Organisation"
+title = "Beauty Reaps the Blood of Solitude"
+released = "1994"
+genres = ["Neofolk"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/nature-and-organisation/beauty-reaps-the-blood-of-solitude/"
+
+[[entries]]
+type = ["music release", "studio", "compilation"]
+artists = "Current 93"
+title = "The Inmost Light"
+released = "2007-03"
+genres = ["Neofolk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/comp/current-93/the-inmost-light/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Current 93"
+title = "I Have A Special Plan For This World"
+released = "2000"
+genres = ["Poetry", "Experimental"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/ep/current-93/i-have-a-special-plan-for-this-world/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Current 93"
+title = "Sleep Has His House"
+released = "2000"
+genres = ["Neofolk", "Drone"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/current-ninety-three/sleep-has-his-house/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Current 93"
+title = "Black Ships Eat the Sky"
+released = "2006-12"
+genres = ["Neofolk"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/current-93/black-ships-eat-the-sky/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Current 93"
+title = "The Light Is Leaving Us All"
+released = "2018-10-13"
+genres = ["Neofolk"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/current-93/the-light-is-leaving-us-all/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Daughters"
+title = "You Won’t Get What You Want"
+released = "2018-10-26"
+genres = ["Noise Rock", "Industrial Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+review.comment = "I pirated this album and I strongly recommend you do too."
+links.rym = "https://rateyourmusic.com/release/album/daughters/you-wont-get-what-you-want/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Deafheaven"
+title = "Sunbather"
+released = "2013-06-11"
+genres = ["Blackgaze", "Post-Metal"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/deafheaven/sunbather/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Dear Sherlock"
+title = "II"
+released = "2019-06-21"
+genres = ["Alternative Rock"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/ep/dear-sherlock/ii/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Death Cab for Cutie"
+title = "Kintsugi"
+released = "2015-03-31"
+genres = ["Indie Pop"]
+review.date = 2023-05-18
+review.score = "2.5"
+links.rym = "https://rateyourmusic.com/release/album/death-cab-for-cutie/kintsugi/"
+
+[[entries]]
+type = ["music release", "studio", "mixtape"]
+artists = "Death Grips"
+title = "Exmilitary"
+released = "2011-04-25"
+genres = ["Industrial Hip Hop"]
+review.date = 2023-04-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/mixtape/death-grips/exmilitary/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Death Grips"
+title = "The Money Store"
+released = "2012-04-24"
+genres = ["Industrial Hip Hop"]
+review.date = 2023-04-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/death-grips/the-money-store/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Death Grips"
+title = "No Love Deep Web"
+released = "2012-10-01"
+genres = ["Industrial Hip Hop"]
+review.date = 2023-04-06
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/death-grips/no-love-deep-web/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Death Grips"
+title = "****** on the Moon: The Powers That B Disc 1"
+released = "2014-06-08"
+genres = ["Industrial Hip Hop"]
+review.date = 2023-05-17
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/death-grips/n---as-on-the-moon-the-powers-that-b-disc-1/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Death Grips"
+title = "Jenny Death: The Powers That B Disc 2"
+released = "2015-03-19"
+genres = ["Industrial Hip Hop"]
+review.date = 2023-05-17
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/death-grips/jenny-death-the-powers-that-b-disc-2/"
+
+[[entries]]
+type = ["music release", "studio", "compilation"]
+artists = "Death Grips"
+title = "The Powers That B"
+released = "2015-03-31"
+genres = ["Industrial Hip Hop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/comp/death-grips/the-powers-that-b/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Death Grips"
+title = "Bottomless Pit"
+released = "2016-05-06"
+genres = ["Industrial Hip Hop"]
+review.date = 2023-04-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/death-grips/bottomless-pit/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Death Grips"
+title = "Year of the Snitch"
+released = "2018-06-22"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/death-grips/year-of-the-snitch/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Dismemberment Plan"
+title = "Emergency & I"
+released = "1999-10-26"
+genres = ["Indie Rock", "Math Rock"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/the-dismemberment-plan/emergency-and-i/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "DJ Shadow"
+title = "Endtroducing…"
+released = "1996-11-19"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/dj-shadow/endtroducing/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Donald Fagen"
+title = "Morph the Cat"
+released = "2006-03-07"
+genres = ["Sophisti-Pop", "Soft Rock", "Jazz-Rock"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/donald-fagen/morph-the-cat/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Duster"
+title = "Stratosphere"
+released = "1998-02-24"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/duster/stratosphere/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Einstürzende Neubauten"
+title = "Ende Neu"
+released = "1996-08-19"
+genres = ["Industrial", "Post-Industrial"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/einsturzende_neubauten/ende_neu/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Einstürzende Neubauten"
+title = "Silence Is Sexy"
+released = "2000-04-03"
+genres = ["Post-Industrial"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/einsturzende-neubauten/silence-is-sexy-6/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Einstürzende Neubauten"
+title = "Alles wieder offen"
+released = "2007-10-19"
+genres = ["Industrial", "Post-Industrial"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/einsturzende-neubauten/alles-wieder-offen/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Elliott Smith"
+title = "Either / Or"
+released = "1997-02-25"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/elliott-smith/either-or/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Everything Everything"
+title = "Man Alive"
+released = "2010-08-30"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/everything-everything/man-alive/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Everything Everything"
+title = "Arc"
+released = "2013-01-14"
+genres = ["Art Pop", "Indie Pop"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/everything-everything/arc/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Everything Everything"
+title = "Get to Heaven"
+released = "2015-06-22"
+genres = ["Art Pop", "Progressive Pop", "Indie Rock"]
+review.date = 2022-07-28
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/everything-everything/get-to-heaven/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Everything Everything"
+title = "A Fever Dream"
+released = "2017-08-18"
+genres = ["Art Pop", "Progressive Pop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/everything-everything/a-fever-dream/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Everything Everything"
+title = "RE-ANIMATOR"
+released = "2020-09-11"
+genres = ["Art Pop", "Progressive Pop"]
+review.date = 2022-07-28
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/everything-everything/re-animator/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Everything Everything"
+title = "Raw Data Feel"
+released = "2022-05-20"
+genres = ["Art Pop", "Alternative Dance", "Indietronica"]
+review.date = 2023-05-17
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/everything-everything/raw-data-feel/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Farrah Abraham"
+title = "My Teenage Dream Ended"
+released = "2012-08-01"
+genres = ["Outsider Art", "Electropop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/farrah-abraham/my-teenage-dream-ended/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Feed Me Jack"
+title = "Chumpfrey"
+released = "2012-10-29"
+genres = ["Math Pop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/feed-me-jack/chumpfrey/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Feed Me Jack"
+title = "Anatolia"
+released = "2013-10-25"
+genres = ["Math Pop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/ep/feed-me-jack/anatolia/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Feed Me Jack"
+title = "Ultra Ego"
+released = "2016-01-14"
+genres = ["Math Pop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/ep/feed-me-jack/ultra-ego/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Fishmans"
+title = "LONG SEASON"
+released = "1996-10-25"
+genres = ["Dream Pop", "Progressive Pop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/fishmans/long-season/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Fishmans"
+title = "宇宙 日本 世田谷 (Uchu Nippon Setagaya)"
+released = "1997-07-24"
+genres = ["Dream Pop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/fishmans/宇宙-日本-世田谷-uchu-nippon-setagaya/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Fishmans"
+title = "98.12.28 男達の別れ (98.12.28 Otokotachi no Wakare)"
+released = "1999-10-29"
+genres = ["Dream Pop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/fishmans/98_12_28-男達の別れ-98_12_28-otokotachi-no-wakare/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Glenn Branca"
+title = "Lesson No. 1"
+released = "1980-07"
+genres = ["No Wave", "Totalism"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/ep/glenn-branca/lesson-no-1/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Glenn Branca"
+title = "The Ascension"
+released = "1981-11"
+genres = ["No Wave", "Totalism"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/glenn-branca/the-ascension/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Glenn Branca"
+title = "Symphony Nos. 8 & 10 (the Mysteries)"
+released = "1994"
+genres = ["Totalism"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/branca/symphony-nos-8-and-10-the-mysteries/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Godspeed You! Black Emperor"
+title = "F♯ A♯ ∞"
+released = "1997-08-14"
+genres = ["Post-Rock"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/godspeed-you-black-emperor/f%E2%99%AFa%E2%99%AF%E2%88%9E/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Godspeed You! Black Emperor"
+title = "Slow Riot for New Zerø Kanada"
+released = "1999-03-29"
+genres = ["Post-Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/ep/godspeed-you-black-emperor/slow-riot-for-new-zero-kanada-e_p/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Godspeed You! Black Emperor"
+title = "Lift Your Skinny Fists Like Antennas to Heaven"
+released = "2000-10-09"
+genres = ["Post-Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/godspeed-you-black-emperor/lift-yr-skinny-fists-like-antennas-to-heaven/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Ground-Zero"
+title = "革命京劇 (Revolutionary Pekinese Opera) Ver.1.28"
+released = "1996"
+genres = ["Sound Collage"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/ground-zero/革命京劇-revolutionary-pekinese-opera-ver_1_28/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Have A Nice Life"
+title = "Deathconsciousness"
+released = "2008-01-24"
+genres = ["Post-Punk", "Shoegaze", "Post-Industrial", "Gothic Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/have-a-nice-life/deathconsciousness/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Hell"
+title = "III"
+released = "2012"
+genres = ["Doom Metal", "Sludge Metal"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/hell/hell-iii/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Horse Jumper of Love"
+title = "Horse Jumper of Love"
+released = "2016-03-11"
+genres = ["Slacker Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/horse-jumper-of-love/horse-jumper-of-love/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Brobecks"
+title = "Understanding The Brobecks"
+released = "2003-12-19"
+genres = ["Indie Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-brobecks/understanding-the-brobecks/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Brobecks"
+title = "Happiest Nuclear Winter"
+released = "2005"
+genres = ["Indie Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-brobecks/happiest-nuclear-winter/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Brobecks"
+title = "Goodnight, and Have a Pleasant Tomorrow"
+released = "2006-04-22"
+genres = ["Indie Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/the-brobecks/goodnight-and-have-a-pleasant-tomorrow/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Brobecks"
+title = "Violent Things"
+released = "2009-04-25"
+genres = ["Indie Rock", "Power Pop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/the-brobecks/violent-things/"
+
+[[entries]]
+type = ["music release", "studio", "single"]
+artists = "I DONT KNOW HOW BUT THEY FOUND ME"
+title = "Modern Day Cain"
+released = "2017-08-18"
+genres = ["Synthpop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/single/i-dont-know-how-but-they-found-me/modern-day-cain/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "I DONT KNOW HOW BUT THEY FOUND ME"
+title = "1981 Extended Play"
+released = "2018-11-09"
+genres = ["Indie Pop", "Synthpop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/ep/idkhow/1981-extended-play/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "I DONT KNOW HOW BUT THEY FOUND ME"
+title = "RAZZMATAZZ"
+released = "2020-10-23"
+genres = ["Synthpop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/i-dont-know-how-but-they-found-me/razzmatazz/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "IDLES"
+title = "Joy as an Act of Resistance."
+released = "2018-08-31"
+genres = ["Post-Punk"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/idles/joy-as-an-act-of-resistance/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Imagine Dragons"
+title = "Speak to Me"
+released = "2008"
+genres = ["Pop Rock", "Piano Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/ep/imagine-dragons/speak-to-me/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Imagine Dragons"
+title = "Imagine Dragons"
+released = "2009"
+genres = ["Pop Rock", "Indie Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/ep/imagine-dragons/imagine-dragons/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Imagine Dragons"
+title = "Hell and Silence"
+released = "2010"
+genres = ["Pop Rock", "Alternative Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/ep/imagine-dragons/hell-and-silence/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Imagine Dragons"
+title = "It’s Time"
+released = "2011-03-12"
+genres = ["Pop Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/ep/imagine-dragons/its-time/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Imagine Dragons"
+title = "Night Visions"
+released = "2012-10-04"
+genres = ["Pop Rock"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/imagine-dragons/night-visions/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Imagine Dragons"
+title = "Smoke + Mirrors"
+released = "2015-02-17"
+genres = ["Pop Rock", "Alternative Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/imagine-dragons/smoke-mirrors/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Imagine Dragons"
+title = "Evolve"
+released = "2017-06-23"
+genres = ["Pop Rock", "Synthpop"]
+review.date = 2023-05-18
+review.score = "2.0"
+links.rym = "https://rateyourmusic.com/release/album/imagine-dragons/evolve/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Joy Division"
+title = "Unknown Pleasures"
+released = "1979-06-15"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/joy-division/unknown-pleasures/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "JPEGMAFIA"
+title = "Veteran"
+released = "2018-01-19"
+genres = ["Experimental Hip Hop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/jpegmafia/veteran/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "JPEGMAFIA"
+title = "All My Heroes Are Cornballs"
+released = "2019-09-13"
+genres = ["Experimental Hip Hop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/jpegmafia/all-my-heroes-are-cornballs/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "JPEGMAFIA"
+title = "LP!"
+released = "2021-10-22"
+genres = ["Experimental Hip Hop", "Hardcore Hip Hop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/jpegmafia/lp/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = ["JPEGMAFIA", "Danny Brown"]
+title = "Scaring the Hoes"
+released = "2023-03-24"
+genres = ["Experimental Hip Hop", "Hardcore Hip Hop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/jpegmafia-x-danny-brown/scaring-the-hoes/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "KANA-BOON"
+title = "僕がCDを出したら (Boku ga CD wo dashitara)"
+released = "2013-04-24"
+genres = ["Alternative Rock", "J-Rock"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/ep/kana-boon/僕がcdを出したら-boku-ga-cd-wo-dashitara/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kendrick Lamar"
+title = "good kid, m.A.A.d city"
+released = "2012-10-22"
+genres = ["West Coast Hip Hop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/kendrick-lamar/good-kid-m_a_a_d-city/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kendrick Lamar"
+title = "To Pimp a Butterfly"
+released = "2015-03-15"
+genres = ["West Coast Hip Hop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/kendrick-lamar/to-pimp-a-butterfly/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "King Crimson"
+title = "In the Court of the Crimson King"
+released = "1969-10-10"
+genres = ["Progressive Rock"]
+review.date = 2023-05-18
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/king-crimson/in-the-court-of-the-crimson-king/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "King Crimson"
+title = "Lizard"
+released = "1970-12-11"
+genres = ["Progressive Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/king-crimson/lizard/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "King Crimson"
+title = "Islands"
+released = "1970-12-03"
+genres = ["Progressive Rock"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/king-crimson/islands/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "King Crimson"
+title = "Larks’ Tongues in Aspic"
+released = "1973-03-23"
+genres = ["Progressive Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/king-crimson/larks-tongues-in-aspic/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "King Crimson"
+title = "Red"
+released = "1974-10-06"
+genres = ["Progressive Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/king-crimson/red/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "King Crimson"
+title = "Discipline"
+released = "1981-10-22"
+genres = ["New Wave", "Progressive Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/king-crimson/discipline/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "KONGOS"
+title = "Lunatic"
+released = "2012-12-28"
+genres = ["Alternative Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/kongos/lunatic/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "KONGOS"
+title = "Egomaniac"
+released = "2016-06-10"
+genres = ["Pop Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/kongos/egomaniac/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "KONGOS"
+title = "1929, Pt. 1"
+released = "2019-01-18"
+genres = ["Pop Rock"]
+review.date = 2023-05-18
+review.score = "2.5"
+links.rym = "https://rateyourmusic.com/release/album/kongos/1929/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kraftwerk"
+title = "Autobahn"
+released = "1974-11-01"
+genres = ["Progressive Electronic"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/kraftwerk/autobahn/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kraftwerk"
+title = "Radio-Activität"
+released = "1975-10"
+genres = ["Electronic"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/kraftwerk/radio-aktivitat/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kraftwerk"
+title = "Trans Europa Express"
+released = "1977-03"
+genres = ["Electronic"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/kraftwerk/trans-europa-express-1/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kraftwerk"
+title = "Die Mensch-Maschine"
+released = "1978-05-19"
+genres = ["Electronic"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/kraftwerk/die-mensch-maschine/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kraftwerk"
+title = "Computerwelt"
+released = "1981-05-10"
+genres = ["Electronic"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/kraftwerk/computerwelt/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Kraftwerk"
+title = "Tour de France Soundtracks"
+released = "2003-08-04"
+genres = ["Techno"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/kraftwerk/tour-de-france-soundtracks/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "La Raíz"
+title = "Entre Poetas y Presos"
+released = "2016-03-11"
+genres = ["Ska"]
+review.date = 2023-05-18
+review.score = "2.5"
+links.rym = "https://rateyourmusic.com/release/album/la-raiz/entre-poetas-y-presos/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "LCD Soundsystem"
+title = "LCD Soundsystem"
+released = "2005-01-24"
+genres = ["Dance-Punk"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/lcd-soundsystem/lcd-soundsystem/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "LCD Soundsystem"
+title = "45:33"
+released = "2006-10-17"
+genres = ["Dance-Punk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/lcd-soundsystem/45_33-4/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "LCD Soundsystem"
+title = "Sound of Silver"
+released = "2007-03-12"
+genres = ["Dance-Punk"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/lcd-soundsystem/sound-of-silver/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "LCD Soundsystem"
+title = "This Is Happening"
+released = "2010-05-18"
+genres = ["Dance-Punk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/lcd-soundsystem/this-is-happening/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Lemon Demon"
+title = "View-Monster"
+released = "2008-07-18"
+genres = ["Indie Pop", "Synthpop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/lemon-demon/view-monster/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Lemon Demon"
+title = "Nature Tapes"
+released = "2014-03-24"
+genres = ["Indie Pop", "Synthpop"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/ep/lemon-demon/nature-tapes-ep/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Lemon Demon"
+title = "Spirit Phone"
+released = "2016-02-29"
+genres = ["Synthpop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/lemon-demon/spirit-phone/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Lingua Ignota"
+title = "CALIGULA"
+released = "2019-07-19"
+genres = ["Neoclassical Darkwave"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/lingua-ignota/caligula/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Lingua Ignota"
+title = "SINNER GET READY"
+released = "2021-08-06"
+genres = ["Neoclassical Darkwave"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/lingua-ignota/sinner-get-ready/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Massive Attack"
+title = "Blue Lines"
+released = "1991-04-08"
+genres = ["Trip Hop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/massive-attack/blue-lines/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Massive Attack"
+title = "Protection"
+released = "1994-09-26"
+genres = ["Trip Hop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/massive-attack/protection/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Massive Attack"
+title = "Mezzanine"
+released = "1998-04-20"
+genres = ["Trip Hop", "Post-Industrial"]
+review.date = 2023-05-11
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/massive-attack/mezzanine/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Madvillain"
+title = "Madvillainy"
+released = "2004-03-23"
+genres = ["Abstract Hip Hop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/madvillain/madvillainy/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Mr. Bungle"
+title = "California"
+released = "1999-07-13"
+genres = ["Experimental Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/mr-bungle/california/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "my bloody valentine"
+title = "loveless"
+released = "1991-11-11"
+genres = ["Shoegaze"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/my-bloody-valentine/loveless/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "My Chemical Romance"
+title = "The Black Parade"
+released = "2006-10-24"
+genres = ["Rock Opera", "Alternative Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/my-chemical-romance/the-black-parade/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Native Construct"
+title = "Quiet World"
+released = "2015-04-21"
+genres = ["Progressive Metal"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/native-construct/quiet-world/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Natural Snow Buildings"
+title = "The Snowbringer Cult"
+released = "2008-04"
+genres = ["Drone", "Avant-Folk"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/isengrind-twinsistermoon-natural-snow-buildings/the-snowbringer-cult/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Natural Snow Buildings"
+title = "Daughter of Darkness"
+released = "2009-01-27"
+genres = ["Drone"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/natural-snow-buildings/daughter-of-darkness/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Neptunian Maximalism"
+title = "Éons"
+released = "2020-06-26"
+genres = ["Free Jazz", "Drone Metal"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/neptunian-maximalism/eons/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Neutral Milk Hotel"
+title = "In the Aeroplane Over the Sea"
+released = "1998-02-10"
+genres = ["Indie Folk", "Indie Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/neutral-milk-hotel/in-the-aeroplane-over-the-sea/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Nine Inch Nails"
+title = "Pretty Hate Machine"
+released = "1989-10-20"
+genres = ["Industrial Rock"]
+review.date = 2023-05-14
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/nine-inch-nails/pretty-hate-machine/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Nine Inch Nails"
+title = "The Downward Spiral"
+released = "1994-03-08"
+genres = ["Industrial Rock"]
+review.date = 2023-05-14
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/nine-inch-nails/the-downward-spiral/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Nine Inch Nails"
+title = "The Fragile"
+released = "1999-09-21"
+genres = ["Industrial Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/nine-inch-nails/the-fragile/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Parquet Courts"
+title = "Wide Awake!"
+released = "2018-05-18"
+genres = ["Indie Rock", "Art Punk"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/parquet-courts/wide-awake/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Pavement"
+title = "Crooked Rain, Crooken Rain"
+released = "1994-02-14"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/pavement/crooked_rain__crooked_rain/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Pierce The Veil"
+title = "Misadventures"
+released = "2016-05-13"
+genres = ["Post-Hardcore", "Emo-Pop"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/pierce-the-veil/misadventures-2/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Pixies"
+title = "Doolittle"
+released = "1989-04-17"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/pixies/doolittle/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Polite Fiction"
+title = "Portrait"
+released = "2023-03-15"
+genres = ["Indie Pop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/ep/polite-fiction/portrait/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Portishead"
+title = "Dummy"
+released = "1994-08-22"
+genres = ["Trip Hop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/portishead/dummy/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Portishead"
+title = "Third"
+released = "2008-04-28"
+genres = ["Trip Hop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/portishead/third/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Qujaku [as The Piqnic]"
+title = "ZyouK"
+released = "2015-10"
+genres = ["Shoegaze"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-piqnic/zyouk/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Qujaku"
+title = "Qujaku"
+released = "2018-08-16"
+genres = ["Noise Rock", "Experimental Rock"]
+review.date = 2023-05-12
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/qujaku/qujaku/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Radiohead"
+title = "The Bends"
+released = "1995-03-13"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/radiohead/the-bends/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Radiohead"
+title = "OK Computer"
+released = "1997-06-16"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/radiohead/ok-computer/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Radiohead"
+title = "Kid A"
+released = "2000-10-03"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/radiohead/kid-a/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Radiohead"
+title = "Amnesiac"
+released = "2001-06-04"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/radiohead/amnesiac/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Radiohead"
+title = "Hail to the Thief"
+released = "2003-06-09"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/radiohead/hail-to-the-thief/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Radiohead"
+title = "In Rainbows"
+released = "2007-10-10"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/radiohead/in-rainbows/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Radiohead"
+title = "A Moon Shaped Pool"
+released = "2016-05-08"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/radiohead/a-moon-shaped-pool/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Red House Painters"
+title = "Down Colorful Hill"
+released = "1992-09-14"
+genres = ["Slowcore"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/red-house-painters/down-colorful-hill/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Red House Painters"
+title = "Red House Painters [Rollercoaster]"
+released = "1993-05-24"
+genres = ["Slowcore"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/red-house-painters/red-house-painters-rollercoaster/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Richard Dawson"
+title = "Peasant"
+released = "2017-06-02"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/richard-dawson/peasant/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Royal Blood"
+title = "Royal Blood"
+released = "2014-08-25"
+genres = ["Hard Rock", "Alternative Rock"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/royal-blood/royal-blood/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Royal Blood"
+title = "How Did We Get So Dark?"
+released = "2017-06-16"
+genres = ["Hard Rock", "Alternative Rock"]
+review.date = 2023-04-06
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/royal-blood/how-did-we-get-so-dark/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Royal Blood"
+title = "Typhoons"
+released = "2021-04-30"
+genres = ["Alternative Rock"]
+review.date = 2023-04-06
+review.score = "2.0"
+links.rym = "https://rateyourmusic.com/release/album/royal-blood/typhoons/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Slint"
+title = "Spiderland"
+released = "1991-03-27"
+genres = ["Post-Rock", "Post-Hardcore", "Math Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/slint/spiderland/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Slint"
+title = "Slint"
+released = "1994-08-29"
+genres = ["Post-Rock", "Post-Hardcore", "Math Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/ep/slint/slint/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Snarky Puppy"
+title = "We Like It Here"
+released = "2014-02-25"
+genres = ["Jazz Fusion"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/snarky-puppy/we-like-it-here/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = ["Snarky Puppy", "Het Metropole Orkest"]
+title = "Sylva"
+released = "2015-04-17"
+genres = ["Jazz Fusion"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/snarky-puppy-het-metropole-orkest/sylva/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Snarky Puppy"
+title = "Immigrance"
+released = "2019-03-15"
+genres = ["Jazz Fusion"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/snarky-puppy/immigrance/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Sonic Youth"
+title = "Daydream Nation"
+released = "1988-10-18"
+genres = ["TODO"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/sonic-youth/daydream-nation/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Sports Team"
+title = "Deep Down Happy"
+released = "2020-06-05"
+genres = ["Indie Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/sports-team/deep-down-happy/"
+
+[[entries]]
+type = ["music release", "studio", "single"]
+artists = "Squid"
+title = "The Dial"
+released = "2018-09-21"
+genres = ["Dance-Punk", "Post-Punk"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/single/squid/the-dial/"
+
+[[entries]]
+type = ["music release", "studio", "single"]
+artists = "Squid"
+title = "Houseplants"
+released = "2019-02-27"
+genres = ["Post-Punk"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/single/squid/houseplants/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Squid"
+title = "Town Centre"
+released = "2019-09-06"
+genres = ["Post-Punk", "Art Punk"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/ep/squid/town-centre/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Squid"
+title = "Bright Green Field"
+released = "2021-05-07"
+genres = ["Post-Punk", "Art Punk"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/squid/bright-green-field/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Suede"
+title = "Suede"
+released = "1993-03-29"
+genres = ["Britpop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/suede/suede/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Suede"
+title = "Dog Man Star"
+released = "1994-10-10"
+genres = ["Britpop"]
+review.date = 2023-05-18
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/suede/dog-man-star/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Suede"
+title = "Coming Up"
+released = "1996-09-02"
+genres = ["Britpop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/suede/coming-up/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Sufjan Stevens"
+title = "Illinois"
+released = "2005-07-05"
+genres = ["Champter Pop", "Singer-Songwriter"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/sufjan-stevens/illinois/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Sufjan Stevens"
+title = "The Age of Adz"
+released = "2010-10-12"
+genres = ["Art Pop", "Progressive Pop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/sufjan-stevens/the-age-of-adz/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Sufjan Stevens"
+title = "Carrie & Lowell"
+released = "2015-03-31"
+genres = ["Indie Folk", "Singer-Songwriter"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/sufjan-stevens/carrie-and-lowell/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Suicide"
+title = "Suicide"
+released = "1977-12-28"
+genres = ["Synth Punk"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/suicide/suicide/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Circus Mort"
+title = "Circus Mort"
+released = "1981"
+genres = ["Post-Punk"]
+review.date = 2022-07-28
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/ep/circus_mort/circus_mort/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Swans"
+title = "Swans"
+released = "1982"
+genres = ["Post-Punk", "No Wave"]
+review.date = 2023-05-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/ep/swans/swans/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Filth"
+released = "1983-05-27"
+genres = ["No Wave"]
+review.date = 2022-07-28
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/filth/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Cop"
+released = "1984"
+genres = ["No Wave", "Noise Rock"]
+review.date = 2023-05-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/swans/cop/"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Swans"
+title = "Young God"
+released = "1984"
+genres = ["No Wave", "Noise Rock"]
+review.date = 2023-05-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/ep/swans/young-god/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Greed"
+released = "1986-02-28"
+genres = ["No Wave", "Noise Rock", "Industrial Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/greed/"
+
+[[entries]]
+type = ["music release", "studio", "single"]
+artists = "Swans"
+title = "Time Is Money (Bastard) / Sealed in Skin"
+released = "1986-01-31"
+genres = ["Industrial Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/single/swans/time-is-money-bastard-sealed-in-skin/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Holy Money"
+released = "1986-03-27"
+genres = ["No Wave", "Noise Rock", "Industrial Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/holy-money/"
+
+[[entries]]
+type = ["music release", "studio", "single"]
+artists = "Swans"
+title = "A Screw"
+released = "1986-09-01"
+genres = ["Industrial Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/single/swans/a-screw/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Swans"
+title = "Public Castration Is A Good Idea"
+released = "1986"
+genres = ["No Wave", "Noise Rock", "Industrial Rock"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/public-castration-is-a-good-idea/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Children of God"
+released = "1987-10-19"
+genres = ["No Wave", "Gothic Rock",  "Post-Punk"]
+review.date = 2023-05-06
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/swans/children-of-god/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "The Burning World"
+released = "1989-05-15"
+genres = ["Gothic Rock"]
+review.date = 2023-05-06
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/the-burning-world/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "White Light from the Mouth of Infinity"
+released = "1991-06-05"
+genres = ["Gothic Rock"]
+review.date = 2023-05-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/swans/white-light-from-the-mouth-of-infinity/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Love of Life"
+released = "1992-02-24"
+genres = ["Gothic Rock"]
+review.date = 2023-05-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/swans/love-of-life/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "The Great Annihilator"
+released = "1995-01-23"
+genres = ["Post-Punk", "Experimental Rock"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/the-great-annihilator/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Soundtracks for the Blind"
+released = "1996-10-22"
+genres = ["Experimental Rock", "Post-Rock", "Experimental"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/soundtracks-for-the-blind"
+
+[[entries]]
+type = ["music release", "studio", "EP"]
+artists = "Swans"
+title = "Die Tür ist zu"
+released = "1996-06-15"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/ep/swans/die-tur-ist-zu/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "Swans Are Dead"
+released = "1998-01-20"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/swans-are-dead/"
+
+[[entries]]
+type = ["music release", "studio", "compilation"]
+artists = ["The Body Lovers", "The Body Haters"]
+title = "The Body Lovers / The Body Haters"
+released = "2005"
+genres = ["Dark Ambient", "Drone", "Experimental"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/comp/the-body-lovers-the-body-haters/the-body-lovers-the-body-haters/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Angels of Light"
+title = "New Mother"
+released = "1999-04-05"
+genres = ["Folk Rock", "Neofolk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-angels-of-light/new-mother/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Angels of Light"
+title = "How I Loved You"
+released = "2001-03-20"
+genres = ["Folk Rock", "Gothic Country"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-angels-of-light/how-i-loved-you/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Angels of Light"
+title = "Everything Is Good Here / Please Come Home"
+released = "2003-03-04"
+genres = ["Folk Rock", "Experimental Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-angels-of-light/everything-is-good-here-please-come-home/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Angels of Light"
+title = "We Are Him"
+released = "2007-08-28"
+genres = ["Folk Rock", "Experimental Rock", "Gothic Country"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/angels-of-light/we-are-him/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "My Father Will Guide Me Up a Rope to the Sky"
+released = "2010-09-21"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/swans/my-father-will-guide-me-up-a-rope-to-the-sky/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Swans"
+title = "We Rose From Your Bed With the Sun in Our Head"
+released = "2012-02-02"
+genres = ["Experimental Rock", "Post-Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/swans/we-rose-from-your-bed-with-the-sun-in-our-head/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "The Seer"
+released = "2012-08-28"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/the-seer/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Swans"
+title = "Not Here / Not Now"
+released = "2023-10-14"
+genres = ["Experimental Rock", "Post-Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/swans/not-here-not-now/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "To Be Kind"
+released = "2014-05-13"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-06
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/swans/to-be-kind/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Swans"
+title = "The Gate"
+released = "2015-10-01"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/the-gate/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "The Glowing Man"
+released = "2016-06-17"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/the-glowing-man/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Swans"
+title = "Deliquescence"
+released = "2017-05-17"
+genres = ["Experimental Rock", "Post-Rock"]
+review.date = 2023-05-06
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/deliquescence/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Swans"
+title = "leaving meaning."
+released = "2019-10-25"
+genres = ["Post-Rock", "Experimental Rock", "Neofolk"]
+review.date = 2023-05-06
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/swans/leaving-meaning/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Talking Heads"
+title = "Talking Heads: ’77"
+released = "1977-09-16"
+genres = ["New Wave"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/talking-heads/talking-heads-77/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Talking Heads"
+title = "More Songs About Buildings and Food"
+released = "1978-07-07"
+genres = ["New Wave"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/talking-heads/more-songs-about-buildings-and-food-4/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Talking Heads"
+title = "Fear of Music"
+released = "1979-08-03"
+genres = ["New Wave"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/talking-heads/fear-of-music/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Talking Heads"
+title = "Remain in Light"
+released = "1980-10-08"
+genres = ["New Wave"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/talking-heads/remain-in-light/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Talking Heads"
+title = "Speaking in Toungues"
+released = "1983-06-01"
+genres = ["New Wave", "Synth Funk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/talking-heads/speaking-in-tongues/"
+
+[[entries]]
+type = ["music release", "live", "album"]
+artists = "Talking Heads"
+title = "Stop Making Sense"
+released = "1984-09"
+genres = ["New Wave"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/talking-heads/stop-making-sense-5/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Beach Boys"
+title = "Pet Sounds"
+released = "1966-05-16"
+genres = ["Baroque Pop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-beach-boys/pet-sounds/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Cure"
+title = "Pornography"
+released = "1982-05-03"
+genres = ["Gothic Rock", "Post-Punk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-cure/pornography/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Cure"
+title = "Disintegration"
+released = "1989-05-02"
+genres = ["Gothic Rock", "Post-Punk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-cure/disintegration/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Doors"
+title = "The Doors"
+released = "1967-01-04"
+genres = ["Psychadelic Rock"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/the-doors/the-doors-21/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Doors"
+title = "L.A. Woman"
+released = "1971-04-29"
+genres = ["Blues Rock", "Psychadelic Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/the-doors/l_a-woman/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "the hatch"
+title = "OpaqueAge"
+released = "2018-09-05"
+genres = ["Noise Rock", "Brutal Prog"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/the-hatch/opaque-age/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "the hatch"
+title = "shape of raw to come"
+released = "2022-09-07"
+genres = ["Experimental Rock", "Art Punk", "Math Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-hatch/shape-of-raw-to-come/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Killers"
+title = "Hot Fuss"
+released = "2004-06-15"
+genres = ["Pop Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/the-killers/hot-fuss/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Killers"
+title = "Wonderful Wonderful"
+released = "2017-09-22"
+genres = ["Pop Rock", "Alternative Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/the-killers/wonderful-wonderful/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Killers"
+title = "Pressure Machine"
+released = "2021-08-13"
+genres = ["Heartland Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/the-killers/pressure-machine/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Magnetic Fields"
+title = "69 Love Songs"
+released = "1999-09-07"
+genres = ["Indie Pop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/the-magnetic-fields/69-love-songs/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Microphones"
+title = "The Glow, Pt. 2"
+released = "2001-09-11"
+genres = ["Indie Folk", "Psychadelic Folk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-microphones/the-glow-pt-2/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Necks"
+title = "Sex"
+released = "1989"
+genres = ["Avant-Garde Jazz"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/the-necks/sex/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Necks"
+title = "Next"
+released = "1990"
+genres = ["Avant-Garde Jazz"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/the-necks/next/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Necks"
+title = "Unfold"
+released = "2017-02-10"
+genres = ["Avant-Garde Jazz"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/the-necks/unfold/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Smashing Pumpkins"
+title = "Mellon Collie and the Infinite Sadness"
+released = "1995-10-23"
+genres = ["Alternative Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/the-smashing-pumpkins/mellon-collie-and-the-infinite-sadness/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "The Strokes"
+title = "Is This It"
+released = "2001-08-20"
+genres = ["Garage Rock", "Indie Rock"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/the-strokes/is-this-it-9/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "This Heat"
+title = "Deceit"
+released = "1981-09"
+genres = ["Experimental Rock", "Post-Punk"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/this-heat/deceit/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "TOOL"
+title = "Lateralus"
+released = "2001-05-15"
+genres = ["Progressive Metal"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/tool/lateralus/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Twenty One Pilots"
+title = "Twenty One Pilots"
+released = "2009-12-29"
+genres = ["Indie Pop", "Piano Rock"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/twenty-one-pilots/twenty-one-pilots/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Twenty One Pilots"
+title = "Regional at Best"
+released = "2011-07-08"
+genres = ["Indie Pop", "Pop Rap"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/twenty-one-pilots/regional-at-best/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Twenty One Pilots"
+title = "Vessel"
+released = "2013-01-08"
+genres = ["Indie Pop", "Pop Rap"]
+review.date = 2023-05-18
+review.score = "3.5"
+links.rym = "https://rateyourmusic.com/release/album/twenty-one-pilots/vessel/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Twenty One Pilots"
+title = "Blurryface"
+released = "2015-05-18"
+genres = ["Pop Rap", "Electropop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/twenty-one-pilots/blurryface/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Twenty One Pilots"
+title = "Trench"
+released = "2018-10-05"
+genres = ["Alt-Pop", "Indie Pop"]
+review.date = 2023-05-18
+review.score = "2.5"
+links.rym = "https://rateyourmusic.com/release/album/twenty-one-pilots/trench/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "We Are Scientists"
+title = "Helter Seltzer"
+released = "2016-04-22"
+genres = ["Indie Rock"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/we-are-scientists/helter-seltzer/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Weezer"
+title = "Weezer [Blue Album]"
+released = "1994-05-10"
+genres = ["Power Pop"]
+review.date = 2023-05-18
+review.score = "2.0"
+links.rym = "https://rateyourmusic.com/release/album/weezer/weezer-blue-album/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Weezer"
+title = "Pinkerton"
+released = "1996-09-24"
+genres = ["Power Pop", "Emo"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/weezer/pinkerton/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Wet Leg"
+title = "Wet Leg"
+released = "2022-04-08"
+genres = ["Indie Rock"]
+review.date = 2023-05-18
+review.score = "2.5"
+links.rym = "https://rateyourmusic.com/release/album/wet-leg/wet-leg/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Wilco"
+title = "Yankee Hotel Foxtrot"
+released = "2022-04-23"
+genres = ["Indie Rock", "Art Rock"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/wilco/yankee-hotel-foxtrot/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Wild Party"
+title = "Phantom Pop"
+released = "2014-10-07"
+genres = ["Indie Pop", "Pop Rock", "Power Pop"]
+review.date = 2023-05-18
+review.score = "3.0"
+links.rym = "https://rateyourmusic.com/release/album/wild-party/phantom-pop/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Wu-Tang Clan"
+title = "Enter The Wu-Tang (36 Chambers)"
+released = "1993-11-09"
+genres = ["East Coast Hip Hop"]
+review.date = 2023-05-18
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/album/wu-tang-clan/enter-the-wu-tang-36-chambers/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Xiu Xiu"
+title = "Knife Play"
+released = "2002-02-19"
+genres = ["Experimental Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/xiu-xiu/knife-play/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Xiu Xiu"
+title = "A Promise"
+released = "2003-02-18"
+genres = ["Experimental", "Post-Industrial"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/xiu-xiu/a-promise/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Xiu Xiu"
+title = "Fabulous Muscles"
+released = "2004-02-17"
+genres = ["Experimental Rock", "Art Pop"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/xiu-xiu/fabulous-muscles/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Xiu Xiu"
+title = "Dear God, I Hate Myself"
+released = "2010-02-23"
+genres = ["Art Pop"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/xiu-xiu/dear-god-i-hate-myself/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Xiu Xiu"
+title = "Girl With Basket of Fruit"
+released = "2019-02-08"
+genres = ["Post-Industrial", "Experimental"]
+review.date = 2023-05-18
+review.score = "4.5"
+links.rym = "https://rateyourmusic.com/release/album/xiu-xiu/girl-with-basket-of-fruit/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "Xiu Xiu"
+title = "Ignore Grief"
+released = "2023-03-03"
+genres = ["Death Industrial", "Experimental"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/xiu-xiu/ignore-grief/"
+
+[[entries]]
+type = ["music release", "studio", "album"]
+artists = "ミドリ (Midori)"
+title = "あらためまして、はじめまして、ミドリです。 (Aratamemashite, hajimemashite, Midori desu.)"
+released = "2008-05-14"
+genres = ["Art Punk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/album/ミドリ/あらためまして、はじめまして、ミドリです。-aratamemashite-hajimemashite-midori-desu/"

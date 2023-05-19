@@ -39,15 +39,6 @@ pre.scode {
 	tab-size: 4;
 }
 
-/* Tables */
-table {
-	border-collapse: collapse;
-}
-th, td {
-	border: 1px solid grey;
-	padding: 6px 10px;
-}
-
 /* Back to top arrow */
 .back {
 	margin-top: 3em;
