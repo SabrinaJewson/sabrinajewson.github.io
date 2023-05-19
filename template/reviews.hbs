@@ -9,16 +9,18 @@
 	{{/inline}}
 	{{#*inline "body"}}
 		{{{introduction}}}
-		<table>
+		<div class="page-controls"></div>
+		<table id="reviews-table">
 			<thead>
 				<tr>
 					<th>Title</th>
 					<th>Genres</th>
-					<th>Score</th>
+					<th class="score-header">Score ↕</th>
 				</tr>
 			</thead>
 			<tbody id="reviews"></tbody>
 		</table>
+		<div class="page-controls"></div>
 		<template id="rows">
 			{{#each entries}}
 				<template>
@@ -42,7 +44,7 @@
 						<td><small>{{genres}}</small></td>
 						<td>
 							{{#if review}}
-								<strong>{{review.score}}</strong>
+								<strong class='score'>{{review.score}}</strong>
 								<br>
 								<small>
 									<time datetime="{{review.date}}">{{review.date}}</time>
