@@ -6,10 +6,10 @@ abbr {
 	width: 100%;
 }
 #reviews-table th:nth-child(2) {
-	width: 150px;
+	width: 110px;
 }
 #reviews-table th:nth-child(3) {
-	width: 100px;
+	width: 90px;
 }
 .score-header {
 	cursor: pointer;
@@ -42,13 +42,22 @@ small {
 	text-align: center;
 	vertical-align: middle;
 	cursor: pointer;
-	background-color: #333;
 }
-.page-controls > div:hover {
-	background-color: #555;
+@media (prefers-color-scheme: dark) {
+	.page-controls > div {
+		background-color: #333;
+	}
+	.page-controls > div:hover, .page-controls > div.selected {
+		background-color: #555;
+	}
 }
-.page-controls > div.selected {
-	background-color: #555;
+@media (prefers-color-scheme: light) {
+	.page-controls > div {
+		background-color: #DDD;
+	}
+	.page-controls > div:hover, .page-controls > div.selected {
+		background-color: #BBB;
+	}
 }
 .page-controls > div.disabled {
 	background-color: revert;
