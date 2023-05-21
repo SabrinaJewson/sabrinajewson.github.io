@@ -20,6 +20,7 @@ for (const container of document.getElementsByClassName("page-controls")) {
 	page_controls.push({ first, last, prev, next, middle });
 }
 const score_header = document.getElementById("score-header");
+const [filter_input, filter_clear_button] = document.getElementById("filter").children;
 
 let current_sort;
 let current_filter;
@@ -28,6 +29,10 @@ let pages;
 function set_sort_and_filter(new_sort, new_filter) {
 	current_sort = new_sort;
 	current_filter = new_filter;
+	filter_input.value = new_filter;
+	history.replaceState(null, "", location.origin + location.pathname + (
+		new_filter === "" ? "" : `?q=${new_filter}`
+	));
 
 	let rows;
 	if (new_filter !== null) {
@@ -106,8 +111,6 @@ function set_shown_page(new_page) {
 	current_page = new_page;
 }
 
-set_sort_and_filter(null, null);
-
 score_header.parentElement.addEventListener("click", () => {
 	if (current_sort === null) {
 		set_sort_and_filter({ direction: "descending" }, current_filter);
@@ -160,11 +163,7 @@ for (const { first, last, prev, next, middle } of page_controls) {
 	});
 }
 
-const [filter_input, filter_clear_button] = document.getElementById("filter").children;
-filter_input.addEventListener("input", () => {
-	set_sort_and_filter(current_sort, filter_input.value);
-});
-filter_clear_button.addEventListener("click", () => {
-	filter_input.value = "";
-	set_sort_and_filter(current_sort, "");
-});
+filter_input.addEventListener("input", () => set_sort_and_filter(current_sort, filter_input.value));
+filter_clear_button.addEventListener("click", () => set_sort_and_filter(current_sort, ""));
+
+set_sort_and_filter(null, (new URLSearchParams(location.search)).get("q") || filter_input.value);
