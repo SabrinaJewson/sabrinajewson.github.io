@@ -150,6 +150,7 @@ dependencies = [
  "image",
  "log",
  "notify",
+ "num-traits",
  "once_cell",
  "percent-encoding",
  "pretty_env_logger",

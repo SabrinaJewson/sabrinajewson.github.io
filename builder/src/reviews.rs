@@ -93,8 +93,8 @@ struct Entry {
     r#type: String,
     artists: String,
     title: String,
-    released_year: u32,
-    released: String,
+    released_short: String,
+    released_full: String,
     genres: String,
     review: Option<Review>,
     links: data::Links,
@@ -150,8 +150,8 @@ impl Entry {
             r#type,
             artists: entry.artists.join(", "),
             title: entry.title,
-            released_year: entry.released.year,
-            released: entry.released.to_string(),
+            released_short: format!("{:#}", entry.released),
+            released_full: format!("{}", entry.released),
             genres: entry.genres.join(", "),
             review: entry.review.map(|review| Review {
                 date: review.date.to_string(),
@@ -420,19 +420,24 @@ mod data {
 
     mod released {
         pub(in crate::reviews) struct Released {
-            pub year: u32,
-            pub month: Option<u8>,
-            pub day: Option<u8>,
+            pub start: PrecisionDate,
+            pub end: Option<PrecisionDate>,
         }
 
         impl Display for Released {
             fn fmt(&self, f: &mut Formatter<'_>) -> fmt::Result {
-                let year = self.year;
-                match (self.month, self.day) {
-                    (Some(month), Some(day)) => write!(f, "{year:04}-{month:02}-{day:02}"),
-                    (Some(month), None) => write!(f, "{year:04}-{month:02}"),
-                    (None, None) => write!(f, "{year:04}"),
-                    _ => unreachable!(),
+                let start = self.start;
+                if let Some(end) = self.end {
+                    if end == start {
+                        Display::fmt(&start, f)
+                    } else {
+                        Display::fmt(&start, f)?;
+                        f.write_str("–")?;
+                        Display::fmt(&end, f)
+                    }
+                } else {
+                    Display::fmt(&start, f)?;
+                    f.write_str("–")
                 }
             }
         }
@@ -450,31 +455,24 @@ mod data {
                 f.write_str("a release date")
             }
             fn visit_str<E: de::Error>(self, v: &str) -> Result<Self::Value, E> {
-                let mut parts = v.splitn(3, '-');
-                let year = parts
-                    .next()
-                    .unwrap()
-                    .parse::<u32>()
-                    .map_err(|e| de::Error::custom(format_args!("invalid year: {e}")))?;
-                let month = match parts.next() {
-                    Some(month) => Some(
-                        month
-                            .parse::<u8>()
-                            .map_err(|e| de::Error::custom(format_args!("invalid month: {e}")))?,
-                    ),
-                    None => None,
-                };
-                let day = match parts.next() {
-                    Some(day) => Some(
-                        day.parse::<u8>()
-                            .map_err(|e| de::Error::custom(format_args!("invalid day: {e}")))?,
-                    ),
-                    None => None,
-                };
-                Ok(Released { year, month, day })
+                let mut parts = v.splitn(2, '–');
+                let start = parts.next().unwrap();
+                let start = start
+                    .parse::<PrecisionDate>()
+                    .map_err(|e| de::Error::custom(format_args!("invalid start date: {e}")))?;
+                let end =
+                    match parts.next() {
+                        Some("") => None,
+                        Some(date) => Some(date.parse::<PrecisionDate>().map_err(|e| {
+                            de::Error::custom(format_args!("invalid end date: {e}"))
+                        })?),
+                        None => Some(start),
+                    };
+                Ok(Released { start, end })
             }
         }
 
+        use crate::util::precision_date::PrecisionDate;
         use serde::de;
         use serde::Deserialize;
         use serde::Deserializer;
