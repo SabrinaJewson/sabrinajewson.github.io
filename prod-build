@@ -1,5 +1,5 @@
 #!/bin/sh
 set -e
 cd "$(dirname "$0")"
-./build
-./build -- --drafts -o dist/drafts
+./build -- --minify
+./build -- --minify --drafts -o dist/drafts

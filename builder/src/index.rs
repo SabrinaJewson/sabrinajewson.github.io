@@ -2,7 +2,7 @@ pub(crate) fn asset<'a>(
     template_path: &'a Path,
     src_path: &'a Path,
     out_path: &'a Path,
-    templater: impl Asset<Output = Templater> + Clone + 'a,
+    templater: impl Asset<Output = Templater<'a>> + Clone + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(template_path)
         .map(|src| Template::compile(&src?).context("failed to compile index template"))
@@ -30,12 +30,10 @@ pub(crate) fn asset<'a>(
                 body: &markdown.body,
                 summary: &markdown.summary,
             };
-            let rendered = match templater.render(template, vars) {
+            match templater.render(template, vars) {
                 Ok(rendered) => rendered,
-                Err(e) => return error_page([&e]),
-            };
-
-            minify::html(&rendered)
+                Err(e) => error_page([&e]),
+            }
         })
         .map(move |html| {
             write_file(out_path, html)?;
@@ -52,7 +50,6 @@ use crate::util::asset::Asset;
 use crate::util::error_page;
 use crate::util::log_errors;
 use crate::util::markdown;
-use crate::util::minify;
 use crate::util::write_file;
 use anyhow::Context as _;
 use handlebars::Template;

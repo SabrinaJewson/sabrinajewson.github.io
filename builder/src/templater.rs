@@ -1,10 +1,10 @@
 #[derive(Clone)]
-pub(crate) struct Templater {
+pub(crate) struct Templater<'a> {
     handlebars: Rc<Handlebars<'static>>,
-    live_reload: bool,
+    config: &'a Config,
 }
 
-impl Templater {
+impl Templater<'_> {
     #[context("failed to render template")]
     pub(crate) fn render(
         &self,
@@ -24,27 +24,29 @@ impl Templater {
             rest: vars,
             icons: icons::PATHS,
             common_css: common_css::PATH,
-            live_reload: self.live_reload,
+            live_reload: self.config.live_reload,
         };
         let context = handlebars::Context::wraps(vars).unwrap();
 
         let mut render_context = handlebars::RenderContext::new(None);
-        Ok(template.renders(&self.handlebars, &context, &mut render_context)?)
+        let mut rendered = template.renders(&self.handlebars, &context, &mut render_context)?;
+        self.config.minify(minify::FileType::Html, &mut rendered);
+        Ok(rendered)
     }
 }
 
 thread_local! {
-    static FALLBACK_TEMPLATER: Templater = Templater {
+    static FALLBACK_TEMPLATER: Templater<'static> = Templater {
         handlebars: Rc::new(Handlebars::new()),
         // This value doesn't matter since we haven't included templates that reference it
-        live_reload: false,
+        config: &Config { drafts: false, minify: false, live_reload: false },
     };
 }
 
 pub(crate) fn asset<'a>(
     include_dir: &'a Path,
-    live_reload: impl Asset<Output = bool> + Clone + 'a,
-) -> impl Asset<Output = Templater> + 'a {
+    config: impl Asset<Output = &'a Config> + Copy + 'a,
+) -> impl Asset<Output = Templater<'a>> + 'a {
     asset::Dir::new(include_dir)
         .map(move |files| -> anyhow::Result<_> {
             let mut includes = Vec::new();
@@ -74,15 +76,15 @@ pub(crate) fn asset<'a>(
                 includes.push(include);
             }
 
-            Ok(asset::all((live_reload.clone(), asset::all(includes)))
-                .map(|(live_reload, includes)| {
+            Ok(asset::all((config, asset::all(includes)))
+                .map(|(config, includes)| {
                     let mut handlebars = Handlebars::new();
                     for (name, include) in Vec::from(includes).into_iter().flatten() {
                         handlebars.register_template(&name, include);
                     }
                     Templater {
                         handlebars: Rc::new(handlebars),
-                        live_reload,
+                        config,
                     }
                 })
                 .cache())
@@ -103,9 +105,11 @@ pub(crate) fn asset<'a>(
 }
 
 use crate::common_css;
+use crate::config::Config;
 use crate::icons;
 use crate::util::asset;
 use crate::util::asset::Asset;
+use crate::util::minify;
 use anyhow::Context as _;
 use fn_error_context::context;
 use handlebars::template::Template;

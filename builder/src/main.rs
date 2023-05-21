@@ -27,6 +27,9 @@ mod reviews;
 mod server;
 mod templater;
 
+mod config;
+use config::Config;
+
 mod util;
 use self::util::asset;
 use self::util::asset::Asset;
@@ -38,6 +41,10 @@ struct Args {
     /// Whether to build drafts.
     #[clap(long)]
     drafts: bool,
+
+    /// Whether to minify the output.
+    #[clap(long)]
+    minify: bool,
 
     /// Whether to watch the directory for changes.
     #[clap(long)]
@@ -65,8 +72,14 @@ fn main() -> anyhow::Result<()> {
         "server is not enabled; rebuild with `--features server` and try again"
     );
 
+    let config = Config {
+        drafts: args.drafts,
+        minify: args.minify,
+        live_reload: args.serve_port.is_some(),
+    };
+
     let bump = Bump::new();
-    let asset = asset(&bump, &args.output, args.drafts, args.serve_port.is_some());
+    let asset = asset(&bump, &args.output, asset::Dynamic::new(&config));
     asset.generate();
 
     if args.watch || args.serve_port.is_some() {
@@ -131,23 +144,27 @@ fn main() -> anyhow::Result<()> {
 fn asset<'asset>(
     bump: &'asset Bump,
     output: &'asset str,
-    drafts: bool,
-    live_reload: bool,
+    config: impl Asset<Output = &'asset Config> + Copy + 'asset,
 ) -> impl Asset<Output = ()> + 'asset {
-    let templater = Rc::new(templater::asset(
-        "template/include".as_ref(),
-        asset::Dynamic::new(live_reload),
-    ));
+    let templater = Rc::new(templater::asset("template/include".as_ref(), config));
 
     asset::all((
         // This must come first to initialize minification
-        minify::asset(),
+        config
+            .map(|config| -> Box<dyn Asset<Output = ()>> {
+                if config.minify {
+                    Box::new(minify::asset())
+                } else {
+                    Box::new(asset::Constant::new(()))
+                }
+            })
+            .flatten(),
         blog::asset(
             "template/blog".as_ref(),
             "src/blog".as_ref(),
             Path::new(util::bump::alloc_str_concat(bump, &[output, "/blog"])),
             templater.clone(),
-            asset::Dynamic::new(drafts),
+            config,
         ),
         reviews::asset(
             "src/reviews.toml".as_ref(),
@@ -156,6 +173,7 @@ fn asset<'asset>(
             "template/reviews.js".as_ref(),
             Path::new(output),
             templater.clone(),
+            config,
         ),
         index::asset(
             "template/index.hbs".as_ref(),
@@ -168,7 +186,7 @@ fn asset<'asset>(
             Path::new(util::bump::alloc_str_concat(bump, &[output, "/404.html"])),
             templater,
         ),
-        common_css::asset("template/common.css".as_ref(), Path::new(output)),
+        common_css::asset("template/common.css".as_ref(), Path::new(output), config),
         icons::asset("src/icon.png".as_ref(), Path::new(output)),
         no_jekyll::asset(Path::new(output)),
         cname::asset(

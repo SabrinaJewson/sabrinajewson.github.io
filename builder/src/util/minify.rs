@@ -19,8 +19,27 @@ fn npm_install() -> anyhow::Result<()> {
     Ok(())
 }
 
-pub(crate) fn html(src: &str) -> String {
-    let res = pipe(
+pub(crate) fn minify(file_type: FileType, s: &mut String) {
+    let res = match file_type {
+        FileType::Html => html(s),
+        FileType::Css => css(s),
+        FileType::Js => js(s),
+    };
+    match res {
+        Ok(minified) => *s = minified,
+        Err(e) => log::error!("{e:?}"),
+    }
+}
+
+#[derive(Clone, Copy)]
+pub(crate) enum FileType {
+    Html,
+    Css,
+    Js,
+}
+
+fn html(src: &str) -> anyhow::Result<String> {
+    pipe(
         process::Command::new("npx")
             .arg("html-minifier-terser")
             .arg("--collapse-boolean-attributes")
@@ -39,40 +58,23 @@ pub(crate) fn html(src: &str) -> String {
             .arg("--sort-class-name")
             .current_dir("./builder/js"),
         src,
-    );
-
-    match res {
-        Ok(minified) => minified,
-        Err(e) => {
-            log::error!(
-                "{:?}",
-                e.context("failed to minify HTML with html-minifier-terser")
-            );
-            src.to_owned()
-        }
-    }
+    )
+    .context("failed to minify HTML with html-minifier-terser")
 }
 
-pub(crate) fn css(src: &str) -> String {
-    let res = pipe(
+fn css(src: &str) -> anyhow::Result<String> {
+    pipe(
         process::Command::new("npx")
             .arg("cleancss")
             .arg("-O2")
             .current_dir("./builder/js"),
         src,
-    );
-
-    match res {
-        Ok(minified) => minified,
-        Err(e) => {
-            log::error!("{:?}", e.context("failed to minify CSS with cleancss"));
-            src.to_owned()
-        }
-    }
+    )
+    .context("failed to minify CSS with cleancss")
 }
 
-pub(crate) fn js(src: &str) -> String {
-    let res = pipe(
+fn js(src: &str) -> anyhow::Result<String> {
+    pipe(
         process::Command::new("npx")
             .arg("terser")
             .arg("--mangle")
@@ -81,15 +83,8 @@ pub(crate) fn js(src: &str) -> String {
             .arg("--compress")
             .current_dir("./builder/js"),
         src,
-    );
-
-    match res {
-        Ok(minified) => minified,
-        Err(e) => {
-            log::error!("{:?}", e.context("failed to minify JS with terser"));
-            src.to_owned()
-        }
-    }
+    )
+    .context("failed to minify JS with terser")
 }
 
 fn pipe(command: &mut process::Command, input: &str) -> anyhow::Result<String> {

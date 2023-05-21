@@ -62,6 +62,7 @@ impl Modified {
     }
 }
 
+#[derive(Clone, Copy)]
 pub(crate) struct Map<A, F> {
     asset: A,
     f: F,
@@ -185,7 +186,7 @@ macro_rules! impl_for_refs {
     )* };
 }
 
-impl_for_refs!(&A, std::rc::Rc<A>);
+impl_for_refs!(&A, Box<A>, std::rc::Rc<A>);
 
 pub(crate) fn all<T: IntoAll>(into_all: T) -> T::All {
     into_all.into_all()

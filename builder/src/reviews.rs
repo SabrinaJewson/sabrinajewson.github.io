@@ -8,7 +8,8 @@ pub(crate) fn asset<'a>(
     css_path: &'a Path,
     js_path: &'a Path,
     out_path: &'a Path,
-    templater: impl Asset<Output = Templater> + Clone + 'a,
+    templater: impl Asset<Output = Templater<'a>> + Clone + 'a,
+    config: impl Asset<Output = &'a Config> + Copy + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(template_path)
         .map(|src| Template::compile(&src?).context("failed to compile reviews template"))
@@ -48,12 +49,10 @@ pub(crate) fn asset<'a>(
                 Ok(template) => template,
                 Err(e) => return error_page([e]),
             };
-            let rendered = match templater.render(template, template_vars) {
+            match templater.render(template, template_vars) {
                 Ok(rendered) => rendered,
-                Err(e) => return error_page([&e]),
-            };
-
-            minify::html(&rendered)
+                Err(e) => error_page([&e]),
+            }
         })
         .map(move |html| {
             write_file(out_path.join(HTML_PATH), html)?;
@@ -63,25 +62,19 @@ pub(crate) fn asset<'a>(
         .map(log_errors)
         .modifies_path(out_path.join(HTML_PATH));
 
-    let css = asset::TextFile::new(css_path)
-        .map(move |res| -> anyhow::Result<()> {
-            let css = minify::css(&res?);
-            write_file(out_path.join(CSS_PATH), css)?;
-            log::info!("successfully emitted {CSS_PATH}");
-            Ok(())
-        })
-        .map(log_errors)
-        .modifies_path(out_path.join(CSS_PATH));
+    let css = copy_minify(
+        config,
+        minify::FileType::Css,
+        css_path,
+        out_path.join(CSS_PATH),
+    );
 
-    let js = asset::TextFile::new(js_path)
-        .map(move |res| -> anyhow::Result<()> {
-            let js = minify::js(&res?);
-            write_file(out_path.join(JS_PATH), js)?;
-            log::info!("successfully emitted {JS_PATH}");
-            Ok(())
-        })
-        .map(log_errors)
-        .modifies_path(out_path.join(JS_PATH));
+    let js = copy_minify(
+        config,
+        minify::FileType::Js,
+        js_path,
+        out_path.join(CSS_PATH),
+    );
 
     asset::all((html, css, js)).map(|((), (), ())| {})
 }
@@ -131,6 +124,27 @@ impl Entry {
                     }
                 }
             }
+            data::Type::Comic(data::r#type::Comic::Oneshot) => "Oneshot comic".to_owned(),
+            data::Type::Comic(data::r#type::Comic::Series) => "Comic series".to_owned(),
+            data::Type::Comic(data::r#type::Comic::Anthology) => "Comic anthology".to_owned(),
+            data::Type::Prose(r) => {
+                let installment_type = match r.installment_type {
+                    data::r#type::prose::InstallmentType::ShortStory => "Short story",
+                    data::r#type::prose::InstallmentType::LightNovel => "Light novel",
+                    data::r#type::prose::InstallmentType::Novella => "Novella",
+                    data::r#type::prose::InstallmentType::Novel => "Novel",
+                };
+                if r.series {
+                    format!("{installment_type} series")
+                } else {
+                    installment_type.to_owned()
+                }
+            }
+            data::Type::Film(data::r#type::Film::Short) => "Short film".to_owned(),
+            data::Type::Film(data::r#type::Film::Feature) => "Feature film".to_owned(),
+            data::Type::Film(data::r#type::Film::Series) => "Film series".to_owned(),
+            data::Type::Film(data::r#type::Film::TvShow) => "TV show".to_owned(),
+            data::Type::Film(data::r#type::Film::TvSeason) => "TV season".to_owned(),
         };
         Entry {
             r#type,
@@ -266,6 +280,12 @@ mod data {
         pub(in crate::reviews) enum Type {
             /// A music release.
             MusicRelease(MusicRelease),
+            /// A comic.
+            Comic(Comic),
+            /// Prose.
+            Prose(Prose),
+            /// A film.
+            Film(Film),
         }
 
         impl<'de> Deserialize<'de> for Type {
@@ -292,14 +312,20 @@ mod data {
                     Form::MusicRelease => {
                         Type::MusicRelease(MusicRelease::deserialize(deserializer)?)
                     }
+                    Form::Comic => Type::Comic(<(Comic,)>::deserialize(deserializer)?.0),
+                    Form::Prose => Type::Prose(Prose::deserialize(deserializer)?),
+                    Form::Film => Type::Film(<(Film,)>::deserialize(deserializer)?.0),
                 })
             }
         }
 
         #[derive(Deserialize)]
+        #[serde(rename_all = "kebab-case")]
         enum Form {
-            #[serde(rename = "music release")]
             MusicRelease,
+            Comic,
+            Prose,
+            Film,
         }
 
         pub(in crate::reviews) mod music_release {
@@ -311,7 +337,7 @@ mod data {
 
             /// How the music release was recorded.
             #[derive(Deserialize)]
-            #[serde(rename_all = "lowercase")]
+            #[serde(rename_all = "kebab-case")]
             pub(in crate::reviews) enum RecordingType {
                 Studio,
                 Live,
@@ -320,7 +346,7 @@ mod data {
 
             /// The format the music release was released as.
             #[derive(Deserialize)]
-            #[serde(rename_all = "lowercase")]
+            #[serde(rename_all = "kebab-case")]
             pub(in crate::reviews) enum Format {
                 Single,
                 #[serde(rename = "EP")]
@@ -333,6 +359,55 @@ mod data {
             use serde::Deserialize;
         }
         use music_release::MusicRelease;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "kebab-case")]
+        pub(in crate::reviews) enum Comic {
+            Oneshot,
+            Series,
+            Anthology,
+        }
+
+        pub(in crate::reviews) mod prose {
+            #[derive(Deserialize)]
+            pub(in crate::reviews) struct Prose {
+                pub installment_type: InstallmentType,
+                #[serde(default, deserialize_with = "deserialize_series")]
+                pub series: bool,
+            }
+
+            #[derive(Deserialize)]
+            #[serde(rename_all = "kebab-case")]
+            pub(in crate::reviews) enum InstallmentType {
+                ShortStory,
+                LightNovel,
+                Novella,
+                Novel,
+            }
+
+            fn deserialize_series<'de, D: Deserializer<'de>>(
+                deserializer: D,
+            ) -> Result<bool, D::Error> {
+                LiteralStr("series").deserialize(deserializer)?;
+                Ok(true)
+            }
+
+            use crate::util::serde::LiteralStr;
+            use serde::de::DeserializeSeed;
+            use serde::Deserialize;
+            use serde::Deserializer;
+        }
+        pub(in crate::reviews) use prose::Prose;
+
+        #[derive(Deserialize)]
+        #[serde(rename_all = "kebab-case")]
+        pub(in crate::reviews) enum Film {
+            Short,
+            Feature,
+            Series,
+            TvShow,
+            TvSeason,
+        }
 
         use serde::de;
         use serde::de::value::SeqAccessDeserializer;
@@ -541,6 +616,8 @@ mod data {
 }
 use data::Data;
 
+use crate::config::copy_minify;
+use crate::config::Config;
 use crate::templater::Templater;
 use crate::util::asset;
 use crate::util::asset::Asset;

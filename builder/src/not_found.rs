@@ -1,7 +1,7 @@
 pub(crate) fn asset<'a>(
     template_path: &'a Path,
     output_path: &'a Path,
-    templater: impl Asset<Output = Templater> + 'a,
+    templater: impl Asset<Output = Templater<'a>> + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(template_path)
         .map(|src| Template::compile(&src?).context("failed to compile 404 template"))
@@ -15,12 +15,10 @@ pub(crate) fn asset<'a>(
                 Err(e) => return error_page([e]),
             };
 
-            let rendered = match templater.render(template, ()) {
+            match templater.render(template, ()) {
                 Ok(rendered) => rendered,
-                Err(e) => return error_page([&e]),
-            };
-
-            minify::html(&rendered)
+                Err(e) => error_page([&e]),
+            }
         })
         .map(move |html| {
             write_file(output_path, html)?;
@@ -36,7 +34,6 @@ use crate::util::asset;
 use crate::util::asset::Asset;
 use crate::util::error_page;
 use crate::util::log_errors;
-use crate::util::minify;
 use crate::util::write_file;
 use anyhow::Context as _;
 use handlebars::Template;

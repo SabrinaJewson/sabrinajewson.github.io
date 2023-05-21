@@ -2,8 +2,8 @@ pub(crate) fn asset<'a>(
     template_dir: &'a Path,
     src_dir: &'a Path,
     out_dir: &'a Path,
-    templater: impl Asset<Output = Templater> + Clone + 'a,
-    drafts: impl Asset<Output = bool> + Clone + 'a,
+    templater: impl Asset<Output = Templater<'a>> + Clone + 'a,
+    config: impl Asset<Output = &'a Config> + Copy + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
         asset::TextFile::new(template_dir.join("post.hbs"))
@@ -57,10 +57,9 @@ pub(crate) fn asset<'a>(
                     .map(move |src| Rc::new(read_post(stem.clone(), src)))
                     .cache();
 
-                let post = Rc::new(
-                    asset::all((drafts.clone(), post))
-                        .map(move |(drafts, post)| (drafts || !post.is_draft()).then_some(post)),
-                );
+                let post = Rc::new(asset::all((config, post)).map(move |(config, post)| {
+                    (config.drafts || !post.is_draft()).then_some(post)
+                }));
 
                 posts.push(post.clone());
 
@@ -130,14 +129,14 @@ pub(crate) fn asset<'a>(
     let dark_theme = theme_asset(code_themes_dir.join("dark.tmTheme"));
     let light_theme = theme_asset(code_themes_dir.join("light.tmTheme"));
 
-    let css = asset::all((post_css, light_theme, dark_theme))
-        .map(|(mut post_css, light_theme, dark_theme)| {
+    let css = asset::all((post_css, light_theme, dark_theme, config))
+        .map(|(mut post_css, light_theme, dark_theme, config)| {
             post_css.push_str(&dark_theme);
             post_css.push_str("@media(prefers-color-scheme:light){");
             post_css.push_str(&light_theme);
             post_css.push('}');
-            let css = minify::css(&post_css);
-            write_file(out_dir.join(POST_CSS_PATH), css)?;
+            config.minify(minify::FileType::Css, &mut post_css);
+            write_file(out_dir.join(POST_CSS_PATH), post_css)?;
             log::info!("successfully emitted post CSS");
             Ok(())
         })
@@ -347,12 +346,10 @@ fn build_index(
         posts,
         feed: FEED_PATH,
     };
-    let rendered = match templater.render(template, vars) {
+    match templater.render(template, vars) {
         Ok(rendered) => rendered,
-        Err(e) => return error_page([&e]),
-    };
-
-    minify::html(&rendered)
+        Err(e) => error_page([&e]),
+    }
 }
 
 fn build_post(
@@ -378,12 +375,10 @@ fn build_post(
         feed: FEED_PATH,
     };
 
-    let rendered = match templater.render(template, vars) {
+    match templater.render(template, vars) {
         Ok(rendered) => rendered,
-        Err(e) => return error_page([&e]),
-    };
-
-    minify::html(&rendered)
+        Err(e) => error_page([&e]),
+    }
 }
 
 fn theme_asset(path: PathBuf) -> impl Asset<Output = Rc<String>> {
@@ -413,6 +408,7 @@ where
         .serialize(serializer)
 }
 
+use crate::config::Config;
 use crate::templater::Templater;
 use crate::util::asset;
 use crate::util::asset::Asset;
