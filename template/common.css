@@ -18,6 +18,10 @@ header {
 	padding: 24px;
 }
 
+nav > a {
+	margin-left: 24px;
+}
+
 .name {
 	font-size: 24px;
 	font-weight: bold;
