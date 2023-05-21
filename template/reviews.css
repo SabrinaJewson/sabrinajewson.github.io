@@ -1,6 +1,15 @@
 abbr {
 	text-decoration: none;
 }
+button {
+	background-color: inherit;
+	color: inherit;
+	padding: 0;
+	border: none;
+	margin: 0;
+	font: inherit;
+	cursor: inherit;
+}
 #reviews-table {
 	line-height: 1.2;
 	width: 100%;
@@ -9,12 +18,8 @@ abbr {
 	width: 110px;
 }
 #reviews-table th:nth-child(3) {
-	width: 90px;
-}
-.score-header {
+	width: 95px;
 	cursor: pointer;
-	user-select: none;
-	-webkit-user-select: none;
 }
 small {
 	font-size: 0.8em;
@@ -30,36 +35,39 @@ small {
 .page-controls {
 	display: flex;
 	flex-flow: row wrap;
+	justify-content: center;
 	margin-top: 8px;
-	user-select: none;
-	-webkit-user-select: none;
 }
-.page-controls > div {
+.page-controls > button {
 	width: 36px;
 	height: 36px;
 	line-height: 36px;
 	margin: 0 4px 4px 0;
 	text-align: center;
 	vertical-align: middle;
+}
+.page-controls > button:not(:disabled) {
 	cursor: pointer;
 }
+.page-controls > button:disabled {
+	cursor: not-allowed;
+}
 @media (prefers-color-scheme: dark) {
-	.page-controls > div {
+	.page-controls > button:not(:disabled) {
 		background-color: #333;
 	}
-	.page-controls > div:hover, .page-controls > div.selected {
+	.page-controls > button:not(:disabled):hover {
 		background-color: #555;
 	}
 }
 @media (prefers-color-scheme: light) {
-	.page-controls > div {
+	.page-controls > button:not(:disabled) {
 		background-color: #DDD;
 	}
-	.page-controls > div:hover, .page-controls > div.selected {
+	.page-controls > button:not(:disabled):hover {
 		background-color: #BBB;
 	}
 }
-.page-controls > div.disabled {
-	background-color: revert;
-	cursor: not-allowed;
+.page-controls > button > input {
+	width: 100%;
 }

@@ -73,7 +73,7 @@ pub(crate) fn asset<'a>(
         config,
         minify::FileType::Js,
         js_path,
-        out_path.join(CSS_PATH),
+        out_path.join(JS_PATH),
     );
 
     asset::all((html, css, js)).map(|((), (), ())| {})
