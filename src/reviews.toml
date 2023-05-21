@@ -26,7 +26,9 @@
 introduction = """
 I attempt to rate every piece of art I experience on the same 11-point scale from 0 to 5 inclusive.
 This page collates all the ratings.
-The specification for the score numbers are given as follows:
+The specification for the score numbers is given below.
+<details><summary>Score number specification</summary>
+
 - 0.0: Actively harmful and really really bad, with zero artistic merit or interest.
 - 0.5: Uninteresting, poorly conceived and terribly executed, not enjoyable at all.
 - 1.0: Some interest, but it’s hard to find the good parts.
@@ -41,6 +43,8 @@ The specification for the score numbers are given as follows:
 - 4.5: Goes above and beyond anything else in the field. Every aspect is near perfect.
 - 5.0: Perfect, not in that it can’t be improved upon, but in that it truly masters everything
 	it possibly could.
+
+</details>
 
 All music ratings here are additionally kept in sync with my [rateyourmusic] page.
 
