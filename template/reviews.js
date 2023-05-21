@@ -27,12 +27,14 @@ let pages;
 
 function set_sort_and_filter(new_sort, new_filter) {
 	current_sort = new_sort;
-	current_filter = new_filter?.toLowerCase();
+	current_filter = new_filter;
 
 	let rows;
 	if (new_filter !== null) {
+		const parts = new_filter.toLowerCase().split(" ");
 		rows = original_rows.filter(row => {
-			return row.content.firstElementChild.textContent.toLowerCase().includes(new_filter);
+			const row_content = row.content.firstElementChild.textContent.toLowerCase();
+			return parts.every(part => row_content.includes(part));
 		});
 	} else {
 		rows = [...original_rows];
