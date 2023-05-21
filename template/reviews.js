@@ -11,6 +11,11 @@ for (const container of document.getElementsByClassName("page-controls")) {
 	first.append("0");
 	prev.append("<");
 	next.append(">");
+	first.classList.add("pretty");
+	last.classList.add("pretty");
+	prev.classList.add("pretty");
+	next.classList.add("pretty");
+	middle.classList.add("pretty");
 	container.append(first, prev, middle, next, last);
 	page_controls.push({ first, last, prev, next, middle });
 }
@@ -22,11 +27,17 @@ let pages;
 
 function set_sort_and_filter(new_sort, new_filter) {
 	current_sort = new_sort;
-	current_filter = new_filter;
+	current_filter = new_filter?.toLowerCase();
 
 	let rows;
-	if (new_sort !== null) {
+	if (new_filter !== null) {
+		rows = original_rows.filter(row => {
+			return row.content.firstElementChild.textContent.toLowerCase().includes(new_filter);
+		});
+	} else {
 		rows = [...original_rows];
+	}
+	if (new_sort !== null) {
 		rows.sort((row_a, row_b) => {
 			const score_of_row = row => {
 				const score_elem = row.content.firstElementChild.getElementsByClassName("score")[0];
@@ -47,12 +58,14 @@ function set_sort_and_filter(new_sort, new_filter) {
 			case "descending": { score_header.textContent = "Score ↓"; break; }
 		}
 	} else {
-		rows = [...original_rows];
 		score_header.textContent = "Score ↕";
 	}
 	pages = [];
 	for (let i = 0; i < rows.length; i += page_size) {
 		pages.push(rows.slice(i, i + page_size));
+	}
+	if (pages.length === 0) {
+		pages.push([]);
 	}
 	for (const { last } of page_controls) {
 		last.replaceChildren(pages.length - 1);
@@ -108,15 +121,21 @@ for (const { first, last, prev, next, middle } of page_controls) {
 	last.addEventListener("click", () => set_shown_page(pages.length - 1));
 	prev.addEventListener("click", () => set_shown_page(Math.max(0, current_page - 1)));
 	next.addEventListener("click", () => set_shown_page(Math.min(pages.length - 1, current_page + 1)));
+	let is_text_boxed = false;
 	middle.addEventListener("click", () => {
+		if (is_text_boxed) {
+			return;
+		}
+		is_text_boxed = true;
+
 		const text_box = document.createElement("input");
 		middle.replaceChildren(text_box);
-		let finished = false;
 		const finish = () => {
-			if (finished) {
+			if (!is_text_boxed) {
 				return;
 			}
-			finished = true;
+			is_text_boxed = false;
+
 			let n = parseInt(text_box.value);
 			if (isNaN(n)) {
 				middle.replaceChildren(current_page);
@@ -125,6 +144,8 @@ for (const { first, last, prev, next, middle } of page_controls) {
 			n = Math.max(0, Math.min(pages.length - 1, n));
 			if (n !== current_page) {
 				set_shown_page(n);
+			} else {
+				middle.replaceChildren(current_page);
 			}
 		};
 		text_box.addEventListener("blur", () => finish());
@@ -136,3 +157,12 @@ for (const { first, last, prev, next, middle } of page_controls) {
 		text_box.focus();
 	});
 }
+
+const [filter_input, filter_clear_button] = document.getElementById("filter").children;
+filter_input.addEventListener("input", () => {
+	set_sort_and_filter(current_sort, filter_input.value);
+});
+filter_clear_button.addEventListener("click", () => {
+	filter_input.value = "";
+	set_sort_and_filter(current_sort, "");
+});
