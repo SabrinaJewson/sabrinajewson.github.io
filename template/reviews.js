@@ -1,94 +1,63 @@
 const original_rows = [...document.getElementById("rows").content.children];
 const page_size = 16;
-const total_pages = Math.ceil(original_rows.length / page_size);
 const reviews_table = document.getElementById("reviews");
 const page_controls = [];
 for (const container of document.getElementsByClassName("page-controls")) {
 	const first = document.createElement("button");
-	first.append("0");
-	first.addEventListener("click", () => set_shown_page(0));
-
 	const last = document.createElement("button");
-	last.append(total_pages - 1);
-	last.addEventListener("click", () => set_shown_page(total_pages - 1));
-
 	const prev = document.createElement("button");
-	prev.append("<");
-	prev.addEventListener("click", () => set_shown_page(Math.max(0, current_page - 1)));
-
 	const next = document.createElement("button");
-	next.append(">");
-	next.addEventListener("click", () => set_shown_page(Math.min(total_pages - 1, current_page + 1)));
-
 	const middle = document.createElement("button");
-	middle.addEventListener("click", () => {
-		const text_box = document.createElement("input");
-		middle.replaceChildren(text_box);
-		let finished = false;
-		const finish = () => {
-			if (finished) {
-				return;
-			}
-			finished = true;
-			let n = parseInt(text_box.value);
-			if (isNaN(n)) {
-				middle.replaceChildren(current_page);
-				return;
-			}
-			n = Math.max(0, Math.min(total_pages - 1, n));
-			if (n !== current_page) {
-				set_shown_page(n);
-			}
-		};
-		text_box.addEventListener("blur", () => finish());
-		text_box.addEventListener("keypress", e => {
-			if (e.key === "Enter") {
-				finish();
-			}
-		});
-		text_box.focus();
-	});
-
+	first.append("0");
+	prev.append("<");
+	next.append(">");
 	container.append(first, prev, middle, next, last);
 	page_controls.push({ first, last, prev, next, middle });
 }
 const score_header = document.getElementById("score-header");
 
 let current_sort;
+let current_filter;
 let pages;
 
-function set_sort(new_sort) {
-	let rows = [...original_rows];
-	if (new_sort !== "native") {
+function set_sort_and_filter(new_sort, new_filter) {
+	current_sort = new_sort;
+	current_filter = new_filter;
+
+	let rows;
+	if (new_sort !== null) {
+		rows = [...original_rows];
 		rows.sort((row_a, row_b) => {
 			const score_of_row = row => {
 				const score_elem = row.content.firstElementChild.getElementsByClassName("score")[0];
 				if (score_elem === undefined) {
-					return -1;
+					return Infinity;
 				}
-				return parseFloat(score_elem.textContent);
+				const score = parseFloat(score_elem.textContent);
+				switch (new_sort.direction) {
+					case "ascending": return score;
+					case "descending": return -score;
+					default: throw new Error(`unknown sort direction ${new_sort.direction}`);
+				}
 			};
-			const a = score_of_row(row_a);
-			const b = score_of_row(row_b);
-			switch (new_sort.direction) {
-				case "ascending": return a - b;
-				case "descending": return b - a;
-				default: throw new Error(`unknown sort direction ${new_sort.direction}`);
-			}
+			return score_of_row(row_a) - score_of_row(row_b);
 		});
 		switch (new_sort.direction) {
 			case "ascending": { score_header.textContent = "Score ↑"; break; }
 			case "descending": { score_header.textContent = "Score ↓"; break; }
 		}
 	} else {
+		rows = [...original_rows];
 		score_header.textContent = "Score ↕";
 	}
 	pages = [];
 	for (let i = 0; i < rows.length; i += page_size) {
 		pages.push(rows.slice(i, i + page_size));
 	}
+	for (const { last } of page_controls) {
+		last.replaceChildren(pages.length - 1);
+	}
 	set_shown_page(0);
-	current_sort = new_sort;
 }
 
 let current_page;
@@ -112,7 +81,7 @@ function set_shown_page(new_page) {
 		if (new_page === pages.length - 1) {
 			last.disabled = true;
 			next.disabled = true;
-		} else if (current_page === pages.length - 1) {
+		} else {
 			last.disabled = false;
 			next.disabled = false;
 		}
@@ -122,14 +91,48 @@ function set_shown_page(new_page) {
 	current_page = new_page;
 }
 
-set_sort("native");
+set_sort_and_filter(null, null);
 
 score_header.parentElement.addEventListener("click", () => {
-	if (current_sort === "native") {
-		set_sort({ direction: "descending" });
+	if (current_sort === null) {
+		set_sort_and_filter({ direction: "descending" }, current_filter);
 	} else if (current_sort.direction === "descending") {
-		set_sort({ direction: "ascending" });
+		set_sort_and_filter({ direction: "ascending" }, current_filter);
 	} else if (current_sort.direction === "ascending") {
-		set_sort("native");
+		set_sort_and_filter(null, current_filter);
 	}
 });
+
+for (const { first, last, prev, next, middle } of page_controls) {
+	first.addEventListener("click", () => set_shown_page(0));
+	last.addEventListener("click", () => set_shown_page(pages.length - 1));
+	prev.addEventListener("click", () => set_shown_page(Math.max(0, current_page - 1)));
+	next.addEventListener("click", () => set_shown_page(Math.min(pages.length - 1, current_page + 1)));
+	middle.addEventListener("click", () => {
+		const text_box = document.createElement("input");
+		middle.replaceChildren(text_box);
+		let finished = false;
+		const finish = () => {
+			if (finished) {
+				return;
+			}
+			finished = true;
+			let n = parseInt(text_box.value);
+			if (isNaN(n)) {
+				middle.replaceChildren(current_page);
+				return;
+			}
+			n = Math.max(0, Math.min(pages.length - 1, n));
+			if (n !== current_page) {
+				set_shown_page(n);
+			}
+		};
+		text_box.addEventListener("blur", () => finish());
+		text_box.addEventListener("keypress", e => {
+			if (e.key === "Enter") {
+				finish();
+			}
+		});
+		text_box.focus();
+	});
+}
