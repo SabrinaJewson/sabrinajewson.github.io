@@ -109,10 +109,9 @@ impl Entry {
                     data::r#type::music_release::Format::EP => ("EP", "EP"),
                     data::r#type::music_release::Format::Album => ("album", "Album"),
                     data::r#type::music_release::Format::Mixtape => ("mixtape", "Mixtape"),
-                    data::r#type::music_release::Format::Compilation => (
-                        "<abbr title='Compilation'>comp</abbr>",
-                        "<abbr title='Compilation'>Comp</abbr>",
-                    ),
+                    data::r#type::music_release::Format::Compilation => {
+                        ("compilation", "Compilation")
+                    }
                 };
                 match r.recording_type {
                     data::r#type::music_release::RecordingType::Studio => format_upper.to_owned(),
@@ -121,6 +120,9 @@ impl Entry {
                     }
                     data::r#type::music_release::RecordingType::Bootleg => {
                         format!("Bootleg {format_lower}")
+                    }
+                    data::r#type::music_release::RecordingType::Demo => {
+                        format!("Demo {format_lower}")
                     }
                 }
             }
@@ -342,6 +344,7 @@ mod data {
                 Studio,
                 Live,
                 Bootleg,
+                Demo,
             }
 
             /// The format the music release was released as.

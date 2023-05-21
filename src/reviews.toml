@@ -1,12 +1,4 @@
 # TODO: Images?
-# TODO: black midi - crow’s perch
-# TODO: black midi - talking heads
-# TODO: black midi - ded sheeran
-# TODO: black midi - sweater
-# TODO: dallon weeks - sickly sweet holidays
-# TODO: squid - sludge / broadcaster
-# TODO: swans - body to body, job to job
-# TODO: swans - is there really a mind
 introduction = """
 I attempt to rate every piece of art I experience on the same 11-point scale from 0 to 5 inclusive.
 This page collates all the ratings.
@@ -181,6 +173,24 @@ review = "TODO"
 links.rym = "https://rateyourmusic.com/release/album/black-country-new-road/live-at-bush-hall/"
 
 [[entries]]
+type = ["music-release", "studio", "single"]
+artists = "black midi"
+title = "Crow’s Perch"
+released = "2019-03-26"
+genres = ["Math Rock", "Experimental Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/single/black-midi/crows-perch/"
+
+[[entries]]
+type = ["music-release", "studio", "single"]
+artists = "black midi"
+title = "Talking Heads"
+released = "2019-04-30"
+genres = ["Math Rock", "Post-Punk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/single/black-midi/talking-heads/"
+
+[[entries]]
 type = ["music-release", "studio", "album"]
 artists = "black midi"
 title = "Schlagenheim"
@@ -189,6 +199,25 @@ genres = ["Math Rock", "Noise Rock", "Post-Punk"]
 review.date = 2022-07-28
 review.score = "5.0"
 links.rym = "https://rateyourmusic.com/release/album/black-midi/schlagenheim/"
+
+[[entries]]
+type = ["music-release", "studio", "single"]
+artists = "black midi"
+title = "ded sheeran (ed sheeran send) part 1"
+released = "2020-01-09"
+genres = ["Comedy Rap", "Glitch Hop", "Novelty"]
+review.date = 2023-05-21
+review.score = "5.0"
+links.rym = "https://rateyourmusic.com/release/single/black-midi/ded-sheeran-ed-sheeran-send-part-1/"
+
+[[entries]]
+type = ["music-release", "studio", "single"]
+artists = "black midi"
+title = "Sweater"
+released = "2020-02-05"
+genres = ["Post-Rock", "Experimental Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/single/black-midi/sweater/"
 
 [[entries]]
 type = ["music-release", "studio", "album"]
@@ -855,6 +884,16 @@ genres = ["Indie Rock", "Power Pop"]
 review.date = 2023-05-18
 review.score = "4.0"
 links.rym = "https://rateyourmusic.com/release/album/the-brobecks/violent-things/"
+
+[[entries]]
+type = ["music-release", "studio", "EP"]
+artists = "Dallon Weekes"
+title = "CHRISTMAS JAMBZ"
+released = "2015-10-24"
+genres = ["Power Pop", "Christmas Music"]
+review.date = 2023-05-21
+review.score = "4.0"
+links.rym = "https://rateyourmusic.com/release/ep/dallon-weekes/christmas-jambz/"
 
 [[entries]]
 type = ["music-release", "studio", "single"]
@@ -1737,6 +1776,15 @@ review.score = "4.0"
 links.rym = "https://rateyourmusic.com/release/ep/squid/town-centre/"
 
 [[entries]]
+type = ["music-release", "studio", "single"]
+artists = "Squid"
+title = "Sludge / Broadcaster"
+released = "2020-07-26"
+genres = ["Art Punk", "Progressive Electronic"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/single/squid/sludge-broadcaster/"
+
+[[entries]]
 type = ["music-release", "studio", "album"]
 artists = "Squid"
 title = "Bright Green Field"
@@ -1901,6 +1949,15 @@ genres = ["Industrial Rock"]
 review.date = 2023-05-18
 review.score = "4.0"
 links.rym = "https://rateyourmusic.com/release/single/swans/a-screw/"
+
+[[entries]]
+type = ["music-release", "studio", "compilation"]
+artists = "Swans"
+title = "Body to Body, Job to Job"
+released = "1991-11-04"
+genres = ["No Wave", "Noise Rock", "Industrial Rock"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/additional/swans/body-to-body-job-to-job/"
 
 [[entries]]
 type = ["music-release", "live", "album"]
@@ -2125,6 +2182,15 @@ genres = ["Post-Rock", "Experimental Rock", "Neofolk"]
 review.date = 2023-05-06
 review.score = "4.0"
 links.rym = "https://rateyourmusic.com/release/album/swans/leaving-meaning/"
+
+[[entries]]
+type = ["music-release", "demo", "album"]
+artists = "Swans"
+title = "Is There Really a Mind?"
+released = "2022-02"
+genres = ["Avant-Folk"]
+review = "TODO"
+links.rym = "https://rateyourmusic.com/release/additional/swans/is-there-really-a-mind/"
 
 [[entries]]
 type = ["music-release", "studio", "album"]
