@@ -13,7 +13,20 @@ pub(crate) const PATHS: Paths = Paths {
 pub(crate) fn asset<'a>(
     input_path: &'a Path,
     output_path: &'a Path,
+    config: impl Asset<Output = &'a Config> + 'a,
 ) -> impl Asset<Output = ()> + 'a {
+    config
+        .map(|config| -> Box<dyn Asset<Output = ()> + 'a> {
+            if config.icons {
+                Box::new(real_asset(input_path, output_path))
+            } else {
+                Box::new(asset::Constant::new(()))
+            }
+        })
+        .flatten()
+}
+
+fn real_asset<'a>(input_path: &'a Path, output_path: &'a Path) -> impl Asset<Output = ()> + 'a {
     asset::FsPath::new(input_path)
         .map(move |()| -> anyhow::Result<()> {
             let image = image::open(input_path)
@@ -70,6 +83,7 @@ const APPLE_TOUCH_ICON_SIZE: u32 = 180;
 use crate::util::asset;
 use crate::util::asset::Asset;
 use crate::util::log_errors;
+use crate::Config;
 use anyhow::Context as _;
 use image::codecs::ico::IcoEncoder;
 use image::codecs::ico::IcoFrame;

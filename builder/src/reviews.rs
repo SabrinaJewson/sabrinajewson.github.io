@@ -8,7 +8,7 @@ pub(crate) fn asset<'a>(
     css_path: &'a Path,
     js_path: &'a Path,
     out_path: &'a Path,
-    templater: impl Asset<Output = Templater<'a>> + Clone + 'a,
+    templater: impl Asset<Output = Templater> + Clone + 'a,
     config: impl Asset<Output = &'a Config> + Copy + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(template_path)

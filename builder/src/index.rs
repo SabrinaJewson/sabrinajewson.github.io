@@ -2,7 +2,7 @@ pub(crate) fn asset<'a>(
     template_path: &'a Path,
     src_path: &'a Path,
     out_path: &'a Path,
-    templater: impl Asset<Output = Templater<'a>> + Clone + 'a,
+    templater: impl Asset<Output = Templater> + Clone + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let template = asset::TextFile::new(template_path)
         .map(|src| Template::compile(&src?).context("failed to compile index template"))

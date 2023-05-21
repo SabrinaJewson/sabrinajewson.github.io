@@ -2,7 +2,7 @@ pub(crate) fn asset<'a>(
     template_dir: &'a Path,
     src_dir: &'a Path,
     out_dir: &'a Path,
-    templater: impl Asset<Output = Templater<'a>> + Clone + 'a,
+    templater: impl Asset<Output = Templater> + Clone + 'a,
     config: impl Asset<Output = &'a Config> + Copy + 'a,
 ) -> impl Asset<Output = ()> + 'a {
     let post_template = Rc::new(
@@ -135,7 +135,9 @@ pub(crate) fn asset<'a>(
             post_css.push_str("@media(prefers-color-scheme:light){");
             post_css.push_str(&light_theme);
             post_css.push('}');
-            config.minify(minify::FileType::Css, &mut post_css);
+            if config.minify {
+                minify(minify::FileType::Css, &mut post_css);
+            }
             write_file(out_dir.join(POST_CSS_PATH), post_css)?;
             log::info!("successfully emitted post CSS");
             Ok(())
@@ -417,6 +419,7 @@ use crate::util::log_errors;
 use crate::util::markdown;
 use crate::util::markdown::Markdown;
 use crate::util::minify;
+use crate::util::minify::minify;
 use crate::util::write_file;
 use anyhow::Context as _;
 use chrono::naive::NaiveDate;

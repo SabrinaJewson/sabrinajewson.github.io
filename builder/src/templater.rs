@@ -1,10 +1,11 @@
 #[derive(Clone)]
-pub(crate) struct Templater<'a> {
+pub(crate) struct Templater {
     handlebars: Rc<Handlebars<'static>>,
-    config: &'a Config,
+    live_reload: bool,
+    minify: bool,
 }
 
-impl Templater<'_> {
+impl Templater {
     #[context("failed to render template")]
     pub(crate) fn render(
         &self,
@@ -24,29 +25,32 @@ impl Templater<'_> {
             rest: vars,
             icons: icons::PATHS,
             common_css: common_css::PATH,
-            live_reload: self.config.live_reload,
+            live_reload: self.live_reload,
         };
         let context = handlebars::Context::wraps(vars).unwrap();
 
         let mut render_context = handlebars::RenderContext::new(None);
         let mut rendered = template.renders(&self.handlebars, &context, &mut render_context)?;
-        self.config.minify(minify::FileType::Html, &mut rendered);
+        if self.minify {
+            minify(minify::FileType::Html, &mut rendered);
+        }
         Ok(rendered)
     }
 }
 
 thread_local! {
-    static FALLBACK_TEMPLATER: Templater<'static> = Templater {
+    static FALLBACK_TEMPLATER: Templater = Templater {
         handlebars: Rc::new(Handlebars::new()),
         // This value doesn't matter since we haven't included templates that reference it
-        config: &Config { drafts: false, minify: false, live_reload: false },
+        live_reload: false,
+        minify: false,
     };
 }
 
 pub(crate) fn asset<'a>(
     include_dir: &'a Path,
     config: impl Asset<Output = &'a Config> + Copy + 'a,
-) -> impl Asset<Output = Templater<'a>> + 'a {
+) -> impl Asset<Output = Templater> + 'a {
     asset::Dir::new(include_dir)
         .map(move |files| -> anyhow::Result<_> {
             let mut includes = Vec::new();
@@ -84,7 +88,8 @@ pub(crate) fn asset<'a>(
                     }
                     Templater {
                         handlebars: Rc::new(handlebars),
-                        config,
+                        live_reload: config.live_reload,
+                        minify: config.minify,
                     }
                 })
                 .cache())
@@ -110,6 +115,7 @@ use crate::icons;
 use crate::util::asset;
 use crate::util::asset::Asset;
 use crate::util::minify;
+use crate::util::minify::minify;
 use anyhow::Context as _;
 use fn_error_context::context;
 use handlebars::template::Template;

@@ -42,6 +42,10 @@ struct Args {
     #[clap(long)]
     drafts: bool,
 
+    /// Whether to disable icon building.
+    #[clap(long)]
+    no_icons: bool,
+
     /// Whether to minify the output.
     #[clap(long)]
     minify: bool,
@@ -75,6 +79,7 @@ fn main() -> anyhow::Result<()> {
     let config = Config {
         drafts: args.drafts,
         minify: args.minify,
+        icons: !args.no_icons,
         live_reload: args.serve_port.is_some(),
     };
 
@@ -187,7 +192,7 @@ fn asset<'asset>(
             templater,
         ),
         common_css::asset("template/common.css".as_ref(), Path::new(output), config),
-        icons::asset("src/icon.png".as_ref(), Path::new(output)),
+        icons::asset("src/icon.png".as_ref(), Path::new(output), config),
         no_jekyll::asset(Path::new(output)),
         cname::asset(
             "template/CNAME".as_ref(),

@@ -6,16 +6,11 @@ pub(crate) struct Config {
     /// Whether we minify the result.
     pub minify: bool,
 
+    /// Whether to build icons.
+    pub icons: bool,
+
     /// Whether we are live reloading.
     pub live_reload: bool,
-}
-
-impl Config {
-    pub(crate) fn minify(&self, file_type: minify::FileType, s: &mut String) {
-        if self.minify {
-            minify(file_type, s);
-        }
-    }
 }
 
 pub(crate) fn copy_minify<'a>(
@@ -28,7 +23,9 @@ pub(crate) fn copy_minify<'a>(
     asset::all((asset::TextFile::new(in_), config))
         .map(move |(res, config)| -> anyhow::Result<_> {
             let mut text = res?;
-            config.minify(file_type, &mut text);
+            if config.minify {
+                minify(file_type, &mut text);
+            }
             write_file(&out_1, text)?;
             log::info!("successfully emitted {}", out_1.as_ref().display());
             Ok(())
