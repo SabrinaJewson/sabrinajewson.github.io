@@ -62,3 +62,11 @@ th, td {
 	border: 1px solid grey;
 	padding: 6px 10px;
 }
+
+/* Block quotes */
+blockquote {
+	border-left: 5px solid grey;
+	margin-left: 10px;
+	padding-left: 10px;
+	opacity: 0.7;
+}

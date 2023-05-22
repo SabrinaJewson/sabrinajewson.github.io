@@ -142,7 +142,7 @@ impl Entry {
             review: entry.review.map(|review| Review {
                 date: review.date.to_string(),
                 score: review.score.as_str(),
-                comment: review.comment,
+                comment: review.comment.map(|c| markdown::parse(&c).body),
             }),
             links: entry.links,
         }

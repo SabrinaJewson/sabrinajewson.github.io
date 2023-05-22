@@ -21,8 +21,10 @@ button {
 	padding: 2px 8px;
 }
 #reviews-table {
-	line-height: 1.2;
 	width: 100%;
+}
+#reviews-table td:not([colspan="3"]) {
+	line-height: 1.2;
 }
 #reviews-table th:nth-child(2) {
 	width: 110px;
