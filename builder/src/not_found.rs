@@ -9,19 +9,11 @@ pub(crate) fn asset<'a>(
         .cache();
 
     asset::all((templater, template))
-        .map(|(templater, template)| {
-            let template = match &*template {
-                Ok(template) => template,
-                Err(e) => return error_page([e]),
-            };
-
-            match templater.render(template, ()) {
-                Ok(rendered) => rendered,
-                Err(e) => error_page([&e]),
-            }
+        .map(|(templater, template)| -> Result<String, ErrorPage> {
+            Ok(templater.render((*template).as_ref()?, ())?)
         })
         .map(move |html| {
-            write_file(output_path, html)?;
+            write_file(output_path, html.unwrap_or_else(ErrorPage::into_html))?;
             log::info!("successfully emitted 404 file");
             Ok(())
         })
@@ -32,9 +24,9 @@ pub(crate) fn asset<'a>(
 use crate::templater::Templater;
 use crate::util::asset;
 use crate::util::asset::Asset;
-use crate::util::error_page;
 use crate::util::log_errors;
 use crate::util::write_file;
+use crate::util::ErrorPage;
 use anyhow::Context as _;
 use handlebars::Template;
 use std::path::Path;

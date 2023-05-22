@@ -12,13 +12,49 @@ pub(crate) fn log_errors<T>(res: anyhow::Result<T>) {
     }
 }
 
-pub(crate) fn error_page<'a, I: IntoIterator<Item = &'a anyhow::Error>>(errors: I) -> String {
-    let mut res = String::new();
-    for error in errors {
-        log::error!("{error:?}");
-        push!(res, "<p style='color:red'>Error: {error:?}</p>");
+pub(crate) struct ErrorPage(String);
+
+impl ErrorPage {
+    fn new<'e, I: IntoIterator<Item = &'e anyhow::Error>>(errors: I) -> Self {
+        let mut res = String::new();
+        for error in errors {
+            log::error!("{error:?}");
+            push!(res, "<pre style='color:red'>Error: {error:?}</pre>");
+        }
+        Self(res)
     }
-    res
+
+    pub(crate) fn into_html(self) -> String {
+        self.0
+    }
+
+    pub(crate) fn zip<T0, T1, E0, E1>(
+        r0: Result<T0, E0>,
+        r1: Result<T1, E1>,
+    ) -> Result<(T0, T1), Self>
+    where
+        E0: Borrow<anyhow::Error>,
+        E1: Borrow<anyhow::Error>,
+    {
+        match (r0, r1) {
+            (Ok(v0), Ok(v1)) => Ok((v0, v1)),
+            (Ok(_), Err(e1)) => Err(Self::new([e1.borrow()])),
+            (Err(e0), Ok(_)) => Err(Self::new([e0.borrow()])),
+            (Err(e0), Err(e1)) => Err(Self::new([e0.borrow(), e1.borrow()])),
+        }
+    }
+}
+
+impl From<&anyhow::Error> for ErrorPage {
+    fn from(e: &anyhow::Error) -> Self {
+        Self::new([e])
+    }
+}
+
+impl From<anyhow::Error> for ErrorPage {
+    fn from(e: anyhow::Error) -> Self {
+        Self::new([&e])
+    }
 }
 
 pub(crate) fn write_file<P: AsRef<Path>, D: AsRef<[u8]>>(path: P, data: D) -> anyhow::Result<()> {
@@ -153,5 +189,6 @@ pub(crate) mod precision_date {
 
 use self::push_str::push;
 use anyhow::Context as _;
+use std::borrow::Borrow;
 use std::fs;
 use std::path::Path;

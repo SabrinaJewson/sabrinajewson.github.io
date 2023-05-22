@@ -15,11 +15,7 @@ pub(crate) fn asset<'a>(
 
     asset::all((markdown, templater, template))
         .map(|(markdown, templater, template)| {
-            let (markdown, template) = match (&*markdown, &*template) {
-                (Ok(markdown), Ok(template)) => (markdown, template),
-                (Ok(_), Err(e)) | (Err(e), Ok(_)) => return error_page([e]),
-                (Err(e1), Err(e2)) => return error_page([e1, e2]),
-            };
+            let (markdown, template) = ErrorPage::zip((*markdown).as_ref(), (*template).as_ref())?;
 
             #[derive(Serialize)]
             struct TemplateVars<'a> {
@@ -30,13 +26,10 @@ pub(crate) fn asset<'a>(
                 body: &markdown.body,
                 summary: &markdown.summary,
             };
-            match templater.render(template, vars) {
-                Ok(rendered) => rendered,
-                Err(e) => error_page([&e]),
-            }
+            Ok(templater.render(template, vars)?)
         })
         .map(move |html| {
-            write_file(out_path, html)?;
+            write_file(out_path, html.unwrap_or_else(ErrorPage::into_html))?;
             log::info!("successfully emitted index.html");
             Ok(())
         })
@@ -47,10 +40,10 @@ pub(crate) fn asset<'a>(
 use crate::templater::Templater;
 use crate::util::asset;
 use crate::util::asset::Asset;
-use crate::util::error_page;
 use crate::util::log_errors;
 use crate::util::markdown;
 use crate::util::write_file;
+use crate::util::ErrorPage;
 use anyhow::Context as _;
 use handlebars::Template;
 use serde::Serialize;

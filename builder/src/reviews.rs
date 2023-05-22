@@ -28,33 +28,17 @@ pub(crate) fn asset<'a>(
                 reviews_js: JS_PATH,
             })
         })
-        .map(|res| {
-            res.unwrap_or_else(|e| {
-                log::error!("{e:?}");
-                TemplateVars {
-                    summary: String::new(),
-                    introduction: format!("<p style='color:red'>Error: {e:?}</p>"),
-                    entries: Vec::new(),
-                    reviews_css: CSS_PATH,
-                    reviews_js: JS_PATH,
-                }
-            })
-        })
         .map(Rc::new)
         .cache();
 
     let html = asset::all((templater, template, template_vars))
         .map(|(templater, template, template_vars)| {
-            let template = match &*template {
-                Ok(template) => template,
-                Err(e) => return error_page([e]),
-            };
-            match templater.render(template, template_vars) {
-                Ok(rendered) => rendered,
-                Err(e) => error_page([&e]),
-            }
+            let (template, template_vars) =
+                ErrorPage::zip((*template).as_ref(), (*template_vars).as_ref())?;
+            Ok(templater.render(template, template_vars)?)
         })
         .map(move |html| {
+            let html = html.unwrap_or_else(ErrorPage::into_html);
             write_file(out_path.join(HTML_PATH), html)?;
             log::info!("successfully emitted {HTML_PATH}");
             Ok(())
@@ -622,11 +606,11 @@ use crate::config::Config;
 use crate::templater::Templater;
 use crate::util::asset;
 use crate::util::asset::Asset;
-use crate::util::error_page;
 use crate::util::log_errors;
 use crate::util::markdown;
 use crate::util::minify;
 use crate::util::write_file;
+use crate::util::ErrorPage;
 use anyhow::Context as _;
 use handlebars::Template;
 use serde::Serialize;

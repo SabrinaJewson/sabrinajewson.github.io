@@ -68,7 +68,8 @@ pub(crate) fn asset<'a>(
                         let output_path = output_path.clone();
                         move |(post, templater, template)| {
                             if let Some(post) = post {
-                                let built = build_post(&post, &templater, (*template).as_ref());
+                                let built = build_post(&post, &templater, (*template).as_ref())
+                                    .unwrap_or_else(ErrorPage::into_html);
                                 write_file(&output_path, built)?;
                                 log::info!("successfully emitted {}.html", post.stem);
                             }
@@ -96,7 +97,8 @@ pub(crate) fn asset<'a>(
 
             let index = asset::all((posts, templater.clone(), index_template.clone()))
                 .map(|(posts, templater, template)| {
-                    let index = build_index(&posts, &templater, &template);
+                    let index = build_index(&posts, &templater, &template)
+                        .unwrap_or_else(ErrorPage::into_html);
                     write_file(out_dir.join("index.html"), index)?;
                     log::info!("successfully emitted blog index");
                     Ok(())
@@ -333,12 +335,7 @@ fn build_index(
     posts: &[Rc<Post>],
     templater: &Templater,
     template: &anyhow::Result<Template>,
-) -> String {
-    let template = match template {
-        Ok(template) => template,
-        Err(e) => return error_page([e]),
-    };
-
+) -> Result<String, ErrorPage> {
     #[derive(Serialize)]
     struct TemplateVars<'a> {
         posts: &'a [Rc<Post>],
@@ -348,22 +345,15 @@ fn build_index(
         posts,
         feed: FEED_PATH,
     };
-    match templater.render(template, vars) {
-        Ok(rendered) => rendered,
-        Err(e) => error_page([&e]),
-    }
+    Ok(templater.render(template.as_ref()?, vars)?)
 }
 
 fn build_post(
     post: &Post,
     templater: &Templater,
     template: Result<&Template, &anyhow::Error>,
-) -> String {
-    let (post_content, template) = match (&post.content, template) {
-        (Ok(post), Ok(template)) => (post, template),
-        (Ok(_), Err(e)) | (Err(e), Ok(_)) => return error_page([e]),
-        (Err(e1), Err(e2)) => return error_page([e1, e2]),
-    };
+) -> Result<String, ErrorPage> {
+    let (post_content, template) = ErrorPage::zip(post.content.as_ref(), template)?;
 
     #[derive(Serialize)]
     struct TemplateVars<'a> {
@@ -377,10 +367,7 @@ fn build_post(
         feed: FEED_PATH,
     };
 
-    match templater.render(template, vars) {
-        Ok(rendered) => rendered,
-        Err(e) => error_page([&e]),
-    }
+    Ok(templater.render(template, vars)?)
 }
 
 fn theme_asset(path: PathBuf) -> impl Asset<Output = Rc<String>> {
@@ -414,13 +401,13 @@ use crate::config::Config;
 use crate::templater::Templater;
 use crate::util::asset;
 use crate::util::asset::Asset;
-use crate::util::error_page;
 use crate::util::log_errors;
 use crate::util::markdown;
 use crate::util::markdown::Markdown;
 use crate::util::minify;
 use crate::util::minify::minify;
 use crate::util::write_file;
+use crate::util::ErrorPage;
 use anyhow::Context as _;
 use chrono::naive::NaiveDate;
 use chrono::offset::TimeZone as _;
