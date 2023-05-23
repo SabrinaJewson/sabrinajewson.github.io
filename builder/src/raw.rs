@@ -21,6 +21,7 @@ pub(crate) fn asset<'a>(src_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outp
 
                 let asset = asset::FsPath::new(src.clone())
                     .map(move |()| {
+                        make_parents(&dest_0)?;
                         fs::copy(&*src, &dest_0).with_context(|| {
                             format!("failed to copy {} to {}", src.display(), dest_0.display())
                         })?;
@@ -55,4 +56,5 @@ use std::fs;
 use std::path::Path;
 use walkdir::WalkDir;
 use std::rc::Rc;
+use crate::util::make_parents;
 

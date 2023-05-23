@@ -161,6 +161,7 @@ impl Service {
             Some("js") => "application/javascript",
             Some("png") => "image/png",
             Some("ico") => "image/x-icon",
+            Some("svg") => "image/svg+xml",
             _ => "application/octet-stream",
         };
 

@@ -59,15 +59,18 @@ impl From<anyhow::Error> for ErrorPage {
 
 pub(crate) fn write_file<P: AsRef<Path>, D: AsRef<[u8]>>(path: P, data: D) -> anyhow::Result<()> {
     let path = path.as_ref();
-
-    if let Some(parent) = path.parent() {
-        fs::create_dir_all(parent)
-            .with_context(|| format!("failed to create dir `{}`", parent.display()))?;
-    }
-
+    make_parents(path)?;
     fs::write(path, data)
         .with_context(|| format!("couldn't write asset to `{}`", path.display()))?;
 
+    Ok(())
+}
+
+pub(crate) fn make_parents<P: AsRef<Path>>(path: P) -> anyhow::Result<()> {
+    if let Some(parent) = path.as_ref().parent() {
+        fs::create_dir_all(parent)
+            .with_context(|| format!("failed to create dir `{}`", parent.display()))?;
+    }
     Ok(())
 }
 
