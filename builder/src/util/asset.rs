@@ -46,7 +46,7 @@ pub(crate) trait Asset {
     }
 }
 
-#[derive(PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
+#[derive(Debug, PartialEq, Eq, PartialOrd, Ord, Clone, Copy)]
 pub(crate) enum Modified {
     Never,
     At(SystemTime),
@@ -305,6 +305,17 @@ impl<T: Clone> Asset for Dynamic<T> {
     fn generate(&self) -> Self::Output {
         self.value.clone()
     }
+}
+
+#[derive(Clone, Copy)]
+pub(crate) struct Volatile;
+impl Asset for Volatile {
+    type Output = ();
+
+    fn modified(&self) -> Modified {
+        Modified::At(SystemTime::now())
+    }
+    fn generate(&self) -> Self::Output {}
 }
 
 /// No-op asset that sources its modification time from a path on the filesystem.

@@ -16,12 +16,11 @@
 )]
 
 mod blog;
-mod cname;
 mod common_css;
 mod icons;
 mod index;
-mod no_jekyll;
 mod not_found;
+mod raw;
 mod reviews;
 #[cfg(feature = "server")]
 mod server;
@@ -193,13 +192,9 @@ fn asset<'asset>(
         ),
         common_css::asset("template/common.css".as_ref(), Path::new(output), config),
         icons::asset("src/icon.png".as_ref(), Path::new(output), config),
-        no_jekyll::asset(Path::new(output)),
-        cname::asset(
-            "template/CNAME".as_ref(),
-            Path::new(util::bump::alloc_str_concat(bump, &[output, "/CNAME"])),
-        ),
+        raw::asset("raw".as_ref(), Path::new(output)),
     ))
-    .map(|((), (), (), (), (), (), (), (), ())| {})
+    .map(|((), (), (), (), (), (), (), ())| {})
 }
 
 #[context("failed to set cwd to project root")]

@@ -161,6 +161,7 @@ dependencies = [
  "tokio",
  "toml",
  "tower-service",
+ "walkdir",
 ]
 
 [[package]]
