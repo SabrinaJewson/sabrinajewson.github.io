@@ -38,6 +38,7 @@ small {
 }
 .links img {
 	vertical-align: middle;
+	height: 16px;
 }
 .links {
 	border-right: 1px solid grey;

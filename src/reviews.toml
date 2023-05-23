@@ -2793,3 +2793,13 @@ so I’m happy to place this at a solid 2.5.
 
 </details>
 """
+
+[[entries]]
+type = ["comic", "series"]
+artists = "大沢 やよい [Yayoi Ohsawa]"
+title = "2DK、Gペン、目覚まし時計。 [2DK, G-pen, Alarm clock]"
+released = "2015-01-17–2018-10-18"
+genres = ["Manga", "Romance", "Yuri", "Adult life"]
+review.date = 2023-05-23
+review.score = "3.0"
+links.mal = "https://myanimelist.net/manga/87175/2DK_G_Pen_Mezamashidokei"

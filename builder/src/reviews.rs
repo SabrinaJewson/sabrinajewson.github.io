@@ -594,6 +594,8 @@ mod data {
     pub(in crate::reviews) struct Links {
         #[serde(default)]
         pub rym: Option<String>,
+        #[serde(default)]
+        pub mal: Option<String>,
     }
 
     use serde::Deserialize;
