@@ -332,7 +332,8 @@ artists = "Car Seat Headrest"
 title = "Teens of Style"
 released = "2015-10-30"
 genres = ["TODO"]
-review = "TODO"
+review.date = 2023-05-20
+review.score = "4.0"
 links.rym = "https://rateyourmusic.com/release/album/car-seat-headrest/teens-of-style/"
 
 [[entries]]
@@ -769,7 +770,8 @@ artists = "Glenn Branca"
 title = "The Ascension"
 released = "1981-11"
 genres = ["No Wave", "Totalism"]
-review = "TODO"
+review.date = 2023-05-19
+review.score = "5.0"
 links.rym = "https://rateyourmusic.com/release/album/glenn-branca/the-ascension/"
 
 [[entries]]
@@ -991,8 +993,8 @@ artists = "Imagine Dragons"
 title = "Smoke + Mirrors"
 released = "2015-02-17"
 genres = ["Pop Rock", "Alternative Rock"]
-review.date = 2023-05-18
-review.score = "4.0"
+review.date = 2023-05-22
+review.score = "3.5"
 links.rym = "https://rateyourmusic.com/release/album/imagine-dragons/smoke-mirrors/"
 
 [[entries]]
@@ -1193,8 +1195,8 @@ artists = "Kraftwerk"
 title = "Trans Europa Express"
 released = "1977-03"
 genres = ["Electronic"]
-review.date = 2023-05-18
-review.score = "4.0"
+review.date = 2023-05-22
+review.score = "4.5"
 links.rym = "https://rateyourmusic.com/release/album/kraftwerk/trans-europa-express-1/"
 
 [[entries]]
@@ -1203,7 +1205,8 @@ artists = "Kraftwerk"
 title = "Die Mensch-Maschine"
 released = "1978-05-19"
 genres = ["Electronic"]
-review = "TODO"
+review.date = 2023-05-21
+review.score = "4.0"
 links.rym = "https://rateyourmusic.com/release/album/kraftwerk/die-mensch-maschine/"
 
 [[entries]]
@@ -1269,7 +1272,8 @@ artists = "LCD Soundsystem"
 title = "This Is Happening"
 released = "2010-05-18"
 genres = ["Dance-Punk"]
-review = "TODO"
+review.date = 2023-05-19
+review.score = "5.0"
 links.rym = "https://rateyourmusic.com/release/album/lcd-soundsystem/this-is-happening/"
 
 [[entries]]
@@ -1886,8 +1890,8 @@ artists = "Swans"
 title = "Filth"
 released = "1983-05-27"
 genres = ["No Wave"]
-review.date = 2022-07-28
-review.score = "5.0"
+review.date = 2023-05-23
+review.score = "4.5"
 links.rym = "https://rateyourmusic.com/release/album/swans/filth/"
 
 [[entries]]
