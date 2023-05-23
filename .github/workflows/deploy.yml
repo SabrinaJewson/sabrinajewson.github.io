@@ -9,39 +9,23 @@
         "deploy": {
             "runs-on": "ubuntu-latest",
             "steps": [
-                {
-                    "uses": "actions/checkout@v3",
-                    "with": {
-                        "submodules": true,
-                    },
-                },
-                {
-                    "name": "Install Rust",
-                    "uses": "actions-rs/toolchain@v1",
-                    "with": {
-                        "profile": "minimal",
-                        "toolchain": "stable",
-                        "override": true,
-                    },
-                },
+                { "uses": "actions/checkout@v3", "with": { "submodules": true, }, },
+                { "name": "Install Rust", "uses": "dtolnay/rust-toolchain@stable", },
                 {
                     "name": "Cache Rust",
                     "uses": "Swatinem/rust-cache@v2",
-                    "with": { "cache-directories": "builder" },
+                    "with": { "workspaces": "builder" },
                 },
                 {
                     "name": "Install npm",
-                    "uses": "actions/setup-node@v2",
+                    "uses": "actions/setup-node@v3",
                     "with": {
-                        "node-version": "16",
+                        "node-version": "latest",
                         "cache": "npm",
                         "cache-dependency-path": "builder/js/package-lock.json",
                     },
                 },
-                {
-                    "name": "Build",
-                    "run": "./prod-build",
-                },
+                { "name": "Build", "run": "./prod-build", },
                 {
                     "name": "Deploy",
                     "uses": "JamesIves/github-pages-deploy-action@v4.4.1",
