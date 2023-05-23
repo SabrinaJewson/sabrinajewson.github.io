@@ -9,8 +9,12 @@
 		<meta name="theme-color" content="#000000" media="(prefers-color-scheme:dark)">
 
 		<meta property="og:site_name" content="Sabrina Jewson">
-		<link rel="icon" href="/{{icons.favicon}}">
-		<link rel="apple-touch-icon" href="/{{icons.apple_touch_icon}}">
+		{{#if icons}}
+			<link rel="icon" href="/{{icons.favicon}}">
+			<link rel="apple-touch-icon" href="/{{icons.apple_touch_icon}}">
+		{{else}}
+			<link rel="icon" href="data:,">
+		{{/if}}
 
 		<link rel="stylesheet" href="/{{common_css}}">
 
@@ -25,7 +29,7 @@
 				params.append("path", path);
 			}
 			dependency(location.pathname);
-			dependency("/{{icons.favicon}}");
+			{{#if icons}}dependency("/{{icons.favicon}}");{{/if}}
 			dependency("/{{common_css}}");
 		</script>
 		{{/if}}

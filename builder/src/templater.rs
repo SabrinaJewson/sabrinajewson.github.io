@@ -2,6 +2,7 @@
 pub(crate) struct Templater {
     handlebars: Rc<Handlebars<'static>>,
     live_reload: bool,
+    icons: bool,
     minify: bool,
 }
 
@@ -16,14 +17,14 @@ impl Templater {
         struct TemplateVars<T> {
             #[serde(flatten)]
             rest: T,
-            icons: icons::Paths,
+            icons: Option<icons::Paths>,
             common_css: &'static str,
             live_reload: bool,
         }
 
         let vars = TemplateVars {
             rest: vars,
-            icons: icons::PATHS,
+            icons: self.icons.then_some(icons::PATHS),
             common_css: common_css::PATH,
             live_reload: self.live_reload,
         };
@@ -43,6 +44,7 @@ thread_local! {
         handlebars: Rc::new(Handlebars::new()),
         // This value doesn't matter since we haven't included templates that reference it
         live_reload: false,
+        icons: false,
         minify: false,
     };
 }
@@ -88,6 +90,7 @@ pub(crate) fn asset<'a>(
                     }
                     Templater {
                         handlebars: Rc::new(handlebars),
+                        icons: config.icons,
                         live_reload: config.live_reload,
                         minify: config.minify,
                     }
