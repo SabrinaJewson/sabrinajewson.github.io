@@ -33,6 +33,12 @@ button {
 	width: 95px;
 	cursor: pointer;
 }
+#reviews-table td[colspan="3"] p:nth-child(1) {
+	margin-top: 0;
+}
+#reviews-table td[colspan="3"] p:last-child {
+	margin-bottom: 0;
+}
 small {
 	font-size: 0.8em;
 }
