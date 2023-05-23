@@ -2365,7 +2365,13 @@ artists = "The Microphones"
 title = "The Glow, Pt. 2"
 released = "2001-09-11"
 genres = ["Indie Folk", "Psychadelic Folk"]
-review = "TODO"
+review.date = 2023-05-23
+review.score = "3.0"
+review.comment = """
+To be honest, I don’t understand the hype around this album.
+It’s not _bad_, but I don’t really feel anything from it.
+It just feels sorta cold and has some alright melodies.
+"""
 links.rym = "https://rateyourmusic.com/release/album/the-microphones/the-glow-pt-2/"
 
 [[entries]]
