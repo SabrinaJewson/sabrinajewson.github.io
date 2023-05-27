@@ -2268,7 +2268,8 @@ artists = "The Cure"
 title = "Pornography"
 released = "1982-05-03"
 genres = ["Gothic Rock", "Post-Punk"]
-review = "TODO"
+review.date = 2023-05-27
+review.score = "3.0"
 links.rym = "https://rateyourmusic.com/release/album/the-cure/pornography/"
 
 [[entries]]
