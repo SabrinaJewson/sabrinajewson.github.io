@@ -720,8 +720,8 @@ artists = "Feed Me Jack"
 title = "Chumpfrey"
 released = "2012-10-29"
 genres = ["Math Pop"]
-review.date = 2023-05-18
-review.score = "4.0"
+review.date = 2023-05-29
+review.score = "4.5"
 links.rym = "https://rateyourmusic.com/release/album/feed-me-jack/chumpfrey/"
 
 [[entries]]
@@ -730,7 +730,7 @@ artists = "Feed Me Jack"
 title = "Anatolia"
 released = "2013-10-25"
 genres = ["Math Pop"]
-review.date = 2023-05-18
+review.date = 2023-05-29
 review.score = "4.5"
 links.rym = "https://rateyourmusic.com/release/ep/feed-me-jack/anatolia/"
 
@@ -740,7 +740,8 @@ artists = "Feed Me Jack"
 title = "Ultra Ego"
 released = "2016-01-14"
 genres = ["Math Pop"]
-review = "TODO"
+review.date = 2023-05-29
+review.score = "4.0"
 links.rym = "https://rateyourmusic.com/release/ep/feed-me-jack/ultra-ego/"
 
 [[entries]]
