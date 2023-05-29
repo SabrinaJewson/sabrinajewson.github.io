@@ -51,10 +51,9 @@ pub(crate) fn asset<'a>(src_dir: &'a Path, out_dir: &'a Path) -> impl Asset<Outp
 use crate::util::asset;
 use crate::util::asset::Asset;
 use crate::util::log_errors;
+use crate::util::make_parents;
 use anyhow::Context;
 use std::fs;
 use std::path::Path;
-use walkdir::WalkDir;
 use std::rc::Rc;
-use crate::util::make_parents;
-
+use walkdir::WalkDir;

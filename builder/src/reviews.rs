@@ -23,6 +23,7 @@ pub(crate) fn asset<'a>(
             Ok(TemplateVars {
                 summary: introduction.summary,
                 introduction: introduction.body,
+                sites: data.sites,
                 entries: data.entries.into_iter().map(Entry::from).collect(),
                 reviews_css: CSS_PATH,
                 reviews_js: JS_PATH,
@@ -67,6 +68,7 @@ pub(crate) fn asset<'a>(
 struct TemplateVars {
     summary: String,
     introduction: String,
+    sites: Vec<data::Site>,
     entries: Vec<Entry>,
     reviews_css: &'static str,
     reviews_js: &'static str,
@@ -81,7 +83,7 @@ struct Entry {
     released_full: String,
     genres: String,
     review: Option<Review>,
-    links: data::Links,
+    links: Option<Box<[Option<String>]>>,
 }
 
 impl Entry {
@@ -144,7 +146,7 @@ impl Entry {
                 score: review.score.as_str(),
                 comment: review.comment.map(|c| markdown::parse(&c).body),
             }),
-            links: entry.links,
+            links: Some(entry.links).filter(|links| links.iter().any(Option::is_some)),
         }
     }
 }
@@ -157,10 +159,131 @@ struct Review {
 }
 
 mod data {
-    #[derive(Deserialize)]
     pub(in crate::reviews) struct Data {
         pub introduction: String,
+        pub sites: Vec<Site>,
         pub entries: Vec<Entry>,
+    }
+
+    impl<'de> Deserialize<'de> for Data {
+        fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
+            deserializer.deserialize_map(DeVisitor)
+        }
+    }
+
+    struct DeVisitor;
+    impl<'de> de::Visitor<'de> for DeVisitor {
+        type Value = Data;
+        fn expecting(&self, f: &mut Formatter<'_>) -> fmt::Result {
+            f.write_str("a data table")
+        }
+        fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+            let introduction = de_map_access_require_entry(&mut map, "introduction")?;
+            let (sites, site_indices) =
+                de_map_access_require_entry_seed(&mut map, "sites", SiteMap)?;
+            let entries_seed = entries::DeserializeSeed {
+                site_indices: &site_indices,
+            };
+            let entries = de_map_access_require_entry_seed(&mut map, "entries", entries_seed)?;
+            Ok(Data {
+                introduction,
+                sites,
+                entries,
+            })
+        }
+    }
+
+    mod site_map {
+        pub(in crate::reviews) struct SiteMap;
+
+        impl<'de> DeserializeSeed<'de> for SiteMap {
+            type Value = (Vec<Site>, HashMap<String, usize>);
+
+            fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                deserializer.deserialize_map(self)
+            }
+        }
+
+        impl<'de> de::Visitor<'de> for SiteMap {
+            type Value = (Vec<Site>, HashMap<String, usize>);
+            fn expecting(&self, f: &mut Formatter<'_>) -> fmt::Result {
+                f.write_str("a site table")
+            }
+            fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                let mut sites = Vec::new();
+                let mut indices = HashMap::default();
+                while let Some((key, value)) = map.next_entry()? {
+                    if indices.contains_key(&key) {
+                        return Err(de::Error::custom(format_args!("duplicate site {key}")));
+                    }
+                    indices.insert(key, sites.len());
+                    sites.push(value);
+                }
+                Ok((sites, indices))
+            }
+        }
+
+        use super::Site;
+        use serde::de;
+        use serde::de::DeserializeSeed;
+        use serde::de::Deserializer;
+        use std::collections::HashMap;
+        use std::fmt;
+        use std::fmt::Formatter;
+    }
+    use site_map::SiteMap;
+
+    #[derive(Deserialize, Serialize)]
+    #[serde(deny_unknown_fields)]
+    pub(in crate::reviews) struct Site {
+        pub icon: String,
+        pub alt: String,
+    }
+
+    mod entries {
+        pub(super) struct DeserializeSeed<'sites, S: BuildHasher> {
+            pub site_indices: &'sites HashMap<String, usize, S>,
+        }
+
+        impl<'de, S: BuildHasher> serde::de::DeserializeSeed<'de> for DeserializeSeed<'_, S> {
+            type Value = Vec<Entry>;
+            fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                deserializer.deserialize_seq(self)
+            }
+        }
+
+        impl<'de, S: BuildHasher> de::Visitor<'de> for DeserializeSeed<'_, S> {
+            type Value = Vec<Entry>;
+            fn expecting(&self, f: &mut Formatter<'_>) -> fmt::Result {
+                f.write_str("a sequence of entries")
+            }
+            fn visit_seq<A: de::SeqAccess<'de>>(self, mut seq: A) -> Result<Self::Value, A::Error> {
+                let mut v = Vec::with_capacity(seq.size_hint().unwrap_or(0));
+
+                while let Some(value) = seq.next_element_seed(entry::DeserializeSeed {
+                    site_indices: self.site_indices,
+                })? {
+                    v.push(value);
+                }
+
+                Ok(v)
+            }
+        }
+
+        use super::entry;
+        use super::Entry;
+        use serde::de;
+        use serde::Deserializer;
+        use std::collections::HashMap;
+        use std::fmt;
+        use std::fmt::Formatter;
+        use std::hash::BuildHasher;
     }
 
     mod entry {
@@ -171,17 +294,25 @@ mod data {
             pub released: Released,
             pub genres: Vec<String>,
             pub review: Option<Review>,
-            pub links: Links,
+            /// One link for every site
+            pub links: Box<[Option<String>]>,
         }
 
-        impl<'de> Deserialize<'de> for Entry {
-            fn deserialize<D: Deserializer<'de>>(deserializer: D) -> Result<Self, D::Error> {
-                deserializer.deserialize_map(DeVisitor)
+        pub(super) struct DeserializeSeed<'sites, S: BuildHasher> {
+            pub site_indices: &'sites HashMap<String, usize, S>,
+        }
+
+        impl<'de, S: BuildHasher> serde::de::DeserializeSeed<'de> for DeserializeSeed<'_, S> {
+            type Value = Entry;
+            fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                deserializer.deserialize_map(self)
             }
         }
 
-        struct DeVisitor;
-        impl<'de> de::Visitor<'de> for DeVisitor {
+        impl<'de, S: BuildHasher> de::Visitor<'de> for DeserializeSeed<'_, S> {
             type Value = Entry;
             fn expecting(&self, f: &mut Formatter<'_>) -> fmt::Result {
                 f.write_str("an entry table")
@@ -193,9 +324,12 @@ mod data {
                 let released = de_map_access_require_entry(&mut map, "released")?;
                 let genres = de_map_access_require_entry(&mut map, "genres")?;
                 let review::Maybe(review) = de_map_access_require_entry(&mut map, "review")?;
+                let links_seed = links::DeserializeSeed {
+                    site_indices: self.site_indices,
+                };
                 let links = match map.next_key_seed(LiteralStr("links"))? {
-                    Some(()) => map.next_value::<Links>()?,
-                    None => Links::default(),
+                    Some(()) => map.next_value_seed(links_seed)?,
+                    None => links_seed.default(),
                 };
 
                 Ok(Entry {
@@ -247,18 +381,19 @@ mod data {
         }
         use artists::Artists;
 
+        use super::links;
         use super::review;
-        use super::Links;
         use super::Released;
         use super::Review;
         use super::Type;
         use crate::util::serde::de_map_access_require_entry;
         use crate::util::serde::LiteralStr;
         use serde::de;
-        use serde::Deserialize;
         use serde::Deserializer;
+        use std::collections::HashMap;
         use std::fmt;
         use std::fmt::Formatter;
+        use std::hash::BuildHasher;
     }
     pub(in crate::reviews) use entry::Entry;
 
@@ -589,17 +724,64 @@ mod data {
     }
     use score::Score;
 
-    #[derive(Default, Deserialize, Serialize)]
-    #[serde(deny_unknown_fields)]
-    pub(in crate::reviews) struct Links {
-        #[serde(default)]
-        pub rym: Option<String>,
-        #[serde(default)]
-        pub mal: Option<String>,
+    mod links {
+        pub(super) struct DeserializeSeed<'sites, S: BuildHasher> {
+            pub site_indices: &'sites HashMap<String, usize, S>,
+        }
+
+        impl<S: BuildHasher> DeserializeSeed<'_, S> {
+            pub fn default(&self) -> Box<[Option<String>]> {
+                (0..self.site_indices.len()).map(|_| None).collect()
+            }
+        }
+
+        impl<'de, S: BuildHasher> serde::de::DeserializeSeed<'de> for DeserializeSeed<'_, S> {
+            type Value = Box<[Option<String>]>;
+            fn deserialize<D>(self, deserializer: D) -> Result<Self::Value, D::Error>
+            where
+                D: Deserializer<'de>,
+            {
+                deserializer.deserialize_map(self)
+            }
+        }
+
+        impl<'de, S: BuildHasher> de::Visitor<'de> for DeserializeSeed<'_, S> {
+            type Value = Box<[Option<String>]>;
+            fn expecting(&self, f: &mut Formatter<'_>) -> fmt::Result {
+                f.write_str("a links table")
+            }
+            fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
+                let mut links = self.default();
+                while let Some((site, url)) = map.next_entry::<String, String>()? {
+                    let &index = self
+                        .site_indices
+                        .get(&site)
+                        .ok_or_else(|| de::Error::custom(format_args!("unknown site `{site}`")))?;
+                    if links[index].is_some() {
+                        return Err(de::Error::custom(format_args!("duplicate site `{site}`")));
+                    }
+                    links[index] = Some(url);
+                }
+                Ok(links)
+            }
+        }
+
+        use serde::de;
+        use serde::Deserializer;
+        use std::collections::HashMap;
+        use std::fmt;
+        use std::fmt::Formatter;
+        use std::hash::BuildHasher;
     }
 
+    use crate::util::serde::de_map_access_require_entry;
+    use crate::util::serde::de_map_access_require_entry_seed;
+    use serde::de;
     use serde::Deserialize;
+    use serde::Deserializer;
     use serde::Serialize;
+    use std::fmt;
+    use std::fmt::Formatter;
 }
 use data::Data;
 

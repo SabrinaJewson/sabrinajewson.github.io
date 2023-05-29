@@ -27,6 +27,11 @@ All music ratings here are additionally kept in sync with my [rateyourmusic] pag
 [rateyourmusic]: https://rateyourmusic.com/~SabrinaJewson
 """
 
+[sites]
+rym = { icon = "/static/sonemic-16.png", alt = "RateYourMusic" }
+mal = { icon = "/static/mal-50.png", alt = "MyAnimeList" }
+imdb = { icon = "/static/imdb-square.png", alt = "IMDb" }
+
 [[entries]]
 type = ["music-release", "studio", "album"]
 artists = "100 gecs"
@@ -2831,3 +2836,13 @@ genres = ["Manga", "Romance", "Yuri", "Adult life"]
 review.date = 2023-05-23
 review.score = "3.0"
 links.mal = "https://myanimelist.net/manga/87175/2DK_G_Pen_Mezamashidokei"
+
+[[entries]]
+type = ["film", "feature"]
+artists = ["Marvel", "Taika Waititi"]
+title = "Thor: Love and Thunder"
+released = "2022-07-08"
+genres = ["Live action", "Action", "Comedy", "Fantasy", "Romance", "Sci-Fi"]
+review.date = 2022-07-11
+review.score = "2.5"
+links.imdb = "https://www.imdb.com/title/tt10648342/"

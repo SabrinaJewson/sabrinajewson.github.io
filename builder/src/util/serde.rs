@@ -6,9 +6,21 @@ where
     T: Deserialize<'de>,
     A: de::MapAccess<'de>,
 {
+    de_map_access_require_entry_seed(map, key, PhantomData::<T>)
+}
+
+pub(crate) fn de_map_access_require_entry_seed<'de, S, A>(
+    map: &mut A,
+    key: &'static str,
+    seed: S,
+) -> Result<S::Value, A::Error>
+where
+    S: DeserializeSeed<'de>,
+    A: de::MapAccess<'de>,
+{
     map.next_key_seed(LiteralStr(key))?
         .ok_or_else(|| de::Error::missing_field(key))?;
-    map.next_value()
+    map.next_value_seed(seed)
 }
 
 mod literal_str {
@@ -47,4 +59,6 @@ mod literal_str {
 pub(crate) use literal_str::LiteralStr;
 
 use serde::de;
+use serde::de::DeserializeSeed;
 use serde::Deserialize;
+use std::marker::PhantomData;
