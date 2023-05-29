@@ -1,3 +1,5 @@
+"use strict";
+
 const original_rows = [...document.getElementById("rows").content.children];
 const page_size = 16;
 const reviews_table = document.getElementById("reviews");
@@ -22,6 +24,19 @@ for (const container of document.getElementsByClassName("page-controls")) {
 const score_header = document.getElementById("score-header");
 const [filter_input, filter_clear_button] = document.getElementById("filter").children;
 
+const UNSORTED = "↕";
+const ASCENDING = "↑";
+const DESCENDING = "↓";
+const SORT_BY_SCORE = "Score";
+const SORT_BY_DATE = "Date";
+const SORTS = [
+	{ by: SORT_BY_SCORE, direction: UNSORTED },
+	{ by: SORT_BY_SCORE, direction: DESCENDING },
+	{ by: SORT_BY_SCORE, direction: ASCENDING },
+	{ by: SORT_BY_DATE, direction: DESCENDING },
+	{ by: SORT_BY_DATE, direction: ASCENDING },
+];
+
 let current_sort;
 let current_filter;
 let pages;
@@ -44,29 +59,39 @@ function set_sort_and_filter(new_sort, new_filter) {
 	} else {
 		rows = [...original_rows];
 	}
-	if (new_sort !== null) {
-		rows.sort((row_a, row_b) => {
-			const score_of_row = row => {
-				const score_elem = row.content.firstElementChild.getElementsByClassName("score")[0];
-				if (score_elem === undefined) {
-					return Infinity;
-				}
-				const score = parseFloat(score_elem.textContent);
-				switch (new_sort.direction) {
-					case "ascending": return score;
-					case "descending": return -score;
-					default: throw new Error(`unknown sort direction ${new_sort.direction}`);
-				}
-			};
-			return score_of_row(row_a) - score_of_row(row_b);
-		});
-		switch (new_sort.direction) {
-			case "ascending": { score_header.textContent = "Score ↑"; break; }
-			case "descending": { score_header.textContent = "Score ↓"; break; }
-		}
-	} else {
-		score_header.textContent = "Score ↕";
+
+	const sort_data = SORTS[new_sort];
+
+	let multiplier;
+	switch (sort_data.direction) {
+		case UNSORTED: multiplier = 0; break;
+		case ASCENDING: multiplier = 1; break;
+		case DESCENDING: multiplier = -1; break;
 	}
+
+	let row_val;
+	switch (sort_data.by) {
+		case SORT_BY_DATE: {
+			row_val = row => {
+				const elem = row.content.firstElementChild.getElementsByTagName("time")[0];
+				return (elem && multiplier * Date.parse(elem.dateTime)) ?? Infinity;
+			};
+			break;
+		}
+		case SORT_BY_SCORE: {
+			row_val = row => {
+				const elem = row.content.firstElementChild.getElementsByClassName("score")[0];
+				return (elem && multiplier * parseFloat(elem.textContent)) ?? Infinity;
+			};
+			break;
+		}
+	}
+
+	if (multiplier !== 0) {
+		rows.sort((row_a, row_b) => row_val(row_a) - row_val(row_b));
+	}
+	score_header.textContent = `${sort_data.by} ${sort_data.direction}`;
+
 	pages = [];
 	for (let i = 0; i < rows.length; i += page_size) {
 		pages.push(rows.slice(i, i + page_size));
@@ -112,13 +137,7 @@ function set_shown_page(new_page) {
 }
 
 score_header.parentElement.addEventListener("click", () => {
-	if (current_sort === null) {
-		set_sort_and_filter({ direction: "descending" }, current_filter);
-	} else if (current_sort.direction === "descending") {
-		set_sort_and_filter({ direction: "ascending" }, current_filter);
-	} else if (current_sort.direction === "ascending") {
-		set_sort_and_filter(null, current_filter);
-	}
+	set_sort_and_filter((current_sort + 1) % SORTS.length, current_filter);
 });
 
 for (const { first, last, prev, next, middle } of page_controls) {
@@ -166,4 +185,4 @@ for (const { first, last, prev, next, middle } of page_controls) {
 filter_input.addEventListener("input", () => set_sort_and_filter(current_sort, filter_input.value));
 filter_clear_button.addEventListener("click", () => set_sort_and_filter(current_sort, ""));
 
-set_sort_and_filter(null, (new URLSearchParams(location.search)).get("q") || filter_input.value);
+set_sort_and_filter(0, (new URLSearchParams(location.search)).get("q") || filter_input.value);
