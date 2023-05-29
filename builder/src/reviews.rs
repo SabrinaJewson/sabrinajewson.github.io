@@ -76,7 +76,7 @@ struct TemplateVars {
 
 #[derive(Serialize)]
 struct Entry {
-    r#type: String,
+    r#type: &'static str,
     artists: String,
     title: String,
     released_short: String,
@@ -90,49 +90,51 @@ impl Entry {
     fn from(entry: data::Entry) -> Self {
         let r#type = match entry.r#type {
             data::Type::MusicRelease(r) => {
-                let (format_lower, format_upper) = match r.format {
-                    data::r#type::music_release::Format::Single => ("single", "Single"),
-                    data::r#type::music_release::Format::EP => ("EP", "EP"),
-                    data::r#type::music_release::Format::Album => ("album", "Album"),
-                    data::r#type::music_release::Format::Mixtape => ("mixtape", "Mixtape"),
-                    data::r#type::music_release::Format::Compilation => {
-                        ("compilation", "Compilation")
-                    }
-                };
-                match r.recording_type {
-                    data::r#type::music_release::RecordingType::Studio => format_upper.to_owned(),
-                    data::r#type::music_release::RecordingType::Live => {
-                        format!("Live {format_lower}")
-                    }
-                    data::r#type::music_release::RecordingType::Bootleg => {
-                        format!("Bootleg {format_lower}")
-                    }
-                    data::r#type::music_release::RecordingType::Demo => {
-                        format!("Demo {format_lower}")
+                macro_rules! match_recording_type {
+                    ($format_lower:literal, $format_upper:literal) => {{
+                        use data::r#type::music_release::RecordingType::*;
+                        match r.recording_type {
+                            Studio => $format_upper,
+                            Live => concat!("Live ", $format_lower),
+                            Bootleg => concat!("Bootleg ", $format_lower),
+                            Demo => concat!("Demo ", $format_lower),
+                        }
+                    }};
+                }
+
+                {
+                    #[allow(clippy::enum_glob_use)]
+                    use data::r#type::music_release::Format::*;
+                    match r.format {
+                        Single => match_recording_type!("single", "Single"),
+                        EP => match_recording_type!("EP", "EP"),
+                        Album => match_recording_type!("album", "Album"),
+                        Mixtape => match_recording_type!("mixtape", "Mixtape"),
+                        Compilation => match_recording_type!("compilation", "Compilation"),
                     }
                 }
             }
-            data::Type::Comic(data::r#type::Comic::Oneshot) => "Oneshot comic".to_owned(),
-            data::Type::Comic(data::r#type::Comic::Series) => "Comic series".to_owned(),
-            data::Type::Comic(data::r#type::Comic::Anthology) => "Comic anthology".to_owned(),
+            data::Type::Comic(data::r#type::Comic::Oneshot) => "Oneshot comic",
+            data::Type::Comic(data::r#type::Comic::Series) => "Comic series",
+            data::Type::Comic(data::r#type::Comic::Anthology) => "Comic anthology",
             data::Type::Prose(r) => {
-                let installment_type = match r.installment_type {
-                    data::r#type::prose::InstallmentType::ShortStory => "Short story",
-                    data::r#type::prose::InstallmentType::LightNovel => "Light novel",
-                    data::r#type::prose::InstallmentType::Novella => "Novella",
-                    data::r#type::prose::InstallmentType::Novel => "Novel",
+                let mut full = match r.installment_type {
+                    data::r#type::prose::InstallmentType::ShortStory => "Short story series",
+                    data::r#type::prose::InstallmentType::LightNovel => "Light novel series",
+                    data::r#type::prose::InstallmentType::Novella => "Novella series",
+                    data::r#type::prose::InstallmentType::Novel => "Novel series",
                 };
-                if r.series {
-                    format!("{installment_type} series")
-                } else {
-                    installment_type.to_owned()
+                if !r.series {
+                    full = full.strip_suffix(" series").unwrap();
                 }
+                full
             }
-            data::Type::Film(data::r#type::Film::Short) => "Short film".to_owned(),
-            data::Type::Film(data::r#type::Film::Feature) => "Feature film".to_owned(),
-            data::Type::Film(data::r#type::Film::Series) => "Film series".to_owned(),
-            data::Type::Film(data::r#type::Film::TvShow) => "TV show".to_owned(),
-            data::Type::Film(data::r#type::Film::TvSeason) => "TV season".to_owned(),
+            data::Type::Film(data::r#type::Film::Short) => "Short film",
+            data::Type::Film(data::r#type::Film::Feature) => "Feature film",
+            data::Type::Film(data::r#type::Film::Series) => "Film series",
+            data::Type::Film(data::r#type::Film::TvShow) => "TV show",
+            data::Type::Film(data::r#type::Film::TvSeason) => "TV season",
+            data::Type::VisualNovel => "Visual novel",
         };
         Entry {
             r#type,
@@ -407,6 +409,8 @@ mod data {
             Prose(Prose),
             /// A film.
             Film(Film),
+            /// A visual novel.
+            VisualNovel,
         }
 
         impl<'de> Deserialize<'de> for Type {
@@ -436,6 +440,7 @@ mod data {
                     Form::Comic => Type::Comic(<(Comic,)>::deserialize(deserializer)?.0),
                     Form::Prose => Type::Prose(Prose::deserialize(deserializer)?),
                     Form::Film => Type::Film(<(Film,)>::deserialize(deserializer)?.0),
+                    Form::VisualNovel => Type::VisualNovel,
                 })
             }
         }
@@ -447,10 +452,12 @@ mod data {
             Comic,
             Prose,
             Film,
+            VisualNovel,
         }
 
         pub(in crate::reviews) mod music_release {
             #[derive(Deserialize)]
+            #[serde(deny_unknown_fields)]
             pub(in crate::reviews) struct MusicRelease {
                 pub recording_type: RecordingType,
                 pub format: Format,
@@ -492,6 +499,7 @@ mod data {
 
         pub(in crate::reviews) mod prose {
             #[derive(Deserialize)]
+            #[serde(deny_unknown_fields)]
             pub(in crate::reviews) struct Prose {
                 pub installment_type: InstallmentType,
                 #[serde(default, deserialize_with = "deserialize_series")]

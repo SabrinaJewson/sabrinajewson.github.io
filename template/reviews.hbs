@@ -34,11 +34,9 @@
 					<br>
 					<small>
 						{{#if links}}<span class='links'>{{#each links}}{{#if this}}
-							<a href="{{this}}">
-								{{#with (lookup ../../sites @index)}}
-									<img src="{{icon}}" alt="{{alt}}">
-								{{~/with~}}
-							</a>
+							{{#with (lookup ../../sites @index)}}
+								<a href="{{../this}}" title="{{alt}}"><img src="{{icon}}" alt="{{alt}}"></a>
+							{{/with}}
 						{{/if}}{{/each}}</span>{{/if}}
 						<span>{{{type}}}</span>
 						• <span title='{{released_full}}'>{{released_short}}</span>

@@ -31,6 +31,7 @@ All music ratings here are additionally kept in sync with my [rateyourmusic] pag
 rym = { icon = "/static/sonemic-16.png", alt = "RateYourMusic" }
 mal = { icon = "/static/mal-50.png", alt = "MyAnimeList" }
 imdb = { icon = "/static/imdb-square.png", alt = "IMDb" }
+vndb = { icon = "/static/vndb.png", alt = "VNDB" }
 
 [[entries]]
 type = ["music-release", "studio", "album"]
@@ -2839,11 +2840,155 @@ review.score = "3.0"
 links.mal = "https://myanimelist.net/manga/87175/2DK_G_Pen_Mezamashidokei"
 
 [[entries]]
+type = ["film", "tv-show"]
+artists = "Bones"
+title = "獣王星 [Jyu-Oh-Sei]"
+released = "2006-04-14–2006-06-23"
+genres = ["Anime", "Action", "Drama", "Mystery", "Sci-Fi"]
+review.date = 2022-02-10
+review.score = "1.0"
+links.imdb = "https://www.imdb.com/title/tt0973423/"
+links.mal = "https://myanimelist.net/anime/953/Juu_Ou_Sei"
+
+[[entries]]
 type = ["film", "feature"]
-artists = ["Marvel", "Taika Waititi"]
+artists = ["Bong Joon Ho (director, writer)", "Han Jin-won (writer)"]
+title = "Parasite"
+released = "2019"
+genres = ["Drama", "Thriller"]
+review.date = 2022-12-02
+review.score = "4.0"
+links.imdb = "https://www.imdb.com/title/tt6751668/"
+
+[[entries]]
+type = ["film", "short"]
+artists = "Cecelia Condit"
+title = "Possibly in Michigan"
+released = "1983"
+genres = ["Live Action", "Horror", "Musical", "Experimental"]
+review.date = 2023-05-29
+review.score = "4.0"
+links.imdb = "https://www.imdb.com/title/tt7275680/"
+
+[[entries]]
+type = ["film", "feature"]
+artists = "Dan Gilroy"
+title = "Nightcrawler"
+released = "2014"
+genres = ["Live Action", "Crime", "Drama", "Thriller"]
+review.date = 2022-01-29
+review.score = "4.0"
+links.imdb = "https://www.imdb.com/title/tt2872718/"
+
+[[entries]]
+type = ["film", "feature"]
+artists = ["Daniel Kwan", "Daniel Scheinert"]
+title = "Everything Everywhere All at Once"
+released = "2022-03-25"
+genres = ["Action", "Comedy", "Sci-Fi"]
+review.date = 2022-05-14
+review.score = "2.0"
+links.imdb = "https://www.imdb.com/title/tt6710474/"
+
+[[entries]]
+type = ["film", "tv-show"]
+artists = "DreamWorks"
+title = "She-Ra and the Princesses of Power"
+released = "2018–2020"
+genres = ["2D", "Action", "Comedy", "Drama", "Family", "Fantasy", "Sci-Fi"]
+review.date = 2021-11-21
+review.score = "3.5"
+links.imdb = "https://www.imdb.com/title/tt7745956/"
+
+[[entries]]
+type = ["film", "feature"]
+artists = "Illumination"
+title = "Minions: The Rise of Gru"
+released = "2022"
+genres = ["3D", "Comedy", "Crime", "Family", "Sci-Fi"]
+review.date = 2022-07-01
+review.score = "2.5"
+links.imdb = "https://www.imdb.com/title/tt5113044/"
+
+[[entries]]
+type = ["film", "feature"]
+artists = "Jordan Peele (director)"
+title = "Nope"
+released = "2022-07-22"
+genres = ["Live action", "Horror", "Mystery", "Sci-Fi", "Thriller"]
+review.date = 2022-09-03
+review.score = "2.0"
+links.imdb = "https://www.imdb.com/title/tt10954984/"
+
+[[entries]]
+type = ["film", "feature"]
+artists = ["Marvel", "Taika Waititi (director)"]
 title = "Thor: Love and Thunder"
 released = "2022-07-08"
 genres = ["Live action", "Action", "Comedy", "Fantasy", "Romance", "Sci-Fi"]
 review.date = 2022-07-11
 review.score = "2.5"
 links.imdb = "https://www.imdb.com/title/tt10648342/"
+
+[[entries]]
+type = ["film", "feature"]
+artists = "Mary Harron (director)"
+title = "American Psycho"
+released = "2000-04-14"
+genres = ["Live action", "Crime", "Drama", "Horror"]
+review.date = 2023-05-29
+review.score = "4.5"
+links.imdb = "https://www.imdb.com/title/tt0144084/"
+
+[[entries]]
+type = ["film", "feature"]
+artists = "Matt Reeves (director)"
+title = "The Batman"
+released = "2022"
+genres = ["Live action", "Action", "Crime", "Drama", "Thriller"]
+review.date = 2022-04-05
+review.score = "1.5"
+links.imdb = "https://www.imdb.com/title/tt1877830/"
+
+[[entries]]
+type = ["film", "tv-show"]
+artists = "Shaft"
+title = "魔法少女まどか★マギカ [Puella Magi Madoka★Magica]"
+released = "2011-01-07–2011-04-22"
+genres = ["Anime", "Magical Girl", "Drama", "Psychological", "Horror"]
+review.date = 2021-10-04
+review.score = "4.0"
+links.imdb = "https://www.imdb.com/title/tt1773185/"
+links.mal = "https://myanimelist.net/anime/9756/Mahou_Shoujo_Madoka%E2%98%85Magica"
+
+[[entries]]
+type = ["film", "tv-show"]
+artists = "Trigger"
+title = "キルラキル [Kill la Kill]"
+released = "2013-10-04–2014-03-28"
+genres = ["Anime", "Action", "Comedy", "Fantasy", "Ecchi"]
+review.date = 2021-10-20
+review.score = "4.0"
+links.imdb = "https://www.imdb.com/title/tt3114390/"
+links.mal = "https://myanimelist.net/anime/18679/Kill_la_Kill"
+
+[[entries]]
+type = ["film", "tv-show"]
+artists = "White Fox"
+title = "Steins;Gate"
+released = "2011-04-06–2011-09-14"
+genres = ["Anime", "Comedy", "Drama", "Sci-Fi", "Thriller"]
+review.date = 2022-01-12
+review.score = "3.0"
+links.imdb = "https://www.imdb.com/title/tt1910272/"
+links.mal = "https://myanimelist.net/anime/9253/Steins_Gate"
+
+[[entries]]
+type = ["visual-novel"]
+artists = "paleontology"
+title = "SeaBed"
+released = "2017"
+genres = ["Anime", "Adult life", "Psychological", "Mystery", "Tragedy", "Yuri"]
+review.date = 2022-02-01
+review.score = "4.0"
+links.vndb = "https://vndb.org/v19273"
