@@ -410,7 +410,7 @@ but it is necessary for the theorem to hold).
 We can then take the [contrapositive] of this theorem,
 giving us the corollary:
 
-> If one is able to move some type with an invariant lifetime parameter `T<'b>` after borrowing it,
+> If one is able to move some type with an invariant lifetime parameter `[rs] T<'b>` after borrowing it,
 > then the lifetime which it was borrowed for is strictly shorter than `[rs] 'b`
 > (as if it outlived `[rs] 'b`, one would not have been able to move it).
 
