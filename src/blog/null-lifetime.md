@@ -1,5 +1,6 @@
 {
-	"published": "2023-07-18"
+	"published": "2023-07-18",
+	"updated": "2023-07-22"
 }
 
 # Why the “Null” Lifetime Does Not Exist
@@ -146,6 +147,28 @@ use std::cell::Cell;
 
 [Try it yourself][play] — although it might be surprising, this compiles just fine,
 and does indeed result in a `[rs] struct` that technically references itself.
+
+> Edit (2023-07-22):
+> After this blog post was pubished, [Daniel Henry-Mantilla] helpfully pointed out that
+> you don’t even need interior mutability to make a stack self-referential struct like this,
+> so long as you’re willing to sacrifice having a _literal_ self-reference (`[rs]&Self`)
+> for a reference to an earlier field.
+> Specifically, the following code just works:
+> ```rs
+> struct SelfRef<'this> {
+> 	a: i32,
+> 	b: &'this i32,
+> }
+> fn main() {
+> 	let mut self_ref = SelfRef { a: 37, b: &0 };
+> 	self_ref.b = &self_ref.a;
+> }
+> ```
+>
+> The resulting `[rs] struct` exhibits the same behaviour we talk about later in this section,
+> but it’s worth putting in this example as a more “pure” demonstration of the same effect.
+> Thanks, Yandros!
+
 So, did we do it?
 Have we solved the years-long problem of self-referential types?
 
@@ -482,3 +505,4 @@ it’s the only way for Rust’s borrow checker to still be sound.
 [`ouroboros`]: https://docs.rs/ouroboros
 [contrapositive]: https://en.wikipedia.org/wiki/Contraposition
 [2017]: https://internals.rust-lang.org/t/opposite-of-static/5128
+[Daniel Henry-Mantilla]: https://github.com/danielhenrymantilla
