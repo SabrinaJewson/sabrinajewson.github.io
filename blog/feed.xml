@@ -62,7 +62,7 @@ use std::cell::Cell;
 
 For more information about this error, try `rustc --explain E0505`.
 &lt;/code&gt;&lt;/pre&gt;&lt;p&gt;And with unique borrowing we get a similar error:&lt;/p&gt;&lt;pre class=&apos;scode&apos;&gt;&lt;code&gt;&lt;span class=&quot;ssource sdiff&quot;&gt;&lt;span class=&quot;smarkup sdeleted sdiff&quot;&gt;&lt;span class=&quot;spunctuation sdefinition sdeleted sdiff&quot;&gt;-&lt;/span&gt;	let self_ref = SelfRef {
-&lt;/span&gt;&lt;span class=&quot;smarkup sinserted sdiff&quot;&gt;&lt;span class=&quot;spunctuation sdefinition sinserted sdiff&quot;&gt;+&lt;/span&gt;	let self_ref = SelfRef {
+&lt;/span&gt;&lt;span class=&quot;smarkup sinserted sdiff&quot;&gt;&lt;span class=&quot;spunctuation sdefinition sinserted sdiff&quot;&gt;+&lt;/span&gt;	let mut self_ref = SelfRef {
 &lt;/span&gt;		this: Cell::new(None),
 	};
 &lt;span class=&quot;smarkup sdeleted sdiff&quot;&gt;&lt;span class=&quot;spunctuation sdefinition sdeleted sdiff&quot;&gt;-&lt;/span&gt;	drop(self_ref);

@@ -61,7 +61,7 @@ use std::cell::Cell;
 
 For more information about this error, try `rustc --explain E0505`.
 </code></pre><p>And with unique borrowing we get a similar error:</p><pre class=scode><code><span class="ssource sdiff"><span class="sdiff smarkup sdeleted"><span class="spunctuation sdefinition sdiff sdeleted">-</span>	let self_ref = SelfRef {
-</span><span class="sdiff sinserted smarkup"><span class="spunctuation sdefinition sdiff sinserted">+</span>	let self_ref = SelfRef {
+</span><span class="sdiff sinserted smarkup"><span class="spunctuation sdefinition sdiff sinserted">+</span>	let mut self_ref = SelfRef {
 </span>		this: Cell::new(None),
 	};
 <span class="sdiff smarkup sdeleted"><span class="spunctuation sdefinition sdiff sdeleted">-</span>	drop(self_ref);
