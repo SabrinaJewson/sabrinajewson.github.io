@@ -217,7 +217,7 @@ And with unique borrowing we get a similar error:
 
 ```diff
 -	let self_ref = SelfRef {
-+	let self_ref = SelfRef {
++	let mut self_ref = SelfRef {
 		this: Cell::new(None),
 	};
 -	drop(self_ref);
