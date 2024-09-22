@@ -170,15 +170,15 @@ fn asset<'asset>(
             templater.clone(),
             config,
         ),
-        reviews::asset(
-            "src/reviews.toml".as_ref(),
-            "template/reviews.hbs".as_ref(),
-            "template/reviews.css".as_ref(),
-            "template/reviews.js".as_ref(),
-            Path::new(output),
-            templater.clone(),
-            config,
-        ),
+        //reviews::asset(
+        //    "src/reviews.toml".as_ref(),
+        //    "template/reviews.hbs".as_ref(),
+        //    "template/reviews.css".as_ref(),
+        //    "template/reviews.js".as_ref(),
+        //    Path::new(output),
+        //    templater.clone(),
+        //    config,
+        //),
         index::asset(
             "template/index.hbs".as_ref(),
             "src/index.md".as_ref(),
@@ -194,7 +194,7 @@ fn asset<'asset>(
         icons::asset("src/icon.png".as_ref(), Path::new(output), config),
         raw::asset("raw".as_ref(), Path::new(output)),
     ))
-    .map(|((), (), (), (), (), (), (), ())| {})
+    .map(|((), (), (), (), (), (), ())| {})
 }
 
 #[context("failed to set cwd to project root")]

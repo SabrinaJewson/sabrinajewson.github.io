@@ -86,7 +86,9 @@ pub(crate) fn asset<'a>(
 
             let feed = asset::all((posts.clone(), feed_metadata.clone()))
                 .map(|(posts, metadata)| {
-                    let Ok(metadata) = metadata else { return Ok(()) };
+                    let Ok(metadata) = metadata else {
+                        return Ok(());
+                    };
                     let feed = build_feed(&posts, &metadata);
                     write_file(out_dir.join(FEED_PATH), feed)?;
                     log::info!("successfully emitted Atom feed");
@@ -298,7 +300,9 @@ fn build_feed(posts: &[Rc<Post>], metadata: &FeedMetadata) -> String {
 
     for post in posts.iter().take(10) {
         let Ok(content) = &post.content else { continue };
-        let Some(published) = content.metadata.published.map(datetime) else { continue };
+        let Some(published) = content.metadata.published.map(datetime) else {
+            continue;
+        };
 
         let post_url = format!("{}{}", metadata.url, post.stem);
 

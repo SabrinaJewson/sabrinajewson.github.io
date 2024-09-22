@@ -642,8 +642,12 @@ mod data {
             fn visit_map<A: de::MapAccess<'de>>(self, mut map: A) -> Result<Self::Value, A::Error> {
                 let date =
                     de_map_access_require_entry::<toml::value::Datetime, _>(&mut map, "date")?;
-                let toml::value::Datetime { date: Some(date), time: None, offset: None } =
-                    date else {
+                let toml::value::Datetime {
+                    date: Some(date),
+                    time: None,
+                    offset: None,
+                } = date
+                else {
                     return Err(de::Error::custom("review date is in invalid format"));
                 };
 

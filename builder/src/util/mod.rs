@@ -147,7 +147,9 @@ pub(crate) mod precision_date {
             }
             let year = year.parse::<u32>().unwrap();
 
-            let Some(month) = parts.next() else { return Ok(PrecisionDate::Year(year)); };
+            let Some(month) = parts.next() else {
+                return Ok(PrecisionDate::Year(year));
+            };
 
             if month.len() != 2 || month.chars().any(|c| !c.is_ascii_digit()) {
                 return Err(ParseError("month is not 2 digits".to_owned()));
@@ -155,7 +157,9 @@ pub(crate) mod precision_date {
             let month = Month::from_u8(month.parse::<u8>().unwrap())
                 .ok_or_else(|| ParseError(format!("month {month} is not in the range [1, 12]")))?;
 
-            let Some(day) = parts.next() else { return Ok(PrecisionDate::Month(year, month)) };
+            let Some(day) = parts.next() else {
+                return Ok(PrecisionDate::Month(year, month));
+            };
 
             if day.len() != 2 || day.chars().any(|c| !c.is_ascii_digit()) {
                 return Err(ParseError("day is not 2 digits".to_owned()));
