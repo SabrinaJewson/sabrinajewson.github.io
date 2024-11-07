@@ -2,6 +2,7 @@ Hi!
 Welcome to my website where I occasionally blog about the Rust programming language.
 
 This site's source code is [available on GitHub](https://github.com/SabrinaJewson/sabrinajewson.github.io).
+All content on the site is available under MIT, Apache-2.0, or CC BY 4.0.
 
 ## About Me { #about-me }
 
